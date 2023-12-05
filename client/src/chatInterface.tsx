@@ -38,7 +38,7 @@ const ChatInterface = () => {
     };
     getHistory();
   }, []);
-  console.log(messages);
+  console.log(messages, ' message component');
   return (
     <div>
       <div>

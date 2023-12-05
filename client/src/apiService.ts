@@ -23,27 +23,38 @@ const getTextResponse = async (
 
 // Create a function that gets both text and audio response
 const getAudioResponse = async (
-  userInput: string,
+  userInput: FormData,
   endpoint: string
-): Promise<{ text: string; audio: string }> => {
+): Promise<{ text: string; audio: string; input: string }> => {
+  const config = {
+    headers: {
+      'content-type': 'multipart/form-data',
+    },
+  };
   try {
-    const response = await axios.post(endpoint, {
-      message: userInput,
-    });
+    //don't use axios , use fetch instead for multipart/form-data
+    /* const response = await fetch(endpoint, {
+      method: 'POST',
+      body: userInput,
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+    }); */
+    const response = await axios.post(endpoint, userInput, config);
 
     console.log(response);
 
     // Extracting text and audio data from the response
-    const { text_data, audio_data } = response.data;
+    const { response_text, response_audio, input_text } = response.data;
 
     // Assuming audio_data is a base64 encoded string
-    const audioBlob = new Blob([audio_data], { type: 'audio/wav' });
+    const audioBlob = new Blob([response_audio], { type: 'audio/wav' });
     const audioUrl = URL.createObjectURL(audioBlob);
 
-    return { text: text_data, audio: audioUrl };
+    return { text: response_text, audio: audioUrl, input: input_text };
   } catch (error) {
-    console.error(error);
-    return { text: 'Error', audio: '' };
+    console.error(error, ' error from getAudioResponse');
+    return { text: 'Error', audio: '', input: 'error' };
   }
 };
 

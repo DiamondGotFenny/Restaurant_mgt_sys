@@ -1,36 +1,40 @@
 import { useState, useEffect, useRef } from 'react';
 import { Message } from './chatInterface';
 import { getAudioResponse } from './apiService';
-import { useReactMediaRecorder } from 'react-media-recorder-2';
+import { useAudioRecorder } from './useAudioRecorder';
 //define the component prop
 interface SpeechRecorderProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }
 
 const SpeechRecongnition = ({ setMessages }: SpeechRecorderProps) => {
-  const { status, startRecording, stopRecording, mediaBlobUrl } =
-    useReactMediaRecorder({ audio: true, video: false });
+  /***
+   * seems the speech converation is not as smooth as the we connect speech to text Azure service
+   * directly in frontend, not sure it has something to do with we record the vocie at client side first,
+   * then send it to our server, then use the Azure speech to text service. need more experiments
+   */
+  const { startRecording, stopRecording, audioBlob, isRecording } =
+    useAudioRecorder();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [audioUrl, setAudioUrl] = useState<string | undefined>(undefined);
 
   const toggleRecording = () => {
-    if (status === 'recording') {
+    if (isRecording) {
       stopRecording();
     } else {
       startRecording();
     }
   };
-
-  const sendDataToServer = async (mediaBlobUrl: string | undefined) => {
-    if (mediaBlobUrl) {
-      const myblob = await fetch(mediaBlobUrl);
-      const audioBlob = await myblob.blob(); // Convert the data to a Blob
+  /***
+   * todo: get the user input text from another sperate route, return the text after the speech recognition,
+   * no need to wait for the audio response, as it make take a while to get the response from the LLM
+   */
+  const sendDataToServer = async (audioBlob: Blob | null) => {
+    if (audioBlob) {
       // Create a FormData object
       const formData = new FormData();
-      console.log(audioBlob, 'recordingBlob');
       // Append the audio data to the FormData object
       formData.append('data', audioBlob, 'recording.wav');
-      console.log(formData.get('data'), 'formData');
       const response = await getAudioResponse(
         formData,
         `${process.env.REACT_APP_API_BASE_URL}/chat-voice/`
@@ -59,15 +63,14 @@ const SpeechRecongnition = ({ setMessages }: SpeechRecorderProps) => {
   }, [audioUrl]);
   //call the sendDataToServer function when mediaBlobUrl is not null
   useEffect(() => {
-    if (mediaBlobUrl) {
-      sendDataToServer(mediaBlobUrl);
+    if (audioBlob) {
+      sendDataToServer(audioBlob);
     }
-  }, [mediaBlobUrl]);
+  }, [audioBlob]);
   return (
     <div>
-      <p>{status}</p>
       <button onClick={toggleRecording}>
-        {status === 'recording' ? 'Stop' : 'Start'}
+        {isRecording ? 'Stop' : 'Start'}
       </button>
       <audio ref={audioRef} hidden />
     </div>

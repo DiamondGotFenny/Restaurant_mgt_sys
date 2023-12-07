@@ -1,5 +1,4 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
-#from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -33,8 +32,6 @@ speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_r
 
 #configure for user input 
 speech_config.speech_recognition_language="en-US"
-#audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
-#speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
 
 #configure for system output
 speech_config.speech_synthesis_language = "en-US"
@@ -62,26 +59,29 @@ app=FastAPI(middleware=middleware)
 client_address = os.getenv("CLIENT_ADDRESS")
 
 # In-memory chat history
-chat_history = [ {"role": "system", "content": "Assistant's name is Janna.She is a virtual receptionist for a restaurant. She can help you with your needs."},
-                {"role": "system", "content": "today's special is chicken curry and beef curry. we have 5 tables available for 2 people and 3 tables available for 4 people.now we have 2 tables for 2 people, 1 table for 4 people available. our business hours are 11:00 am to 10:00 pm."},
-                {"role": "assistant", "content": "Hi this is Janna, nice talke to you and how may I help",},]
+chat_history = [ {"role": "system", "content": "Assistant's name is Jenna. She is a virtual receptionist for a restaurant. She can help user with user's needs.But Jenna will only answer the question based on restaurant information, if user's question is not related to the restaurant information, she will not be able to answer it.REMEMBER THAT!"},
+                {"role": "system", "content": "the restaurant information:restaurant name is Kiwi's Day. Today's special is chicken curry and beef curry. We have 5 tables available for 2 people and 3 tables available for 4 people.now we have 2 tables for 2 people, 1 table for 4 people available. our business hours are 11:00 am to 10:00 pm."},
+                {"role": "assistant", "content": "Hi this is Jenna, nice talke to you and how may I help",},]
 
-greeting=f'Hi this is Janna, nice talke to you and how may I help?'
 
 class Chat_Request(BaseModel):
     message: str
 
 class Voice_Request(BaseModel):
     data: UploadFile = File(...)
+
+def is_audio_file(file: UploadFile) -> bool:
+    """
+    Check if the file is a wav audio file based on its MIME type.
+    """
+    accepted_mime_types = "audio/wav"
+    return file.content_type == accepted_mime_types
     
 # Define the speech-to-text function
 async def speech_to_text(audio_file: UploadFile):
-    print("processing audio file")
-
     # Check if the file is a wav file
-    if not audio_file.filename.endswith('.wav'):
-        print("The file is not a wav audio file.")
-        return None
+    if not is_audio_file(audio_file):
+        return {"error": "The file is not valid wav file."}
 
     try:
         # Save the audio file
@@ -95,9 +95,8 @@ async def speech_to_text(audio_file: UploadFile):
         speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
     except Exception as e:
         print(f"Error: {e}")
-        return None
+        return 'sorry I did not catch you, could please repeat it?'
 
-    print("processing audio file 2")
     speech_recognition_result = speech_recognizer.recognize_once()
 
     # Handling different speech recognition outcomes
@@ -106,7 +105,7 @@ async def speech_to_text(audio_file: UploadFile):
         return speech_recognition_result.text
     elif speech_recognition_result.reason == speechsdk.ResultReason.NoMatch:
         print("No speech could be recognized: {}".format(speech_recognition_result.no_match_details))
-        return None
+        return 'sorry I did not catch you, could please repeat it?'
     elif speech_recognition_result.reason == speechsdk.ResultReason.Canceled:
         cancellation_details = speech_recognition_result.cancellation_details
         print("Speech Recognition canceled: {}".format(cancellation_details.reason))
@@ -133,6 +132,9 @@ def text_to_speech(text):
     
 # get the response from LLM function
 def response_from_LLM(input_text):
+      #check if the input is valid string
+    if not input_text:
+        return {"error": "The input is not a valid string."}
     try:
         chat_history.append({"role": "user", "content": input_text,})
         response = client.chat.completions.create(
@@ -146,33 +148,18 @@ def response_from_LLM(input_text):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def is_audio_file(file: UploadFile) -> bool:
-    """
-    Check if the file is an audio file based on its MIME type.
-    """
-    # List of accepted audio MIME types
-    accepted_mime_types = ["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp3"]
-    return file.content_type in accepted_mime_types
+
   
 @app.post("/chat-text/")
 async def chat_text(chat: Chat_Request):
-    try:
-        chat_history.append({"role": "user", "content": chat.message,})
-        response = client.chat.completions.create(
-            model=model_name, # model = "deployment_name".
-            messages=chat_history
-        )
-        gpt_response=response.choices[0].message.content
-        chat_history.append({"role": "assistant", "content": gpt_response,})
-        print(chat_history)
-        return {"response": gpt_response}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+   response_from_LLM(chat.message)
 
-#define voice chat route
-@app.post("/chat-voice/")
-async def chat_voice(data: UploadFile = File(...)):
-    print("processing audio file   ")
+#define speech to text chat route
+@app.post("/chat-speech-to-text/")
+async def chat_speech_to_text(data: UploadFile = File(...)):
+  # Check if the file is an wav audio file
+    if not is_audio_file(data):
+        return {"error": "The file is not an audio file."}
     
       # Assuming `speech_to_text` function can handle audio file
     input_text = await speech_to_text(data)
@@ -181,20 +168,28 @@ async def chat_voice(data: UploadFile = File(...)):
     if input_text is None:
         return {"error": "Speech to text conversion failed"}
 
-    # Send the text to the LLM and get the response
-    response = response_from_LLM(input_text
-                                 )
-    response_text=response['response']
-    # Convert the response to speech
-    encoded_audio = text_to_speech(response_text)
-
-    if encoded_audio:
-        # return {"response": response["response"], "audio": encoded_audio}
-        
-        return {"response_text": response_text, "response_audio": encoded_audio.decode("utf-8"),'input_text':input_text}
+    if input_text:
+        return {'input_text':input_text}
     else:
-        return {"error": "Unable to synthesize audio"}
+        return {"error": "Unable to recognize the audio"}
 
+# Define text to speech chat route
+@app.post("/chat-text-to-speech/")
+async def chat_text_to_speech(data: Chat_Request):
+    # Send the text to the LLM and get the response
+    response = response_from_LLM(data.message)
+
+    # Check if the response is successful
+    if response:
+        # Convert the response to speech
+        encoded_audio = text_to_speech(response["response"])
+
+        if encoded_audio:
+            return {"text": response["response"], "audio": encoded_audio.decode("utf-8")}
+        else:
+            return {"error": "Unable to synthesize audio"}
+    else:
+        return {"error": "Unable to get response from LLM"}
 
 # Define a route to get the chat history
 @app.get("/chat_history/")

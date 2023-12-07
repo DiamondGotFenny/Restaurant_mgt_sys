@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Message } from './chatInterface';
-import { getAudioResponse } from './apiService';
+import { sendTextToSpeechRequest, sendSpeechToTextRequest } from './apiService';
 import { useAudioRecorder } from './useAudioRecorder';
 //define the component prop
 interface SpeechRecorderProps {
@@ -8,11 +8,6 @@ interface SpeechRecorderProps {
 }
 
 const SpeechRecongnition = ({ setMessages }: SpeechRecorderProps) => {
-  /***
-   * seems the speech converation is not as smooth as the we connect speech to text Azure service
-   * directly in frontend, not sure it has something to do with we record the vocie at client side first,
-   * then send it to our server, then use the Azure speech to text service. need more experiments
-   */
   const { startRecording, stopRecording, audioBlob, isRecording } =
     useAudioRecorder();
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -35,19 +30,23 @@ const SpeechRecongnition = ({ setMessages }: SpeechRecorderProps) => {
       const formData = new FormData();
       // Append the audio data to the FormData object
       formData.append('data', audioBlob, 'recording.wav');
-      const response = await getAudioResponse(
+      const response = await sendSpeechToTextRequest(
         formData,
-        `${process.env.REACT_APP_API_BASE_URL}/chat-voice/`
+        `${process.env.REACT_APP_API_BASE_URL}/chat-speech-to-text/`
       );
       setMessages((messages) => [
         ...messages,
-        { role: 'user', content: response.input },
+        { role: 'user', content: response },
       ]);
+      const responseAudio = await sendTextToSpeechRequest(
+        response,
+        `${process.env.REACT_APP_API_BASE_URL}/chat-text-to-speech/`
+      );
       setMessages((messages) => [
         ...messages,
-        { role: 'assistant', content: response.text },
+        { role: 'assistant', content: responseAudio.text },
       ]);
-      setAudioUrl(response.audio); // Set the audio URL
+      setAudioUrl(responseAudio.audio); // Set the audio URL
     } else {
       console.log('no audio chunks or audio is not recorded correctly!');
     }

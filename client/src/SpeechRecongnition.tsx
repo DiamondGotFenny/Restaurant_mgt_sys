@@ -21,8 +21,7 @@ const SpeechRecongnition = ({ setMessages }: SpeechRecorderProps) => {
     }
   };
   /***
-   * todo: get the user input text from another sperate route, return the text after the speech recognition,
-   * no need to wait for the audio response, as it make take a while to get the response from the LLM
+   *use the stream to send the speech back
    */
   const sendDataToServer = async (audioBlob: Blob | null) => {
     if (audioBlob) {

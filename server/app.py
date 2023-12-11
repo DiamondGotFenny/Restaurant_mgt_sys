@@ -7,13 +7,14 @@ import os
 from dotenv import load_dotenv, find_dotenv
 import azure.cognitiveservices.speech as speechsdk
 import base64
+import time
 
 _ = load_dotenv(find_dotenv())
 
 #creadentials for openai
 api_base = os.getenv("OPENAI_API_BASE")
 api_key = os.getenv("OPENAI_API_KEY")
-model_name=os.getenv("OPENAI_MODEL_3")
+model3_name=os.getenv("OPENAI_MODEL_3")
 model4_name=os.getenv("OPENAI_MODEL_4_16")
 
 client=AzureOpenAI(
@@ -59,7 +60,7 @@ app=FastAPI(middleware=middleware)
 client_address = os.getenv("CLIENT_ADDRESS")
 
 # In-memory chat history
-chat_history = [ {"role": "system", "content": "Assistant's name is Jenna. She is a virtual receptionist for a restaurant. She can help user with user's needs.But Jenna will only answer the question based on restaurant information, if user's question is not related to the restaurant information, she will not be able to answer it.REMEMBER THAT!"},
+chat_history = [ {"role": "system", "content": "Assistant's name is Jenna. She is a virtual receptionist for a restaurant. She can help user with user's needs.But Jenna will only answer the question based on restaurant information, if user's question is not related to the restaurant information, or content not included in the restaurant information, she will not be able to answer it. Jenna's answer should be short and clean,like spoken conversation. REMEMBER THAT!"},
                 {"role": "system", "content": "the restaurant information:restaurant name is Kiwi's Day. Today's special is chicken curry and beef curry. We have 5 tables available for 2 people and 3 tables available for 4 people.now we have 2 tables for 2 people, 1 table for 4 people available. our business hours are 11:00 am to 10:00 pm."},
                 {"role": "assistant", "content": "Hi this is Jenna, nice talke to you and how may I help",},]
 
@@ -90,6 +91,7 @@ async def speech_to_text(audio_file: UploadFile):
 
         # Create an AudioConfig object
         audio_input = speechsdk.AudioConfig(filename='recording.wav')
+        
 
         # Initialize SpeechRecognizer
         speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
@@ -116,16 +118,29 @@ async def speech_to_text(audio_file: UploadFile):
 
 # Define the text-to-speech function
 def text_to_speech(text):
+     
     try:
-        result = speech_synthesizer.speak_text_async(text).get()
-        if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+        result = speech_synthesizer.start_speaking_text_async(text).get()
+        audio_data_stream = speechsdk.AudioDataStream(result)
+        audio_buffer = bytes(16000)
+        filled_size = audio_data_stream.read_data(audio_buffer)
+        while filled_size > 0:
+            print("{} bytes received.".format(filled_size))
+            filled_size = audio_data_stream.read_data(audio_buffer)
+        first_byte_latency = int(result.properties.get_property(speechsdk.PropertyId.SpeechServiceResponse_SynthesisFirstByteLatencyMs))
+        finished_latency = int(result.properties.get_property(speechsdk.PropertyId.SpeechServiceResponse_SynthesisFinishLatencyMs))
+        print(f"First byte latency: {first_byte_latency} ms, Finished latency: {finished_latency} ms")
+        encoded_audio = base64.b64encode(result.audio_data)
+        return encoded_audio
+    #can not use those function and return the audio data, it will throw error, need to solve it later
+        """ if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
             print("Text-to-speech conversion successful.")
             # Encode the audio data into Base64
             encoded_audio = base64.b64encode(result.audio_data)
             return encoded_audio
         else:
             print(f"Error synthesizing audio: {result}")
-            return False
+            return False """
     except Exception as ex:
         print(f"Error synthesizing audio: {ex}")
         return False
@@ -138,7 +153,7 @@ def response_from_LLM(input_text):
     try:
         chat_history.append({"role": "user", "content": input_text,})
         response = client.chat.completions.create(
-            model=model_name, # model = "deployment_name".
+            model=model3_name, # model = "deployment_name".
             messages=chat_history,
         )
         gpt_response=response.choices[0].message.content

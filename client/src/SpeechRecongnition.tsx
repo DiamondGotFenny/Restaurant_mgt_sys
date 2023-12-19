@@ -21,6 +21,7 @@ const SpeechRecongnition = ({ setMessages }: SpeechRecorderProps) => {
     }
   };
   /***
+   * todo: use chat history to render the text chatbox, update it every time we receive the response from the server
    *use the stream to send the speech back
    */
   const sendDataToServer = async (audioBlob: Blob | null) => {

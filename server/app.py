@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.responses import StreamingResponse
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -118,32 +119,17 @@ async def speech_to_text(audio_file: UploadFile):
 
 # Define the text-to-speech function
 def text_to_speech(text):
-     
     try:
         result = speech_synthesizer.start_speaking_text_async(text).get()
         audio_data_stream = speechsdk.AudioDataStream(result)
         audio_buffer = bytes(16000)
         filled_size = audio_data_stream.read_data(audio_buffer)
         while filled_size > 0:
-            print("{} bytes received.".format(filled_size))
+            yield audio_buffer[:filled_size]
             filled_size = audio_data_stream.read_data(audio_buffer)
-        first_byte_latency = int(result.properties.get_property(speechsdk.PropertyId.SpeechServiceResponse_SynthesisFirstByteLatencyMs))
-        finished_latency = int(result.properties.get_property(speechsdk.PropertyId.SpeechServiceResponse_SynthesisFinishLatencyMs))
-        print(f"First byte latency: {first_byte_latency} ms, Finished latency: {finished_latency} ms")
-        encoded_audio = base64.b64encode(result.audio_data)
-        return encoded_audio
-    #can not use those function and return the audio data, it will throw error, need to solve it later
-        """ if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
-            print("Text-to-speech conversion successful.")
-            # Encode the audio data into Base64
-            encoded_audio = base64.b64encode(result.audio_data)
-            return encoded_audio
-        else:
-            print(f"Error synthesizing audio: {result}")
-            return False """
     except Exception as ex:
         print(f"Error synthesizing audio: {ex}")
-        return False
+        yield b''
     
 # get the response from LLM function
 def response_from_LLM(input_text):
@@ -187,7 +173,7 @@ async def chat_speech_to_text(data: UploadFile = File(...)):
         return {'input_text':input_text}
     else:
         return {"error": "Unable to recognize the audio"}
-
+#todo: push the response text to the history
 # Define text to speech chat route
 @app.post("/chat-text-to-speech/")
 async def chat_text_to_speech(data: Chat_Request):
@@ -197,10 +183,10 @@ async def chat_text_to_speech(data: Chat_Request):
     # Check if the response is successful
     if response:
         # Convert the response to speech
-        encoded_audio = text_to_speech(response["response"])
+        audio_stream = text_to_speech(response["response"])
 
-        if encoded_audio:
-            return {"text": response["response"], "audio": encoded_audio.decode("utf-8")}
+        if  audio_stream:
+            return StreamingResponse(audio_stream, media_type='audio/wav')
         else:
             return {"error": "Unable to synthesize audio"}
     else:

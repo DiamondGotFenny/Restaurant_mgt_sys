@@ -83,7 +83,8 @@ def is_audio_file(file: UploadFile) -> bool:
 async def speech_to_text(audio_file: UploadFile):
     # Check if the file is a wav file
     if not is_audio_file(audio_file):
-        return {"error": "The file is not valid wav file."}
+        print("The file is not valid wav file.")
+        return 'invalid wav file'
 
     try:
         # Save the audio file
@@ -98,7 +99,7 @@ async def speech_to_text(audio_file: UploadFile):
         speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
     except Exception as e:
         print(f"Error: {e}")
-        return 'sorry I did not catch you, could please repeat it?'
+        return None
 
     speech_recognition_result = speech_recognizer.recognize_once()
 
@@ -108,12 +109,12 @@ async def speech_to_text(audio_file: UploadFile):
         return speech_recognition_result.text
     elif speech_recognition_result.reason == speechsdk.ResultReason.NoMatch:
         print("No speech could be recognized: {}".format(speech_recognition_result.no_match_details))
-        return 'sorry I did not catch you, could please repeat it?'
+        return None
     elif speech_recognition_result.reason == speechsdk.ResultReason.Canceled:
         cancellation_details = speech_recognition_result.cancellation_details
         print("Speech Recognition canceled: {}".format(cancellation_details.reason))
         if cancellation_details.reason == speechsdk.CancellationReason.Error:
-            print("Error details: {}".format(cancellation_details.error_details))
+            print("Cancellation Error details: {}".format(cancellation_details.error_details))
             return None
         return None
 
@@ -167,13 +168,15 @@ async def chat_speech_to_text(data: UploadFile = File(...)):
 
     # Check if speech to text was successful
     if input_text is None:
-        return {"error": "Speech to text conversion failed"}
-
+        return {"error": "your speech is not recognized, could you please repeat it?"}
+    # if the input_text string equal to 'invalid wav file' string, we return error
+    if input_text == 'invalid wav file':
+        return {"error":'your file is not a valid wav file'}
     if input_text:
         return {'input_text':input_text}
     else:
         return {"error": "Unable to recognize the audio"}
-#todo: push the response text to the history
+    
 # Define text to speech chat route
 @app.post("/chat-text-to-speech/")
 async def chat_text_to_speech(data: Chat_Request):

@@ -154,7 +154,7 @@ def response_from_LLM(input_text):
   
 @app.post("/chat-text/")
 async def chat_text(chat: Chat_Request):
-   response_from_LLM(chat.message)
+   return response_from_LLM(chat.message)
 
 #define speech to text chat route
 @app.post("/chat-speech-to-text/")

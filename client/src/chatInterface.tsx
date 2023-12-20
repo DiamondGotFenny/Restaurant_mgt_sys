@@ -29,14 +29,17 @@ const ChatInterface = () => {
     }
   };
 
+  const getHistory = async (
+    setMessages: (value: React.SetStateAction<Message[]>) => void
+  ) => {
+    const response = await getChatHistory(
+      `${process.env.REACT_APP_API_BASE_URL}/chat_history/`
+    );
+    setMessages([...response]);
+  };
+
   useEffect(() => {
-    const getHistory = async () => {
-      const response = await getChatHistory(
-        `${process.env.REACT_APP_API_BASE_URL}/chat_history/`
-      );
-      setMessages([...response]);
-    };
-    getHistory();
+    getHistory(setMessages);
   }, []);
   console.log(messages, ' message component');
   return (
@@ -57,7 +60,7 @@ const ChatInterface = () => {
         onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
       />
       <button onClick={sendMessage}>Send</button>
-      <SpeechRecongnition setMessages={setMessages} />
+      <SpeechRecongnition setMessages={setMessages} getHistory={getHistory} />
     </div>
   );
 };

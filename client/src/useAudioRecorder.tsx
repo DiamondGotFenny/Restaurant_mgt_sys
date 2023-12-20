@@ -9,6 +9,8 @@ interface UseAudioRecorderReturn {
   audioBlob: Blob | null;
   isRecording: boolean;
 }
+//put the register here, otherwise it will throw double regiger recorder error
+register(await connect());
 
 export const useAudioRecorder = (): UseAudioRecorderReturn => {
   const [mediaRecorder, setMediaRecorder] = useState<InstanceType<
@@ -64,7 +66,6 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
 
     const setup = async () => {
       try {
-        await register(await connect());
         await setupRecorder();
       } catch (e) {
         console.error('Error setting up the audio recorder:', e);

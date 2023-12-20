@@ -5,9 +5,15 @@ import { useAudioRecorder } from './useAudioRecorder';
 //define the component prop
 interface SpeechRecorderProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+  getHistory: (
+    setMessages: (value: React.SetStateAction<Message[]>) => void
+  ) => Promise<void>;
 }
 
-const SpeechRecongnition = ({ setMessages }: SpeechRecorderProps) => {
+const SpeechRecongnition = ({
+  setMessages,
+  getHistory,
+}: SpeechRecorderProps) => {
   const { startRecording, stopRecording, audioBlob, isRecording } =
     useAudioRecorder();
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -21,7 +27,7 @@ const SpeechRecongnition = ({ setMessages }: SpeechRecorderProps) => {
     }
   };
   /***
-   * todo: use chat history to render the text chatbox, update it every time we receive the response from the server
+   * todo: solve the error:"Uncaught (in promise) DOMException: Failed to load because no supported source was found."
    *use the stream to send the speech back
    */
   const sendDataToServer = async (audioBlob: Blob | null) => {
@@ -34,19 +40,13 @@ const SpeechRecongnition = ({ setMessages }: SpeechRecorderProps) => {
         formData,
         `${process.env.REACT_APP_API_BASE_URL}/chat-speech-to-text/`
       );
-      setMessages((messages) => [
-        ...messages,
-        { role: 'user', content: response },
-      ]);
+
       const responseAudio = await sendTextToSpeechRequest(
         response,
         `${process.env.REACT_APP_API_BASE_URL}/chat-text-to-speech/`
       );
-      setMessages((messages) => [
-        ...messages,
-        { role: 'assistant', content: responseAudio.text },
-      ]);
       setAudioUrl(responseAudio.audio); // Set the audio URL
+      await getHistory(setMessages);
     } else {
       console.log('no audio chunks or audio is not recorded correctly!');
     }

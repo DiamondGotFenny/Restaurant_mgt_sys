@@ -189,7 +189,7 @@ async def chat_text_to_speech(data: Chat_Request):
         audio_stream = text_to_speech(response["response"])
 
         if  audio_stream:
-            return StreamingResponse(audio_stream, media_type='audio/wav')
+           return StreamingResponse(audio_stream, media_type='audio/wav')
         else:
             return {"error": "Unable to synthesize audio"}
     else:

@@ -25,7 +25,7 @@ const getTextResponse = async (
 const sendTextToSpeechRequest = async (
   userInput: string,
   endpoint: string
-): Promise<{ text: string; audio: string }> => {
+): Promise<{ audio: string }> => {
   try {
     const response = await axios.post(endpoint, {
       message: userInput,
@@ -34,17 +34,17 @@ const sendTextToSpeechRequest = async (
     console.log(response, ' response from getAudioResponse');
 
     // Extracting text and audio data from the response
-    const { text, audio } = response.data;
-
+    const audio = response.data;
+    //check the type of audio
+    console.log(typeof audio, ' type of audio');
     // Assuming audio_data is a base64 encoded string
     const audioBlob = new Blob([audio], { type: 'audio/wav' });
     const audioUrl = URL.createObjectURL(audioBlob);
 
-    return { text: text, audio: audioUrl };
+    return { audio: audioUrl };
   } catch (error) {
     console.error(error, ' error from getAudioResponse');
     return {
-      text: 'sorry I did not catch you, could please repeat it?',
       audio: '',
     };
   }

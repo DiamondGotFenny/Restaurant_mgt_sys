@@ -14,8 +14,13 @@ const SpeechRecongnition = ({
   setMessages,
   getHistory,
 }: SpeechRecorderProps) => {
-  const { startRecording, stopRecording, audioBlob, isRecording } =
-    useAudioRecorder();
+  const {
+    startRecording,
+    stopRecording,
+    audioBlob,
+    isRecording,
+    clearAudioBlob,
+  } = useAudioRecorder();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [audioUrl, setAudioUrl] = useState<string | undefined>(undefined);
 
@@ -40,7 +45,6 @@ const SpeechRecongnition = ({
         formData,
         `${process.env.REACT_APP_API_BASE_URL}/chat-speech-to-text/`
       );
-
       const responseAudio = await sendTextToSpeechRequest(
         response,
         `${process.env.REACT_APP_API_BASE_URL}/chat-text-to-speech/`
@@ -57,7 +61,24 @@ const SpeechRecongnition = ({
     if (audioUrl && audioRef.current) {
       const audio = audioRef.current;
       audio.src = audioUrl;
-      audio.play();
+
+      const audioPromise = audio.play();
+      if (audioPromise !== undefined) {
+        audioPromise
+          .then(() => {
+            console.log('play success');
+          })
+          .catch((error) => {
+            console.log('play error', error);
+            console.log(`Failed audio URL: ${audioUrl}`); // Log the problematic URL
+          });
+      }
+
+      audio.onended = () => {
+        setAudioUrl(undefined); // Clear the audioUrl state
+        audio.src = ''; // Clear the audio element's src
+        clearAudioBlob(); // Clear the audio blob
+      };
     }
   }, [audioUrl]);
   //call the sendDataToServer function when mediaBlobUrl is not null
@@ -66,12 +87,13 @@ const SpeechRecongnition = ({
       sendDataToServer(audioBlob);
     }
   }, [audioBlob]);
+
   return (
     <div>
       <button onClick={toggleRecording}>
         {isRecording ? 'Stop' : 'Start'}
       </button>
-      <audio ref={audioRef} hidden />
+      <audio ref={audioRef} controls hidden />
     </div>
   );
 };

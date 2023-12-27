@@ -8,6 +8,7 @@ interface UseAudioRecorderReturn {
   stopRecording: () => void;
   audioBlob: Blob | null;
   isRecording: boolean;
+  clearAudioBlob: () => void;
 }
 //put the register here, otherwise it will throw double regiger recorder error
 register(await connect());
@@ -89,6 +90,14 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
       setIsRecording(false);
     }
   };
-
-  return { startRecording, stopRecording, audioBlob, isRecording };
+  const clearAudioBlob = () => {
+    setAudioBlob(null);
+  };
+  return {
+    startRecording,
+    stopRecording,
+    audioBlob,
+    isRecording,
+    clearAudioBlob,
+  };
 };

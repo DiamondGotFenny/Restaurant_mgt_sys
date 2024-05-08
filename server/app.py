@@ -15,12 +15,14 @@ _ = load_dotenv(find_dotenv())
 #creadentials for openai
 api_base = os.getenv("OPENAI_API_BASE")
 api_key = os.getenv("OPENAI_API_KEY")
+api_version="2024-02-15-preview"
 model3_name=os.getenv("OPENAI_MODEL_3")
 model4_name=os.getenv("OPENAI_MODEL_4_16")
 
+
 client=AzureOpenAI(
     api_key=api_key,
-    api_version="2023-05-15",
+    api_version=api_version,
     azure_endpoint=api_base
 )
 
@@ -61,7 +63,7 @@ app=FastAPI(middleware=middleware)
 client_address = os.getenv("CLIENT_ADDRESS")
 
 # In-memory chat history
-chat_history = [ {"role": "system", "content": "Assistant's name is Jenna. She is a virtual receptionist for a restaurant. She can help user with user's needs.But Jenna will only answer the question based on restaurant information, if user's question is not related to the restaurant information, or content not included in the restaurant information, she will not be able to answer it. Jenna's answer should be short and clean,like spoken conversation. REMEMBER THAT!"},
+chat_history = [ {"role": "system", "content": "Assistant's name is Jenna. She is a virtual receptionist for a restaurant. She can help user with user's needs.Jenna need to ask user's name, how many people will join the party, what time they will be arrived if user want to book a table. if Jenna don't know any of those three infomation, she will have to ask the user untill she have all three info. Jenna will only answer the question based on restaurant information, if user's question is not related to the restaurant information, or content not included in the restaurant information, she will not be able to answer it. Jenna's answer should be short and clean,like spoken conversation. REMEMBER THAT!"},
                 {"role": "system", "content": "the restaurant information:restaurant name is Kiwi's Day. Today's special is chicken curry and beef curry. We have 5 tables available for 2 people and 3 tables available for 4 people.now we have 2 tables for 2 people, 1 table for 4 people available. our business hours are 11:00 am to 10:00 pm."},
                 {"role": "assistant", "content": "Hi this is Jenna, nice talke to you and how may I help",},]
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Message } from './chatInterface';
 import { sendTextToSpeechRequest, sendSpeechToTextRequest } from './apiService';
 import { useAudioRecorder } from './useAudioRecorder';
+
 //define the component prop
 interface SpeechRecorderProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -21,6 +22,7 @@ const SpeechRecongnition = ({
     isRecording,
     clearAudioBlob,
   } = useAudioRecorder();
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const [audioUrl, setAudioUrl] = useState<string | undefined>(undefined);
 
@@ -84,7 +86,14 @@ const SpeechRecongnition = ({
   //call the sendDataToServer function when mediaBlobUrl is not null
   useEffect(() => {
     if (audioBlob) {
-      sendDataToServer(audioBlob);
+      //create the audioBlob to audio/wav type blob because the audioBlob is audio/wave type
+      const newBlob = new Blob([audioBlob], { type: 'audio/wav' });
+      //check if the audioBlob is wav format
+      if (newBlob.type !== 'audio/wav') {
+        console.log(newBlob.type, 'The audio is not in wav format');
+        return;
+      }
+      sendDataToServer(newBlob);
     }
   }, [audioBlob]);
 
@@ -93,7 +102,7 @@ const SpeechRecongnition = ({
       <button onClick={toggleRecording}>
         {isRecording ? 'Stop' : 'Start'}
       </button>
-      <audio ref={audioRef} controls hidden />
+      <audio ref={audioRef} controls autoPlay />
     </div>
   );
 };

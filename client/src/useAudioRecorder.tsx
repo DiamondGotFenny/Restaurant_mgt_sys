@@ -1,8 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
-import { MediaRecorder, register } from 'extendable-media-recorder';
-import { connect } from 'extendable-media-recorder-wav-encoder';
-
+import { getWaveBlob } from 'webm-to-wav-converter';
 interface UseAudioRecorderReturn {
   startRecording: () => void;
   stopRecording: () => void;
@@ -10,89 +8,63 @@ interface UseAudioRecorderReturn {
   isRecording: boolean;
   clearAudioBlob: () => void;
 }
-//put the register here, otherwise it will throw double regiger recorder error
-register(await connect());
 
 export const useAudioRecorder = (): UseAudioRecorderReturn => {
-  const [mediaRecorder, setMediaRecorder] = useState<InstanceType<
-    typeof MediaRecorder
-  > | null>(null);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null
+  );
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [init, setInit] = useState(false);
-
-  const setupRecorder = useCallback(async () => {
-    try {
-      const constraints: MediaStreamConstraints = {
-        audio: true,
-        video: false,
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      const audioContext = new AudioContext({
-        sampleRate: 16000,
-      });
-      const mediaStreamAudioSourceNode = new MediaStreamAudioSourceNode(
-        audioContext,
-        { mediaStream: stream }
-      );
-      const mediaStreamAudioDestinationNode =
-        new MediaStreamAudioDestinationNode(audioContext, {
-          channelCount: 1,
-        });
-      mediaStreamAudioSourceNode.connect(mediaStreamAudioDestinationNode);
-
-      const recorder = new MediaRecorder(
-        mediaStreamAudioDestinationNode.stream,
-        {
-          mimeType: 'audio/wav',
-        }
-      );
-
-      recorder.ondataavailable = (event: BlobEvent) => {
-        setAudioBlob(event.data);
-      };
-
-      setMediaRecorder(recorder);
-    } catch (error) {
-      console.error('Error setting up the audio recorder:', error);
-    }
-  }, []);
+  const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
-    // avoid re-registering the encoder
-    if (init) {
-      return;
-    }
+    const constraints = { audio: { channelCount: 1 }, video: false };
 
-    const setup = async () => {
-      try {
-        await setupRecorder();
-      } catch (e) {
-        console.error('Error setting up the audio recorder:', e);
-      }
-    };
+    navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then((stream) => {
+        const newMediaRecorder = new MediaRecorder(stream);
 
-    setup();
-    setInit(true);
+        setMediaRecorder(newMediaRecorder);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   }, []);
 
   const startRecording = () => {
-    if (mediaRecorder && mediaRecorder.state === 'inactive') {
-      mediaRecorder.start();
-      setIsRecording(true);
+    if (mediaRecorder) {
+      try {
+        mediaRecorder.start();
+
+        setIsRecording(true);
+      } catch (error) {
+        console.error('Error starting the audio recorder:', error);
+      }
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
+    if (mediaRecorder) {
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          console.log(e.data, '  e.data');
+          const wavBlob = getWaveBlob(e.data, false, {
+            sampleRate: 16000,
+          });
+          wavBlob.then((blob) => {
+            setAudioBlob(blob);
+          });
+        }
+      };
       mediaRecorder.stop();
-      setIsRecording(false);
     }
+    setIsRecording(false);
   };
+
   const clearAudioBlob = () => {
     setAudioBlob(null);
   };
+
   return {
     startRecording,
     stopRecording,

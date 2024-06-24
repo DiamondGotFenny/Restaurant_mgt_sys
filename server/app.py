@@ -7,8 +7,9 @@ from openai import AzureOpenAI
 import os
 from dotenv import load_dotenv, find_dotenv
 import azure.cognitiveservices.speech as speechsdk
-import base64
-import time
+import wave
+import io
+import struct
 
 _ = load_dotenv(find_dotenv())
 
@@ -40,8 +41,10 @@ speech_config.speech_recognition_language="en-US"
 #configure for system output
 speech_config.speech_synthesis_language = "en-US"
 speech_config.speech_synthesis_voice_name = "en-US-JennyNeural"
-audio_output_config = speechsdk.audio.AudioOutputConfig(use_default_speaker=True)
-speech_synthesizer=speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=audio_output_config)
+ # Creates a speech synthesizer with a null output stream.
+    # This means the audio output data will not be written to any output channel.
+    # You can just get the audio from the result.
+speech_synthesizer=speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=None)
 
  # tts sentence end mark
 tts_sentence_end = [ ".", "!", "?", ";", "。", "！", "？", "；", "\n" ]
@@ -61,11 +64,15 @@ app=FastAPI(middleware=middleware)
 
 
 client_address = os.getenv("CLIENT_ADDRESS")
-
-# In-memory chat history
-chat_history = [ {"role": "system", "content": "Assistant's name is Jenna. She is a virtual receptionist for a restaurant. She can help user with user's needs.Jenna need to ask user's name, how many people will join the party, what time they will be arrived if user want to book a table. if Jenna don't know any of those three infomation, she will have to ask the user untill she have all three info. Jenna will only answer the question based on restaurant information, if user's question is not related to the restaurant information, or content not included in the restaurant information, she will not be able to answer it. Jenna's answer should be short and clean,like spoken conversation. REMEMBER THAT!"},
+init_chat = [{"role": "system", "content": "Assistant's name is Jenna. She is a virtual receptionist for a restaurant. She can help user with user's needs.Jenna need to ask user's name, how many people will join the party, what time they will be arrived if user want to book a table. if Jenna don't know any of those three infomation, she will have to ask the user untill she have all three info. Jenna will only answer the question based on restaurant information, if user's question is not related to the restaurant information, or content not included in the restaurant information, she will not be able to answer it. Jenna's answer should be short and clean,like spoken conversation. REMEMBER THAT!"},
                 {"role": "system", "content": "the restaurant information:restaurant name is Kiwi's Day. Today's special is chicken curry and beef curry. We have 5 tables available for 2 people and 3 tables available for 4 people.now we have 2 tables for 2 people, 1 table for 4 people available. our business hours are 11:00 am to 10:00 pm."},
-                {"role": "assistant", "content": "Hi this is Jenna, nice talke to you and how may I help",},]
+                {"role": "assistant", "content": "Hi this is Jenna, nice talke to you and how may I help",},
+                ]
+# init In-memory chat history
+chat_history = [{"role": "system", "content": "Assistant's name is Jenna. She is a virtual receptionist for a restaurant. She can help user with user's needs.Jenna need to ask user's name, how many people will join the party, what time they will be arrived if user want to book a table. if Jenna don't know any of those three infomation, she will have to ask the user untill she have all three info. Jenna will only answer the question based on restaurant information, if user's question is not related to the restaurant information, or content not included in the restaurant information, she will not be able to answer it. Jenna's answer should be short and clean,like spoken conversation. REMEMBER THAT!"},
+                {"role": "system", "content": "the restaurant information:restaurant name is Kiwi's Day. Today's special is chicken curry and beef curry. We have 5 tables available for 2 people and 3 tables available for 4 people.now we have 2 tables for 2 people, 1 table for 4 people available. our business hours are 11:00 am to 10:00 pm."},
+                {"role": "assistant", "content": "Hi this is Jenna, nice talke to you and how may I help",},
+                ]
 
 
 class Chat_Request(BaseModel):
@@ -119,20 +126,67 @@ async def speech_to_text(audio_file: UploadFile):
             print("Cancellation Error details: {}".format(cancellation_details.error_details))
             return None
         return None
+    
+    
+def create_wav_header(channels, sample_rate, bits_per_sample):
+    bytes_per_sample = bits_per_sample // 8
+    block_align = channels * bytes_per_sample
+    byte_rate = sample_rate * block_align
 
-# Define the text-to-speech function
-def text_to_speech(text):
+    header = struct.pack('<4sI4s4sIHHIIHH4sI',
+        b'RIFF', 0, b'WAVE', b'fmt ', 16, 1, channels, sample_rate,
+        byte_rate, block_align, bits_per_sample, b'data', 0)
+    print('header setted')
+    return header
+
+# Define the text-to-speech stream function
+async def text_to_speech_stream(text):
     try:
-        result = speech_synthesizer.start_speaking_text_async(text).get()
-        audio_data_stream = speechsdk.AudioDataStream(result)
-        audio_buffer = bytes(16000)
-        filled_size = audio_data_stream.read_data(audio_buffer)
-        while filled_size > 0:
-            yield audio_buffer[:filled_size]
-            filled_size = audio_data_stream.read_data(audio_buffer)
+        result = speech_synthesizer.speak_text_async(text).get()
+        if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+            audio_data_stream = speechsdk.AudioDataStream(result)
+            audio_data_stream.position = 0
+           
+            # Yield WAV header
+            yield create_wav_header(1, 16000, 16)
+
+            # Stream audio data in chunks
+            chunk_size = 16000  # You can adjust this value
+            audio_buffer = bytes(chunk_size)
+            while True:
+                filled_size = audio_data_stream.read_data(audio_buffer)
+                if filled_size > 0:
+                    print(f"{filled_size} bytes received.")
+                    yield audio_buffer[:filled_size]
+                else:
+                    break
+
+        elif result.reason == speechsdk.ResultReason.Canceled:
+            cancellation_details = result.cancellation_details
+            print("Speech synthesis canceled: {}".format(cancellation_details.reason))
+            if cancellation_details.reason == speechsdk.CancellationReason.Error:
+                print("Error details: {}".format(cancellation_details.error_details))
     except Exception as ex:
         print(f"Error synthesizing audio: {ex}")
         yield b''
+
+# Define the text-to-speech function
+async def text_to_speech_completed(text):
+    try:
+        result = speech_synthesizer.speak_text_async(text).get()
+        if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+            print("Speech synthesized for text [{}]".format(text))
+            return result
+        elif result.reason == speechsdk.ResultReason.Canceled:
+                cancellation_details = result.cancellation_details
+                print("Speech synthesis canceled: {}".format(cancellation_details.reason))
+        if cancellation_details.reason == speechsdk.CancellationReason.Error:
+            if cancellation_details.error_details:
+                print("Error details: {}".format(cancellation_details.error_details))
+                print("Did you set the speech resource key and region values?")
+    except Exception as ex:
+        print(f"Error synthesizing audio: {ex}")
+        return None          
     
 # get the response from LLM function
 def response_from_LLM(input_text):
@@ -184,14 +238,13 @@ async def chat_speech_to_text(data: UploadFile = File(...)):
 async def chat_text_to_speech(data: Chat_Request):
     # Send the text to the LLM and get the response
     response = response_from_LLM(data.message)
-
     # Check if the response is successful
     if response:
         # Convert the response to speech
-        audio_stream = text_to_speech(response["response"])
-
+        audio_stream = text_to_speech_stream(response["response"])
+        
         if  audio_stream:
-           return StreamingResponse(audio_stream, media_type='audio/wav')
+            return StreamingResponse(audio_stream, media_type='audio/wav')
         else:
             return {"error": "Unable to synthesize audio"}
     else:
@@ -206,3 +259,10 @@ async def get_chat_history():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+    
+    #create a route that can clean the chat history
+@app.post("/clear_chat_history/")
+async def delete_chat_history():
+    global chat_history
+    chat_history=init_chat.copy()
+    return {"message": "Chat history has been cleared."}

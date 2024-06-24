@@ -27,21 +27,24 @@ const sendTextToSpeechRequest = async (
   endpoint: string
 ): Promise<{ audio: string }> => {
   try {
-    const response = await axios.post(endpoint, {
-      message: userInput,
-    });
+    const response = await axios.post(
+      endpoint,
+      {
+        message: userInput,
+      },
+      {
+        responseType: 'arraybuffer', // Set the response type to handle binary data
+      }
+    );
 
     console.log(response, ' response from getAudioResponse');
 
     // Extracting text and audio data from the response
-    const audio = response.data;
+    const audioData = response.data;
     //check the type of audio
-    console.log(typeof audio, ' type of audio');
-    // Assuming audio_data is a base64 encoded string
-    const audioBlob = new Blob([audio], { type: 'audio/wav' });
-    const audioUrl = URL.createObjectURL(audioBlob);
+    console.log(typeof audioData, ' type of audio');
 
-    return { audio: audioUrl };
+    return { audio: audioData };
   } catch (error) {
     console.error(error, ' error from getAudioResponse');
     return {

@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Message } from './chatInterface';
-import { sendTextToSpeechRequest, sendSpeechToTextRequest } from './apiService';
+import { sendSpeechToTextRequest } from './apiService';
 import { useAudioRecorder } from './useAudioRecorder';
+import AudioPlayer from './AudioPlayer';
 
 //define the component prop
 interface SpeechRecorderProps {
@@ -23,8 +24,7 @@ const SpeechRecongnition = ({
     clearAudioBlob,
   } = useAudioRecorder();
 
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [audioUrl, setAudioUrl] = useState<string | undefined>(undefined);
+  const [text, setText] = useState<string>(''); // State to store the text response
 
   const toggleRecording = () => {
     if (isRecording) {
@@ -33,10 +33,7 @@ const SpeechRecongnition = ({
       startRecording();
     }
   };
-  /***
-   * todo: solve the error:"Uncaught (in promise) DOMException: Failed to load because no supported source was found."
-   *use the stream to send the speech back
-   */
+
   const sendDataToServer = async (audioBlob: Blob | null) => {
     if (audioBlob) {
       // Create a FormData object
@@ -47,52 +44,20 @@ const SpeechRecongnition = ({
         formData,
         `${process.env.REACT_APP_API_BASE_URL}/chat-speech-to-text/`
       );
-      const responseAudio = await sendTextToSpeechRequest(
-        response,
-        `${process.env.REACT_APP_API_BASE_URL}/chat-text-to-speech/`
-      );
-      setAudioUrl(responseAudio.audio); // Set the audio URL
       await getHistory(setMessages);
+      setText(response);
+      clearAudioBlob();
     } else {
       console.log('no audio chunks or audio is not recorded correctly!');
     }
   };
 
-  //play the audio mediaBlobUrl is not null
-  useEffect(() => {
-    if (audioUrl && audioRef.current) {
-      const audio = audioRef.current;
-      audio.src = audioUrl;
-
-      const audioPromise = audio.play();
-      if (audioPromise !== undefined) {
-        audioPromise
-          .then(() => {
-            console.log('play success');
-          })
-          .catch((error) => {
-            console.log('play error', error);
-            console.log(`Failed audio URL: ${audioUrl}`); // Log the problematic URL
-          });
-      }
-
-      audio.onended = () => {
-        setAudioUrl(undefined); // Clear the audioUrl state
-        audio.src = ''; // Clear the audio element's src
-        clearAudioBlob(); // Clear the audio blob
-      };
-    }
-  }, [audioUrl]);
   //call the sendDataToServer function when mediaBlobUrl is not null
   useEffect(() => {
     if (audioBlob) {
       //create the audioBlob to audio/wav type blob because the audioBlob is audio/wave type
       const newBlob = new Blob([audioBlob], { type: 'audio/wav' });
-      //check if the audioBlob is wav format
-      if (newBlob.type !== 'audio/wav') {
-        console.log(newBlob.type, 'The audio is not in wav format');
-        return;
-      }
+
       sendDataToServer(newBlob);
     }
   }, [audioBlob]);
@@ -102,7 +67,11 @@ const SpeechRecongnition = ({
       <button onClick={toggleRecording}>
         {isRecording ? 'Stop' : 'Start'}
       </button>
-      <audio ref={audioRef} controls autoPlay />
+      <AudioPlayer
+        text={text}
+        setMessages={setMessages}
+        getHistory={getHistory}
+      />
     </div>
   );
 };

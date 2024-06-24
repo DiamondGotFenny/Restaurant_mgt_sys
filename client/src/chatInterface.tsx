@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getTextResponse, getChatHistory } from './apiService';
 import SpeechRecongnition from './SpeechRecongnition';
+import axios from 'axios';
 
 export interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -42,6 +43,16 @@ const ChatInterface = () => {
     getHistory(setMessages);
   }, []);
   console.log(messages, ' message component');
+
+  //make axios request to clear chat history
+  const clearChatHistory = async () => {
+    await axios.post(
+      `${process.env.REACT_APP_API_BASE_URL}/clear_chat_history/`
+    );
+    getHistory(setMessages);
+    console.log('chat history cleared');
+  };
+
   return (
     <div>
       <div>
@@ -61,6 +72,7 @@ const ChatInterface = () => {
       />
       <button onClick={sendMessage}>Send</button>
       <SpeechRecongnition setMessages={setMessages} getHistory={getHistory} />
+      <button onClick={() => clearChatHistory()}>Reset Chat</button>
     </div>
   );
 };

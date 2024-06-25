@@ -146,12 +146,14 @@ async def text_to_speech_stream(text):
         if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
             audio_data_stream = speechsdk.AudioDataStream(result)
             audio_data_stream.position = 0
-           
+            channels=1
+            sample_rate=16000
+            bits_per_sample=16
             # Yield WAV header
-            yield create_wav_header(1, 16000, 16)
+            yield create_wav_header(channels, sample_rate, bits_per_sample)
 
             # Stream audio data in chunks
-            chunk_size = 16000  # You can adjust this value
+            chunk_size = 16000  
             audio_buffer = bytes(chunk_size)
             while True:
                 filled_size = audio_data_stream.read_data(audio_buffer)
@@ -237,7 +239,8 @@ async def chat_speech_to_text(data: UploadFile = File(...)):
 @app.post("/chat-text-to-speech/")
 async def chat_text_to_speech(data: Chat_Request):
     # Send the text to the LLM and get the response
-    response = response_from_LLM(data.message)
+    #response = response_from_LLM(data.message)
+    response={"response":"restaurant name is Kiwi's Day. Today's special is chicken curry and beef curry. We have 5 tables available for 2 people and 3 tables available for 4 people.now we have 2 tables for 2 people, 1 table for 4 people available. our business hours are 11:00 am to 10:00 pm."}
     # Check if the response is successful
     if response:
         # Convert the response to speech

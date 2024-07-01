@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { getTextResponse, getChatHistory } from './apiService';
-import SpeechRecongnition from './SpeechRecongnition';
 import Speech from './Speech';
 import axios from 'axios';
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getTextResponse, getChatHistory } from './apiService';
 import SpeechRecongnition from './SpeechRecongnition';
+import Speech from './Speech';
 import axios from 'axios';
 
 export interface Message {
@@ -71,7 +72,7 @@ const ChatInterface = () => {
         onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
       />
       <button onClick={sendMessage}>Send</button>
-      <SpeechRecongnition setMessages={setMessages} getHistory={getHistory} />
+      <Speech setMessages={setMessages} getHistory={getHistory} />
       <button onClick={() => clearChatHistory()}>Reset Chat</button>
     </div>
   );

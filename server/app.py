@@ -7,8 +7,6 @@ from openai import AzureOpenAI
 import os
 from dotenv import load_dotenv, find_dotenv
 import azure.cognitiveservices.speech as speechsdk
-import wave
-import io
 import struct
 
 _ = load_dotenv(find_dotenv())
@@ -191,7 +189,7 @@ async def text_to_speech_completed(text):
         return None          
     
 # get the response from LLM function
-def response_from_LLM(input_text):
+def response_from_LLM(input_text:str):
       #check if the input is valid string
     if not input_text:
         return {"error": "The input is not a valid string."}
@@ -214,7 +212,43 @@ def response_from_LLM(input_text):
 async def chat_text(chat: Chat_Request):
    return response_from_LLM(chat.message)
 
-#define speech to text chat route
+#define chat speech route
+@app.post("/chat-speech")
+async def chat_audio_stream(data: UploadFile = File(...)):
+     # Check if the file is an wav audio file
+    if not is_audio_file(data):
+        return {"error": "The file is not an audio file."}
+    
+      # Assuming `speech_to_text` function can handle audio file
+    input_text = await speech_to_text(data)
+
+    # Check if speech to text was successful
+    if input_text is None:
+        return {"error": "your speech is not recognized, could you please repeat it?"}
+    # if the input_text string equal to 'invalid wav file' string, we return error
+    if input_text == 'invalid wav file':
+        return {"error":'your file is not a valid wav file'}
+    if input_text:
+        # Send the text to the LLM and get the response
+        response = response_from_LLM(input_text)
+        # Check if the response is successful
+        if response:
+            # Convert the response to speech
+            audio_stream = text_to_speech_stream(response["response"])
+            
+            if  audio_stream:
+                return StreamingResponse(audio_stream, media_type='audio/wav')
+            else:
+                return {"error": "Unable to synthesize audio"}
+        else:
+            return {"error": "Unable to get response from LLM"}
+    else:
+        return {"error": "Unable to recognize the audio"}
+    
+    
+
+
+#define speech to text chat route (may not need this route)
 @app.post("/chat-speech-to-text/")
 async def chat_speech_to_text(data: UploadFile = File(...)):
   # Check if the file is an wav audio file
@@ -235,23 +269,6 @@ async def chat_speech_to_text(data: UploadFile = File(...)):
     else:
         return {"error": "Unable to recognize the audio"}
     
-# Define text to speech chat route
-@app.post("/chat-text-to-speech/")
-async def chat_text_to_speech(data: Chat_Request):
-    # Send the text to the LLM and get the response
-    #response = response_from_LLM(data.message)
-    response={"response":"restaurant name is Kiwi's Day. Today's special is chicken curry and beef curry. We have 5 tables available for 2 people and 3 tables available for 4 people.now we have 2 tables for 2 people, 1 table for 4 people available. our business hours are 11:00 am to 10:00 pm."}
-    # Check if the response is successful
-    if response:
-        # Convert the response to speech
-        audio_stream = text_to_speech_stream(response["response"])
-        
-        if  audio_stream:
-            return StreamingResponse(audio_stream, media_type='audio/wav')
-        else:
-            return {"error": "Unable to synthesize audio"}
-    else:
-        return {"error": "Unable to get response from LLM"}
 
 # Define a route to get the chat history
 @app.get("/chat_history/")

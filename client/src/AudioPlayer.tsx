@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Message } from './chatInterface';
+import { Message } from './types';
 import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import styled, { keyframes } from 'styled-components';
 

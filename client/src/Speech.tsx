@@ -1,75 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { Message } from './chatInterface';
+import { Message } from './types';
 import { FaMicrophone, FaStop, FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
-import styled, { keyframes, css } from 'styled-components';
 import { useAudioRecorder } from './useAudioRecorder';
 
-interface CombinedSpeechProps {
+interface SpeechProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   getHistory: (
     setMessages: (value: React.SetStateAction<Message[]>) => void
   ) => Promise<void>;
 }
 
-const wave = keyframes`
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-`;
-
-const pulse = keyframes`
-  0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
-`;
-
-const Button = styled.button<{ $disabled: boolean }>`
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
-  transition: all 0.3s ease;
-  margin: 0 10px;
-  opacity: ${(props) => (props.$disabled ? 0.5 : 1)};
-
-  &:hover {
-    opacity: ${(props) => (props.$disabled ? 0.5 : 0.8)};
-  }
-
-  &:focus {
-    outline: none;
-  }
-`;
-
-const RecordButton = styled(Button)<{ $isRecording: boolean }>`
-  background-color: ${(props) => (props.$isRecording ? '#dc3545' : '#28a745')};
-  animation: ${(props) => (props.$isRecording ? pulse : 'none')} 2s infinite;
-`;
-
-const MuteButton = styled(Button)<{ $isMuted: boolean; $isPlaying: boolean }>`
-  background-color: ${(props) => (props.$isMuted ? '#dc3545' : '#28a745')};
-  animation: ${(props) =>
-    props.$isPlaying && !props.$isMuted
-      ? css`
-          ${wave} 1s infinite
-        `
-      : 'none'};
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-`;
-
-const Speech: React.FC<CombinedSpeechProps> = ({ setMessages, getHistory }) => {
+const Speech: React.FC<SpeechProps> = ({ setMessages, getHistory }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
@@ -96,9 +38,7 @@ const Speech: React.FC<CombinedSpeechProps> = ({ setMessages, getHistory }) => {
 
   const sendDataToServer = async (audioBlob: Blob | null) => {
     if (audioBlob) {
-      // Create a FormData object
       const formData = new FormData();
-      // Append the audio data to the FormData object
       formData.append('data', audioBlob, 'recording.wav');
       try {
         const response = await axios.post(
@@ -122,15 +62,13 @@ const Speech: React.FC<CombinedSpeechProps> = ({ setMessages, getHistory }) => {
       }
     } else {
       console.log('no audio chunks or audio is not recorded correctly!');
+      setIsWaiting(false);
     }
   };
 
-  //call the sendDataToServer function when mediaBlobUrl is not null
   useEffect(() => {
     if (audioBlob) {
-      //create the audioBlob to audio/wav type blob because the audioBlob is audio/wave type
       const newBlob = new Blob([audioBlob], { type: 'audio/wav' });
-
       sendDataToServer(newBlob);
     }
   }, [audioBlob]);
@@ -166,13 +104,11 @@ const Speech: React.FC<CombinedSpeechProps> = ({ setMessages, getHistory }) => {
   const toggleMute = () => {
     if (gainNodeRef.current && audioContextRef.current) {
       if (isMuted) {
-        console.log('unmute');
         gainNodeRef.current.gain.setValueAtTime(
           1,
           audioContextRef.current.currentTime
         );
       } else {
-        console.log('mute');
         gainNodeRef.current.gain.setValueAtTime(
           0,
           audioContextRef.current.currentTime
@@ -191,23 +127,39 @@ const Speech: React.FC<CombinedSpeechProps> = ({ setMessages, getHistory }) => {
   }, []);
 
   return (
-    <ButtonContainer>
-      <RecordButton
+    <div className='flex justify-center mt-5'>
+      <button
         onClick={toggleRecording}
-        $isRecording={isRecording}
-        $disabled={isPlaying || isWaiting}
-        disabled={isPlaying || isWaiting}>
+        disabled={isPlaying || isWaiting}
+        className={`
+          w-12 h-12 rounded-full flex items-center justify-center
+          transition-all duration-300 ease-in-out mr-2
+          ${
+            isRecording
+              ? 'bg-red-500 text-white animate-pulse'
+              : 'bg-green-500 text-white'
+          }
+          ${
+            isPlaying || isWaiting
+              ? 'opacity-50 cursor-not-allowed'
+              : 'hover:opacity-80'
+          }
+        `}>
         {isRecording ? <FaStop size={24} /> : <FaMicrophone size={24} />}
-      </RecordButton>
-      <MuteButton
+      </button>
+      <button
         onClick={toggleMute}
-        $isMuted={isMuted}
-        $isPlaying={isPlaying}
-        $disabled={!isPlaying}
-        disabled={!isPlaying}>
+        disabled={!isPlaying}
+        className={`
+          w-12 h-12 rounded-full flex items-center justify-center
+          transition-all duration-300 ease-in-out
+          ${isMuted ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}
+          ${!isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}
+          ${isPlaying && !isMuted ? 'animate-pulse' : ''}
+        `}>
         {isMuted ? <FaVolumeMute size={24} /> : <FaVolumeUp size={24} />}
-      </MuteButton>
-    </ButtonContainer>
+      </button>
+    </div>
   );
 };
 

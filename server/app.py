@@ -8,6 +8,8 @@ import os
 from dotenv import load_dotenv, find_dotenv
 import azure.cognitiveservices.speech as speechsdk
 import struct
+from datetime import datetime
+import uuid
 
 _ = load_dotenv(find_dotenv())
 
@@ -59,18 +61,37 @@ middleware = [
 
 app=FastAPI(middleware=middleware)
 
-
+class Message(BaseModel):
+    id: str
+    text: str
+    sender: str
+    timestamp: datetime
 
 client_address = os.getenv("CLIENT_ADDRESS")
-init_chat = [{"role": "system", "content": "Assistant's name is Jenna. She is a virtual receptionist for a restaurant. She can help user with user's needs.Jenna need to ask user's name, how many people will join the party, what time they will be arrived if user want to book a table. if Jenna don't know any of those three infomation, she will have to ask the user untill she have all three info. Jenna will only answer the question based on restaurant information, if user's question is not related to the restaurant information, or content not included in the restaurant information, she will not be able to answer it. Jenna's answer should be short and clean,like spoken conversation. REMEMBER THAT!"},
-                {"role": "system", "content": "the restaurant information:restaurant name is Kiwi's Day. Today's special is chicken curry and beef curry. We have 5 tables available for 2 people and 3 tables available for 4 people. our business hours are 11:00 am to 10:00 pm. At 6 pm, we have 2 tables for 2 people, 0 table for 4 people available. At 7 pm, we have 1 tables for 2 people, 1 table for 4 people available."},
-                {"role": "assistant", "content": "Hi this is Jenna, nice talke to you and how may I help",},
-                ]
+# Initialize chat history
+init_chat = [
+    Message(
+        id=str(uuid.uuid4()),
+        text="Assistant's name is Jenna. She is a virtual receptionist for a restaurant. She can help user with user's needs. Jenna needs to ask user's name, how many people will join the party, what time they will arrive if user wants to book a table. If Jenna doesn't know any of those three pieces of information, she will have to ask the user until she has all three. Jenna will only answer questions based on restaurant information; if user's question is not related to the restaurant information or content not included in the restaurant information, she will not be able to answer it. Jenna's answers should be short and clean, like spoken conversation. REMEMBER THAT!",
+        sender="system",
+        timestamp=datetime.now()
+    ),
+    Message(
+        id=str(uuid.uuid4()),
+        text="The restaurant information: restaurant name is Kiwi's Day. Today's special is chicken curry and beef curry. We have 5 tables available for 2 people and 3 tables available for 4 people. Our business hours are 11:00 am to 10:00 pm. At 6 pm, we have 2 tables for 2 people, 0 table for 4 people available. At 7 pm, we have 1 table for 2 people, 1 table for 4 people available.",
+        sender="system",
+        timestamp=datetime.now()
+    ),
+    Message(
+        id=str(uuid.uuid4()),
+        text="Hi, this is Jenna. Nice to talk to you. How may I help?",
+        sender="assistant",
+        timestamp=datetime.now()
+    ),
+]
 # init In-memory chat history
-chat_history = [{"role": "system", "content": "Assistant's name is Jenna. She is a virtual receptionist for a restaurant. She can help user with user's needs.Jenna need to ask user's name, how many people will join the party, what time they will be arrived if user want to book a table. if Jenna don't know any of those three infomation, she will have to ask the user untill she have all three info. Jenna will only answer the question based on restaurant information, if user's question is not related to the restaurant information, or content not included in the restaurant information, she will not be able to answer it. Jenna's answer should be short and clean,like spoken conversation. REMEMBER THAT!"},
-                {"role": "system", "content": "the restaurant information:restaurant name is Kiwi's Day. Today's special is chicken curry and beef curry. We have 5 tables available for 2 people and 3 tables available for 4 people. our business hours are 11:00 am to 10:00 pm. At 6 pm, we have 2 tables for 2 people, 0 table for 4 people available. At 7 pm, we have 1 tables for 2 people, 1 table for 4 people available."},
-                {"role": "assistant", "content": "Hi this is Jenna, nice talke to you and how may I help",},
-                ]
+# Use a global variable for chat_history
+chat_history = init_chat.copy()
 
 
 class Chat_Request(BaseModel):
@@ -169,40 +190,33 @@ async def text_to_speech_stream(text):
     except Exception as ex:
         print(f"Error synthesizing audio: {ex}")
         yield b''
-
-# Define the text-to-speech function
-async def text_to_speech_completed(text):
-    try:
-        result = speech_synthesizer.speak_text_async(text).get()
-        if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
-            print("Speech synthesized for text [{}]".format(text))
-            return result
-        elif result.reason == speechsdk.ResultReason.Canceled:
-                cancellation_details = result.cancellation_details
-                print("Speech synthesis canceled: {}".format(cancellation_details.reason))
-        if cancellation_details.reason == speechsdk.CancellationReason.Error:
-            if cancellation_details.error_details:
-                print("Error details: {}".format(cancellation_details.error_details))
-                print("Did you set the speech resource key and region values?")
-    except Exception as ex:
-        print(f"Error synthesizing audio: {ex}")
-        return None          
+       
     
 # get the response from LLM function
-def response_from_LLM(input_text:str):
-      #check if the input is valid string
+def response_from_LLM(input_text: str):
     if not input_text:
         return {"error": "The input is not a valid string."}
     try:
-        chat_history.append({"role": "user", "content": input_text,})
+        chat_history.append(Message(
+            id=str(uuid.uuid4()),
+            text=input_text,
+            sender="user",
+            timestamp=datetime.now()
+        ))
+        messages = [{"role": msg.sender, "content": msg.text} for msg in chat_history]
         response = client.chat.completions.create(
-            model=model3_name, # model = "deployment_name".
-            messages=chat_history,
+            model=model3_name,
+            messages=messages,
         )
-        gpt_response=response.choices[0].message.content
-        chat_history.append({"role": "assistant", "content": gpt_response,})
+        assistant_response=Message(
+            id=str(uuid.uuid4()),
+            text=response.choices[0].message.content,
+            sender="assistant",
+            timestamp=datetime.now()
+        )
+        chat_history.append(assistant_response)
         print(chat_history)
-        return {"response": gpt_response}
+        return {"response": assistant_response.dict()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -232,9 +246,10 @@ async def chat_audio_stream(data: UploadFile = File(...)):
         # Send the text to the LLM and get the response
         response = response_from_LLM(input_text)
         # Check if the response is successful
-        if response:
+        if response and "response" in response:
             # Convert the response to speech
-            audio_stream = text_to_speech_stream(response["response"])
+            resposne_text=response["response"]["text"]
+            audio_stream = text_to_speech_stream(resposne_text)
             
             if  audio_stream:
                 return StreamingResponse(audio_stream, media_type='audio/wav')
@@ -247,35 +262,12 @@ async def chat_audio_stream(data: UploadFile = File(...)):
     
     
 
-
-#define speech to text chat route (may not need this route)
-@app.post("/chat-speech-to-text/")
-async def chat_speech_to_text(data: UploadFile = File(...)):
-  # Check if the file is an wav audio file
-    if not is_audio_file(data):
-        return {"error": "The file is not an audio file."}
-    
-      # Assuming `speech_to_text` function can handle audio file
-    input_text = await speech_to_text(data)
-
-    # Check if speech to text was successful
-    if input_text is None:
-        return {"error": "your speech is not recognized, could you please repeat it?"}
-    # if the input_text string equal to 'invalid wav file' string, we return error
-    if input_text == 'invalid wav file':
-        return {"error":'your file is not a valid wav file'}
-    if input_text:
-        return {'input_text':input_text}
-    else:
-        return {"error": "Unable to recognize the audio"}
-    
-
 # Define a route to get the chat history
 @app.get("/chat_history/")
 async def get_chat_history():
-     # Filter out system messages
-    filtered_chat_history = [message for message in chat_history if message["role"] != "system"]
-    return {"chat_history": filtered_chat_history}
+    return {"chat_history": [msg.dict() for msg in chat_history if msg.sender != "system"]}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
@@ -284,5 +276,5 @@ if __name__ == "__main__":
 @app.post("/clear_chat_history/")
 async def delete_chat_history():
     global chat_history
-    chat_history=init_chat.copy()
+    chat_history = init_chat.copy()
     return {"message": "Chat history has been cleared."}

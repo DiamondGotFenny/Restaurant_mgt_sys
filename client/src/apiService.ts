@@ -1,14 +1,24 @@
 import axios from 'axios';
+import { Message } from './types';
 
-interface IChatHistory {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
+function generateErrorId() {
+  // Generate a random number between 1000 and 9999
+  const id = Math.floor(Math.random() * 9000) + 1000;
+  return id.toString();
+}
+
+function generateErrorTimestamp() {
+  // Get the current date and time
+  const now = new Date();
+  // Format the timestamp as "YYYY-MM-DD HH:MM:SS"
+  const timestamp = now.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+  return timestamp;
 }
 
 const getTextResponse = async (
   userInput: string,
   endpoint: string
-): Promise<string> => {
+): Promise<Message> => {
   try {
     const response = await axios.post(endpoint, {
       message: userInput,
@@ -17,7 +27,12 @@ const getTextResponse = async (
     return response.data.response;
   } catch (error) {
     console.error(error);
-    return 'Error';
+    return {
+      id: generateErrorId(),
+      text: 'Sorry, there is an error, please try again.',
+      sender: 'assistant',
+      timestamp: generateErrorTimestamp(),
+    };
   }
 };
 
@@ -73,7 +88,7 @@ const sendSpeechToTextRequest = async (
   }
 };
 
-const getChatHistory = async (endpoint: string): Promise<IChatHistory[]> => {
+const getChatHistory = async (endpoint: string): Promise<Message[]> => {
   const response = await axios.get(endpoint);
   return response.data.chat_history;
 };

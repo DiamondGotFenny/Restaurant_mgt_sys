@@ -2,31 +2,28 @@ import { useEffect, useState } from 'react';
 import { getTextResponse, getChatHistory } from './apiService';
 import Speech from './Speech';
 import axios from 'axios';
-
-export interface Message {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-}
+import ChatMessages from './ChatMessage';
+import { Message } from './types';
+import InputArea from './InputArea';
+import ClearButton from './ClearButton';
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const sendMessage = async () => {
-    if (input.trim() !== '') {
-      setMessages((messages) => [
-        ...messages,
-        { role: 'user', content: input },
-      ]);
-      setInput('');
-      const response = await getTextResponse(
+  const onSendMessage = async (input: string) => {
+    setIsLoading(true);
+    try {
+      await getTextResponse(
         input,
         `${process.env.REACT_APP_API_BASE_URL}/chat-text/`
       );
-      setMessages((messages) => [
-        ...messages,
-        { role: 'assistant', content: response },
-      ]);
+      await getHistory(setMessages);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -49,30 +46,27 @@ const ChatInterface = () => {
     await axios.post(
       `${process.env.REACT_APP_API_BASE_URL}/clear_chat_history/`
     );
-    getHistory(setMessages);
+    await getHistory(setMessages);
     console.log('chat history cleared');
   };
 
   return (
-    <div>
-      <div>
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            style={{ textAlign: message.role === 'user' ? 'right' : 'left' }}>
-            {message.content}
+    <div className='flex flex-col h-screen bg-gray-100'>
+      <header className='bg-blue-500 text-white p-4'>
+        <h1 className='text-2xl font-bold'>AI Chat Assistant</h1>
+      </header>
+      <main className='flex-grow overflow-hidden'>
+        <ChatMessages messages={messages} isLoading={isLoading} />
+      </main>
+      <footer className='bg-white border-t'>
+        <div className='flex justify-between items-center p-4'>
+          <div className='flex space-x-2'>
+            <Speech setMessages={setMessages} getHistory={getHistory} />
           </div>
-        ))}
-      </div>
-      <input
-        type='text'
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-      />
-      <button onClick={sendMessage}>Send</button>
-      <Speech setMessages={setMessages} getHistory={getHistory} />
-      <button onClick={() => clearChatHistory()}>Reset Chat</button>
+          <InputArea onSendMessage={onSendMessage} />
+          <ClearButton onClear={clearChatHistory} />
+        </div>
+      </footer>
     </div>
   );
 };

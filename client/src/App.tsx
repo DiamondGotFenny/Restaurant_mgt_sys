@@ -1,4 +1,4 @@
-import './App.css';
+import './index.css';
 import ChatInterface from './chatInterface';
 
 function App() {

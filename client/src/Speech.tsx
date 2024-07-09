@@ -126,41 +126,39 @@ const Speech: React.FC<SpeechProps> = ({ setMessages, getHistory }) => {
     };
   }, []);
 
-  return (
-    <div className='flex justify-center mt-5'>
-      <button
-        onClick={toggleRecording}
-        disabled={isPlaying || isWaiting}
-        className={`
-          w-12 h-12 rounded-full flex items-center justify-center
-          transition-all duration-300 ease-in-out mr-2
-          ${
-            isRecording
-              ? 'bg-red-500 text-white animate-pulse'
-              : 'bg-green-500 text-white'
-          }
-          ${
-            isPlaying || isWaiting
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:opacity-80'
-          }
-        `}>
-        {isRecording ? <FaStop size={24} /> : <FaMicrophone size={24} />}
-      </button>
-      <button
-        onClick={toggleMute}
-        disabled={!isPlaying}
-        className={`
-          w-12 h-12 rounded-full flex items-center justify-center
-          transition-all duration-300 ease-in-out
-          ${isMuted ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}
-          ${!isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}
-          ${isPlaying && !isMuted ? 'animate-pulse' : ''}
-        `}>
-        {isMuted ? <FaVolumeMute size={24} /> : <FaVolumeUp size={24} />}
-      </button>
-    </div>
-  );
+  const renderButton = () => {
+    if (isPlaying) {
+      return (
+        <button
+          onClick={toggleMute}
+          className={`
+            w-12 h-12 rounded-full flex items-center justify-center
+            transition-all duration-300 ease-in-out
+            ${isMuted ? 'bg-red-500' : 'bg-green-500'} text-white
+            ${isPlaying ? 'animate-pulse' : ''}
+          `}>
+          {isMuted ? <FaVolumeMute size={24} /> : <FaVolumeUp size={24} />}
+        </button>
+      );
+    } else {
+      return (
+        <button
+          onClick={toggleRecording}
+          disabled={isWaiting}
+          className={`
+            w-12 h-12 rounded-full flex items-center justify-center
+            transition-all duration-300 ease-in-out
+            ${isRecording ? 'bg-red-500' : 'bg-green-500'} text-white
+            ${isRecording ? 'animate-pulse' : ''}
+            ${isWaiting ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}
+          `}>
+          {isRecording ? <FaStop size={24} /> : <FaMicrophone size={24} />}
+        </button>
+      );
+    }
+  };
+
+  return <div className='flex justify-start'>{renderButton()}</div>;
 };
 
 export default Speech;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getTextResponse, getChatHistory } from './apiService';
 import Speech from './Speech';
 import axios from 'axios';
@@ -7,7 +7,7 @@ import { Message } from './types';
 import InputArea from './InputArea';
 import ClearButton from './ClearButton';
 
-const ChatInterface = () => {
+const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,21 +51,24 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className='flex flex-col h-screen bg-gray-100'>
-      <header className='bg-blue-500 text-white p-4'>
-        <h1 className='text-2xl font-bold'>AI Chat Assistant</h1>
+    <div className='flex flex-col h-screen bg-gradient-to-br from-indigo-100 to-purple-100'>
+      <header className='bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 shadow-lg'>
+        <h1 className='text-2xl font-bold text-center'>
+          New York Restaurants Assistant
+        </h1>
       </header>
-      <main className='flex-grow overflow-hidden'>
-        <ChatMessages messages={messages} isLoading={isLoading} />
-      </main>
-      <footer className='bg-white border-t'>
-        <div className='flex justify-between items-center p-4'>
-          <div className='flex space-x-2'>
-            <Speech setMessages={setMessages} getHistory={getHistory} />
-          </div>
-          <InputArea onSendMessage={onSendMessage} />
-          <ClearButton onClear={clearChatHistory} />
+      <main className='flex-grow flex flex-col overflow-hidden'>
+        <div className='flex-grow overflow-y-auto p-4'>
+          <ChatMessages messages={messages} isLoading={isLoading} />
         </div>
+      </main>
+      <footer className='flex items-center bg-white border-t border-gray-200 p-4 shadow-inner'>
+        <div className='max-w-4xl mx-auto flex items-center space-x-4'>
+          <InputArea onSendMessage={onSendMessage} />
+
+          <Speech setMessages={setMessages} getHistory={getHistory} />
+        </div>
+        <ClearButton onClear={clearChatHistory} />
       </footer>
     </div>
   );

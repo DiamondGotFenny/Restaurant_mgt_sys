@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { FaPaperPlane } from 'react-icons/fa';
 interface InputAreaProps {
   onSendMessage: (message: string) => void;
 }
@@ -21,13 +21,13 @@ const InputArea: React.FC<InputAreaProps> = ({ onSendMessage }) => {
         type='text'
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        className='flex-grow px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+        className='flex-grow w-64 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500'
         placeholder='Type your message...'
       />
       <button
         type='submit'
-        className='px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500'>
-        Send
+        className='flex w-12 h-12 items-center justify-center bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition duration-200'>
+        <FaPaperPlane size={20} />
       </button>
     </form>
   );

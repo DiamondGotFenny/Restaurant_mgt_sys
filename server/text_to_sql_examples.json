@@ -1,0 +1,26 @@
+[
+  {
+    "input": "Top 5 restaurants by number of menu items",
+    "query": "SELECT r.\"Name\", COUNT(m.\"Item\") as menu_item_count FROM restaurant r JOIN menu m ON r.id = m.restaurant_id GROUP BY r.\"Name\" ORDER BY menu_item_count DESC LIMIT 5"
+  },
+  {
+    "input": "Top 5 most expensive restaurants on average (base price)",
+    "query": "SELECT r.\"Name\", AVG(CASE WHEN m.base_price != -1 THEN m.base_price END) as avg_base_price FROM restaurant r JOIN menu m ON r.id = m.restaurant_id GROUP BY r.\"Name\" HAVING AVG(CASE WHEN m.base_price != -1 THEN m.base_price END) IS NOT NULL ORDER BY avg_base_price DESC LIMIT 5"
+  },
+  {
+    "input": "Total number of menu items",
+    "query": "SELECT COUNT(*) FROM menu"
+  },
+  {
+    "input": "Total number of restaurants",
+    "query": "SELECT COUNT(*) FROM restaurant"
+  },
+  {
+    "input": "Number of menu items with addons",
+    "query": "SELECT COUNT(*) as items_with_addons FROM menu WHERE has_addons = TRUE"
+  },
+  {
+    "input": "Number of menu items with missing price",
+    "query": "SELECT COUNT(*) as items_with_missing_price FROM menu WHERE base_price = -1"
+  }
+]

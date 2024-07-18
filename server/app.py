@@ -16,7 +16,7 @@ _ = load_dotenv(find_dotenv())
 #creadentials for openai
 api_base = os.getenv("OPENAI_API_BASE")
 api_key = os.getenv("OPENAI_API_KEY")
-api_version="2024-02-15-preview"
+api_version=os.getenv("OPENAI_API_VERSION")
 model3_name=os.getenv("OPENAI_MODEL_3")
 model4_name=os.getenv("OPENAI_MODEL_4_16")
 

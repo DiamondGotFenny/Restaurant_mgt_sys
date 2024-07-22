@@ -12,7 +12,18 @@ const ChatInterface: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const onSendMessage = async (input: string) => {
+    const tempId = `temp-${Date.now()}`;
+    const newUserMessage: Message = {
+      id: tempId,
+      text: input,
+      sender: 'user',
+      timestamp: new Date().toISOString(),
+    };
+
+    // Immediately update the messages state with the user's input
+    setMessages((prevMessages) => [...prevMessages, newUserMessage]);
     setIsLoading(true);
+
     try {
       await getTextResponse(
         input,

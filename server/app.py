@@ -19,11 +19,11 @@ api_key = os.getenv("OPENAI_API_KEY")
 api_version=os.getenv("OPENAI_API_VERSION")
 model3_name=os.getenv("OPENAI_MODEL_3")
 model4_name=os.getenv("OPENAI_MODEL_4_16")
-
+os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
 
 client=AzureOpenAI(
     api_key=api_key,
-    api_version=api_version,
+    api_version=os.environ["AZURE_OPENAI_API_VERSION"],
     azure_endpoint=api_base
 )
 
@@ -41,9 +41,7 @@ speech_config.speech_recognition_language="en-US"
 #configure for system output
 speech_config.speech_synthesis_language = "en-US"
 speech_config.speech_synthesis_voice_name = "en-US-JennyNeural"
- # Creates a speech synthesizer with a null output stream.
-    # This means the audio output data will not be written to any output channel.
-    # You can just get the audio from the result.
+
 speech_synthesizer=speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=None)
 
  # tts sentence end mark

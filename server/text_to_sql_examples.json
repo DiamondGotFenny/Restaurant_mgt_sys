@@ -1,26 +1,42 @@
 [
   {
-    "input": "Top 5 restaurants by number of menu items",
-    "query": "SELECT r.\"Name\", COUNT(m.\"Item\") as menu_item_count FROM restaurant r JOIN menu m ON r.id = m.restaurant_id GROUP BY r.\"Name\" ORDER BY menu_item_count DESC LIMIT 5"
+    "input": "Top 5 highest-rated restaurants in New York City",
+    "query": "SELECT name, average_review FROM restaurants_week_2018_final WHERE city = 'New York City' ORDER BY average_review DESC LIMIT 5"
   },
   {
-    "input": "Top 5 most expensive restaurants on average (base price)",
-    "query": "SELECT r.\"Name\", AVG(CASE WHEN m.base_price != -1 THEN m.base_price END) as avg_base_price FROM restaurant r JOIN menu m ON r.id = m.restaurant_id GROUP BY r.\"Name\" HAVING AVG(CASE WHEN m.base_price != -1 THEN m.base_price END) IS NOT NULL ORDER BY avg_base_price DESC LIMIT 5"
+    "input": "Restaurants with the most critical violations in the past year",
+    "query": "SELECT dba, COUNT(*) as critical_violations FROM restaurant_inspections WHERE critical_flag = 'Critical' AND inspection_date >= CURRENT_DATE - INTERVAL '1 year' GROUP BY dba ORDER BY critical_violations DESC LIMIT 10"
   },
   {
-    "input": "Total number of menu items",
-    "query": "SELECT COUNT(*) FROM menu"
+    "input": "Most popular cuisine types in Manhattan",
+    "query": "SELECT cuisine_description, COUNT(*) as restaurant_count FROM restaurant_inspections WHERE boro = 'Manhattan' GROUP BY cuisine_description ORDER BY restaurant_count DESC LIMIT 5"
   },
   {
-    "input": "Total number of restaurants",
-    "query": "SELECT COUNT(*) FROM restaurant"
+    "input": "Restaurants with the best value reviews",
+    "query": "SELECT name, value_review FROM restaurants_week_2018_final WHERE city = 'New York City' ORDER BY value_review DESC LIMIT 10"
   },
   {
-    "input": "Number of menu items with addons",
-    "query": "SELECT COUNT(*) as items_with_addons FROM menu WHERE has_addons = TRUE"
+    "input": "Top-rated Italian restaurants that offer online ordering",
+    "query": "SELECT tar.title, tar.number_of_reviews FROM trip_advisor_restaurants tar JOIN restaurants_has_reviews rhr ON tar.title = rhr.name WHERE rhr.type LIKE '%Italian%' AND tar.online_order = TRUE ORDER BY rhr.rating DESC LIMIT 5"
   },
   {
-    "input": "Number of menu items with missing price",
-    "query": "SELECT COUNT(*) as items_with_missing_price FROM menu WHERE base_price = -1"
+    "input": "Restaurants with the most 5-star reviews",
+    "query": "SELECT name, star_5 FROM restaurants_week_2018_final WHERE city = 'New York City' ORDER BY star_5 DESC LIMIT 10"
+  },
+  {
+    "input": "Average price of menu items in French restaurants",
+    "query": "SELECT AVG(rm.base_price) as avg_price FROM restaurant_menu rm JOIN restaurants_has_menu rhm ON rm.restaurant_id = rhm.restaurant_id WHERE rhm.cuisine LIKE '%French%'"
+  },
+  {
+    "input": "Restaurants with 'A' grade and lowest inspection scores in Brooklyn",
+    "query": "SELECT dba, score FROM restaurant_inspections WHERE boro = 'Brooklyn' AND grade = 'A' ORDER BY score ASC LIMIT 10"
+  },
+  {
+    "input": "Most reviewed restaurants on TripAdvisor",
+    "query": "SELECT title, number_of_reviews FROM trip_advisor_restaurants ORDER BY CAST(REPLACE(number_of_reviews, ',', '') AS INTEGER) DESC LIMIT 5"
+  },
+  {
+    "input": "Restaurants with the highest ambience ratings that serve American cuisine",
+    "query": "SELECT name, ambience_review FROM restaurants_week_2018_final WHERE restaurant_type LIKE '%American%' ORDER BY ambience_review DESC LIMIT 10"
   }
 ]

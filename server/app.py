@@ -18,7 +18,7 @@ api_base = os.getenv("OPENAI_API_BASE")
 api_key = os.getenv("OPENAI_API_KEY")
 api_version=os.getenv("OPENAI_API_VERSION")
 model3_name=os.getenv("OPENAI_MODEL_3")
-model4_name=os.getenv("OPENAI_MODEL_4_16")
+model4_name=os.getenv("OPENAI_MODEL_4o")
 os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
 
 client=AzureOpenAI(

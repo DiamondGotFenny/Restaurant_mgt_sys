@@ -1,1 +1,4 @@
 .env
+data/
+logs/
+vectorDB_Agent/__pycache__/

@@ -105,7 +105,6 @@ def test_llm_processor():
     os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
     os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
     os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-    os.environ["AZURE_OPENAI_EMBEDDING_MODEL"] = os.getenv("OPENAI_EMBEDDING_MODEL")
     os.environ["AZURE_OPENAI_4O"] = os.getenv("OPENAI_MODEL_4o")
 
     AZURE_OPENAI_API_KEY = os.environ["AZURE_OPENAI_API_KEY"]

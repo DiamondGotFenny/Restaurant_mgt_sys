@@ -56,7 +56,7 @@ def vectorDB_Engine():
         persist_directory=PERSIST_DIRECTORY,
         azure_openai_api_key=AZURE_OPENAI_API_KEY,
         azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
-        azure_openai_deployment=AZURE_OPENAI_EMBEDDING,
+        azure_openai_embedding_deployment=AZURE_OPENAI_EMBEDDING,
         log_file=LOG_FILE
     )
 

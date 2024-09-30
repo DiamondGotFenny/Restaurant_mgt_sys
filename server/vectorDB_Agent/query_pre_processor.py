@@ -8,7 +8,7 @@ from dotenv import load_dotenv, find_dotenv
 import re
 _ = load_dotenv(find_dotenv())
 
-class LLMProcessor:
+class LLMQueryPreProcessor:
     def __init__(
         self,
         azure_openai_api_key: str,
@@ -46,6 +46,7 @@ class LLMProcessor:
                 "'entities' is a list of specific items or categories (e.g., 'Mediterranean', 'noodle').\n\n"
                 "extracted 'terms' and 'entities' should be optimized for keyword searching for getting best result .\n\n"
                 "try your best to identify the most relevant entities, base on user's intention, as entities will be put on higher priority.\n\n"
+                "when extracting entities, the cuisine should be simple word(e.g., 'indian', 'Chinese', not 'indian food', 'Chinese style').\n\n"
                 "Output JSON only, without any additional text."
             )
         )
@@ -108,7 +109,7 @@ def test_module():
     AZURE_OPENAI_ENDPOINT = os.environ["AZURE_OPENAI_ENDPOINT"] 
     AZURE_OPENAI_4O = os.environ["AZURE_OPENAI_4o"]
     AZURE_API_VERSION = os.environ["AZURE_OPENAI_API_VERSION"]
-    processor = LLMProcessor(
+    processor = LLMQueryPreProcessor(
         azure_openai_api_key=AZURE_OPENAI_API_KEY,
         azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
         azure_openai_deployment=AZURE_OPENAI_4O,

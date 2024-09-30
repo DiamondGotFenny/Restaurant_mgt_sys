@@ -25,6 +25,7 @@ from whoosh.qparser import QueryParser, OrGroup
 from whoosh.analysis import StemmingAnalyzer
 from whoosh.query import Or
 from whoosh.scoring import BM25F
+from query_pre_processor import LLMQueryPreProcessor
 import nltk
 
 # Ensure the necessary NLTK data is downloaded
@@ -315,28 +316,28 @@ class BM25RetrieverAgent:
 def test_module(agent: BM25RetrieverAgent):
     """
     A test method to interactively query the BM25 retriever via the terminal.
-
-    It expects the user to input a JSON-formatted string with 'terms' and 'entities'.
-    Example input:
-    {
-      "terms": ["oyster", "offer", "seafood"],
-      "entities": ["Oyster Bar", "Grand Central Terminal"]
-    }
     """
     print("=== Enhanced BM25 Retriever Agent Test Module ===")
     print("Enter 'exit' or 'quit' to terminate the test.\n")
-    print("Please enter your query as a JSON object with 'terms' and 'entities'.")
-    print("Example:")
-    print("""
-{
-  "terms": ["oyster", "offer", "seafood"],
-  "entities": ["Oyster Bar", "Grand Central Terminal"]
-}
-""")
+    os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+    os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
+    os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
+    os.environ["AZURE_OPENAI_4O"] = os.getenv("OPENAI_MODEL_4o")
 
+    AZURE_OPENAI_API_KEY = os.environ["AZURE_OPENAI_API_KEY"]
+    AZURE_OPENAI_ENDPOINT = os.environ["AZURE_OPENAI_ENDPOINT"] 
+    AZURE_OPENAI_4O = os.environ["AZURE_OPENAI_4o"]
+    AZURE_API_VERSION = os.environ["AZURE_OPENAI_API_VERSION"]
+    query_pre_processor = LLMQueryPreProcessor(
+        azure_openai_api_key=AZURE_OPENAI_API_KEY,
+        azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
+        azure_openai_deployment=AZURE_OPENAI_4O,
+        azure_api_version=AZURE_API_VERSION,
+        log_file="llm_processor.log"
+    )
     while True:
         try:
-            user_input = input("Enter your query in JSON format: ")
+            user_input = input("Enter your query: ")
         except (KeyboardInterrupt, EOFError):
             print("\nExiting test module.")
             break
@@ -346,12 +347,12 @@ def test_module(agent: BM25RetrieverAgent):
             break
 
         if not user_input.strip():
-            print("Empty query. Please enter a valid JSON object with 'terms' and 'entities'.")
+            print("Empty query. Please enter a valid string.")
             continue
 
         try:
-            # Parse the JSON input
-            query_json = json.loads(user_input)
+            # call the query_pre_processor.py file to process the query
+            query_json =query_pre_processor.process_query(user_input)
             if not isinstance(query_json, dict):
                 raise ValueError("Input must be a JSON object with 'terms' and 'entities'.")
 

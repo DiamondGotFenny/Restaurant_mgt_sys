@@ -34,16 +34,18 @@ class LLMProcessor:
             deployment_name=azure_openai_deployment,
             api_version=azure_api_version,
             temperature=0.1,  # Low temperature for more deterministic outputs
-            max_tokens=1000    # Adjust based on expected summary length
+            max_tokens=500    # Adjust based on expected summary length
         )
         self.prompt = PromptTemplate(
             input_variables=["query"],
             template=(
-                "Extract relevant keywords and entities from the following user query.\n\n"
+               "Extract relevant terms and entities for keyword searching, from the following user query.\n\n"
                 "User Query: \"{query}\"\n\n"
-                "Provide the output as a JSON object with two fields: 'keywords' and 'entities'.\n"
-                "Ensure that 'keywords' is a list of descriptive terms (e.g., 'spicy', 'quiet') and "
+                "Provide the output as a JSON object with two fields: 'terms' and 'entities'.\n"
+                "Ensure that 'terms' is a list of descriptive terms (e.g., 'spicy', 'quiet') and "
                 "'entities' is a list of specific items or categories (e.g., 'Mediterranean', 'noodle').\n\n"
+                "extracted 'terms' and 'entities' should be optimized for keyword searching for getting best result .\n\n"
+                "try your best to identify the most relevant entities, base on user's intention, as entities will be put on higher priority.\n\n"
                 "Output JSON only, without any additional text."
             )
         )
@@ -51,13 +53,13 @@ class LLMProcessor:
         self.llm_chain = self.prompt | self.llm | self.output_parser
     def process_query(self, query: str) -> Dict[str, List[str]]:
         """
-        Processes the user query to extract keywords and entities.
+        Processes the user query to extract terms and entities.
 
         Args:
             query (str): The user input query.
 
         Returns:
-            Dict[str, List[str]]: A dictionary with 'keywords' and 'entities' lists.
+            Dict[str, List[str]]: A dictionary with 'terms' and 'entities' lists.
         """
         self.logger.info(f"Processing query: {query}")
         try:
@@ -76,20 +78,20 @@ class LLMProcessor:
             extracted = eval(json_str)  # Caution: using eval; ensure safety in production
 
             # Validate extracted content
-            keywords = extracted.get('keywords', [])
+            terms = extracted.get('terms', [])
             entities = extracted.get('entities', [])
 
-            self.logger.info(f"Extracted keywords: {keywords}")
+            self.logger.info(f"Extracted terms: {terms}")
             self.logger.info(f"Extracted entities: {entities}")
 
             return {
-                'keywords': keywords,
+                'terms': terms,
                 'entities': entities
             }
         except Exception as e:
             self.logger.error(f"Error processing query: {e}")
             return {
-                'keywords': [],
+                'terms': [],
                 'entities': []
             }
 
@@ -130,7 +132,7 @@ def test_module():
         
         result = processor.process_query(query)
         print("\nExtracted Keywords and Entities:")
-        print(f"Keywords: {result['keywords']}")
+        print(f"terms: {result['terms']}")
         print(f"Entities: {result['entities']}\n")
 
 # Example usage:

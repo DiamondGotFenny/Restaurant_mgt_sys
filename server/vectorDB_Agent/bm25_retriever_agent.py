@@ -1,39 +1,35 @@
 """
-BM25 Retriever Agent Module with Phrase Matching via Whoosh
+BM25 Retriever Agent Module with Structured JSON Input for Terms and Entities
 
 This module provides functionality to perform BM25-based document retrieval
-and incorporate phrase matching using Whoosh. It allows loading and splitting
-PDF documents, annotating them with metadata, initializing the BM25 retriever,
-setting up Whoosh indexing, and performing queries to retrieve relevant documents.
-
-Prerequisites:
-    Install required packages:
-        pip install langchain
-        pip install rank_bm25
-        pip install langchain-community
-        pip install python-dotenv
-        pip install pypdf
-        pip install Whoosh
+with support for structured JSON input (separated keywords and entities) to optimize search
+results. It allows loading and splitting PDF documents, annotating them with metadata,
+initializing the BM25 retriever, setting up Whoosh indexing, and performing
+queries to retrieve relevant documents based on specified terms and entities.
 """
 
 import os
 import glob
 import sys
+import json
+from typing import List, Optional, Tuple, Dict, Any
 from logger_config import setup_logger
-from typing import List, Optional, Tuple
 from dotenv import load_dotenv, find_dotenv
 from langchain_community.retrievers import BM25Retriever
 from langchain.schema import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter, NLTKTextSplitter
+from langchain.text_splitter import NLTKTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from whoosh import index
 from whoosh.fields import Schema, TEXT, ID
 from whoosh.qparser import QueryParser, OrGroup
 from whoosh.analysis import StemmingAnalyzer
-from whoosh.query import And
+from whoosh.query import Or
 from whoosh.scoring import BM25F
 import nltk
+
+# Ensure the necessary NLTK data is downloaded
 nltk.download('punkt_tab')
+
 
 class BM25RetrieverAgent:
     def __init__(
@@ -66,7 +62,7 @@ class BM25RetrieverAgent:
             separator="\n",
             length_function=len
         )
-        self.bm25_params = bm25_params if bm25_params else {"k1": 1.0, "b": 0.75}
+        self.bm25_params = bm25_params if bm25_params else {"k1": 0.5, "b": 0.75}
         self.retriever = None
         self.documents = self._load_and_prepare_documents()
 
@@ -169,38 +165,90 @@ class BM25RetrieverAgent:
         Performs phrase matching using Whoosh and returns relevant documents.
 
         Args:
-            query (str): The search query.
+            query (str): The search query with possible boosts.
             top_k (int, optional): Number of top results to return. Defaults to 5.
 
         Returns:
             List[Tuple[float, Document]]: List of tuples containing score and Document.
         """
         with self.index.searcher(weighting=BM25F()) as searcher:
-            # Use MultifieldParser to search in 'content' field
-            parser = QueryParser("content", schema=self.index.schema, group=OrGroup)
+            # Use QueryParser to search in 'content' field
+            parser = QueryParser("content", schema=self.index.schema, group=OrGroup.factory(0.9))
 
-            # Parse phrase query
-            # To handle phrases, we use "quoted" query if applicable
-            if '"' in query:
+            # Allow boosts in the query
+            try:
                 parsed_query = parser.parse(query)
-            else:
-                # If no quotes, perform an AND search for all terms
-                parsed_query = And([parser.parse(term) for term in query.split()])
+            except Exception as e:
+                self.logger.error(f"Failed to parse query '{query}': {e}")
+                return []
 
             results = searcher.search(parsed_query, limit=top_k)
             retrieved_docs = []
             for hit in results:
-                doc_id = int(hit['id']) - 1  # Adjusting index to match documents list
-                if 0 <= doc_id < len(self.documents):
-                    retrieved_docs.append((hit.score, self.documents[doc_id]))
-            return retrieved_docs
+                try:
+                    doc_id = int(hit['id']) - 1  # Adjusting index to match documents list
+                    if 0 <= doc_id < len(self.documents):
+                        retrieved_docs.append((hit.score, self.documents[doc_id]))
+                except (ValueError, IndexError) as e:
+                    self.logger.error(f"Error retrieving document ID {hit['id']}: {e}")
+        return retrieved_docs
 
-    def query_documents(self, query: str, top_k: int = 5) -> List[Document]:
+    def _construct_bm25_query_from_json(self, query_dict: Dict[str, Any]) -> str:
         """
-        Performs a BM25 query and incorporates phrase matching to retrieve the top_k most relevant documents.
+        Constructs a weighted BM25 query string from a JSON object containing terms and entities.
+        Entities are given higher importance by boosting their weight.
 
         Args:
-            query (str): The search query.
+            query_dict (Dict[str, Any]): Dictionary with 'terms' and 'entities' lists.
+
+        Returns:
+            str: Constructed BM25 query string.
+        """
+        if not isinstance(query_dict, dict):
+            raise ValueError("Input must be a dictionary with 'terms' and 'entities'.")
+
+        terms = query_dict.get("terms", [])
+        entities = query_dict.get("entities", [])
+
+        if not isinstance(terms, list) or not all(isinstance(term, str) for term in terms):
+            raise ValueError("'terms' must be a list of strings.")
+        if not isinstance(entities, list) or not all(isinstance(ent, str) for ent in entities):
+            raise ValueError("'entities' must be a list of strings.")
+
+        # Define boosting factors
+        ENTITY_BOOST = 3
+        TERM_BOOST = 1
+
+        # Apply boosting to entities and terms
+        boosted_entities = [f'"{entity}"^{ENTITY_BOOST}' for entity in entities if entity]
+        boosted_terms = [f'"{term}"^{TERM_BOOST}' for term in terms if term]
+
+        # Combine entities and terms using OR within their groups and AND between groups
+        # Ensuring that documents contain at least one entity and any of the terms
+        if boosted_entities and boosted_terms:
+            bm25_query = f"({' OR '.join(boosted_entities)}) AND ({' OR '.join(boosted_terms)})"
+        elif boosted_entities:
+            bm25_query = ' OR '.join(boosted_entities)
+        elif boosted_terms:
+            bm25_query = ' OR '.join(boosted_terms)
+        else:
+            bm25_query = ""
+
+        self.logger.debug(f"Constructed BM25 Query: {bm25_query}")
+        return bm25_query
+
+    def query_documents(self, query: Dict[str, Any], top_k: int = 5) -> List[Document]:
+        """
+        Performs a BM25 query using separate lists of terms and entities,
+        applying term weighting to prioritize entities.
+
+        Args:
+            query (Dict[str, Any]): The search query as a JSON object with 'terms' and 'entities'.
+                                      Example:
+                                      {
+                                          "terms": ["oyster", "offer", "seafood"],
+                                          "entities": ["Oyster Bar", "Grand Central Terminal"]
+                                      }
             top_k (int, optional): The number of top results to return. Defaults to 5.
 
         Returns:
@@ -210,14 +258,26 @@ class BM25RetrieverAgent:
             self.logger.error("BM25 Retriever or Whoosh Index is not initialized. Cannot perform queries.")
             return []
 
-        try:
-            # BM25 based retrieval
-            bm25_results = self.retriever.invoke(query)[:top_k]
-            self.logger.info(f"BM25 query '{query}' executed successfully. Retrieved {len(bm25_results)} results.")
+        if not isinstance(query, dict):
+            self.logger.error("Query must be a dictionary with 'terms' and 'entities'.")
+            return []
 
-            # Whoosh phrase matching
-            whoosh_results = self._search_whoosh(query, top_k=top_k)
-            self.logger.info(f"Whoosh phrase matching for query '{query}' retrieved {len(whoosh_results)} results.")
+        try:
+            # Construct the BM25 query string from the JSON object
+            bm25_query = self._construct_bm25_query_from_json(query)
+            if not bm25_query:
+                self.logger.error("Constructed BM25 query is empty. Check your 'terms' and 'entities'.")
+                return []
+
+            self.logger.info(f"Constructed BM25 Query: {bm25_query}")
+
+            # BM25 based retrieval
+            bm25_results = self.retriever.invoke(bm25_query)[:top_k]
+            self.logger.info(f"BM25 query executed successfully. Retrieved {len(bm25_results)} results.")
+
+            # Whoosh phrase matching using the weighted BM25 query
+            whoosh_results = self._search_whoosh(query=bm25_query, top_k=top_k)
+            self.logger.info(f"Whoosh phrase matching retrieved {len(whoosh_results)} results.")
 
             # Combine results: Prefer Whoosh results for exact phrase matches
             combined_docs = []
@@ -244,6 +304,9 @@ class BM25RetrieverAgent:
             self.logger.info(f"Combined and de-duplicated results. Total returned: {len(combined_docs)}")
             return combined_docs
 
+        except ValueError as ve:
+            self.logger.error(f"ValueError during query_documents: {ve}")
+            return []
         except Exception as e:
             self.logger.error(f"Failed to execute query '{query}': {e}")
             return []
@@ -252,40 +315,82 @@ class BM25RetrieverAgent:
 def test_module(agent: BM25RetrieverAgent):
     """
     A test method to interactively query the BM25 retriever via the terminal.
+
+    It expects the user to input a JSON-formatted string with 'terms' and 'entities'.
+    Example input:
+    {
+      "terms": ["oyster", "offer", "seafood"],
+      "entities": ["Oyster Bar", "Grand Central Terminal"]
+    }
     """
-    print("=== BM25 Retriever Agent Test Module ===")
-    print("Enter 'exit' to quit.")
+    print("=== Enhanced BM25 Retriever Agent Test Module ===")
+    print("Enter 'exit' or 'quit' to terminate the test.\n")
+    print("Please enter your query as a JSON object with 'terms' and 'entities'.")
+    print("Example:")
+    print("""
+{
+  "terms": ["oyster", "offer", "seafood"],
+  "entities": ["Oyster Bar", "Grand Central Terminal"]
+}
+""")
+
     while True:
         try:
-            query = input("Enter your query: ")
+            user_input = input("Enter your query in JSON format: ")
         except (KeyboardInterrupt, EOFError):
             print("\nExiting test module.")
             break
-        if query.strip().lower() in ['exit', 'quit']:
+
+        if user_input.strip().lower() in ['exit', 'quit']:
             print("Exiting test module.")
             break
-        if not query.strip():
-            print("Empty query. Please enter a valid query.")
+
+        if not user_input.strip():
+            print("Empty query. Please enter a valid JSON object with 'terms' and 'entities'.")
             continue
-        results = agent.query_documents(query=query, top_k=5)
-        if not results:
-            print("No results found.")
+
+        try:
+            # Parse the JSON input
+            query_json = json.loads(user_input)
+            if not isinstance(query_json, dict):
+                raise ValueError("Input must be a JSON object with 'terms' and 'entities'.")
+
+            # Validate presence of 'terms' and 'entities'
+            if 'terms' not in query_json and 'entities' not in query_json:
+                raise ValueError("JSON object must contain at least 'terms' or 'entities'.")
+
+            # Query the BM25RetrieverAgent
+            results = agent.query_documents(query=query_json, top_k=5)
+            if not results:
+                print("No results found or an error occurred.")
+                continue
+
+            print(f"\nTop {len(results)} Relevant Documents:")
+            for idx, doc in enumerate(results, start=1):
+                page = doc.metadata.get('page', 'N/A')
+                source = doc.metadata.get('source', 'Unknown Source')
+                # Log the metadata and content for auditing/debugging
+                agent.logger.info(f"Document {idx}:")
+                agent.logger.info(f"Page: {page}, Source: {source}")
+                agent.logger.info(f"Content: {doc.page_content}")
+                agent.logger.info("-" * 60)
+                # Display a snippet or relevant information to the user
+                snippet_length = 200
+                content = doc.page_content.replace('\n', ' ').strip()
+                snippet = (content[:snippet_length] + '...') if len(content) > snippet_length else content
+                print(f"\nDocument {idx}:")
+                print(f"Page: {page}, Source: {source}")
+                print(f"Snippet: {snippet}")
+                print("-" * 60)
+        except json.JSONDecodeError as jde:
+            print(f"Invalid JSON format: {jde}")
             continue
-        print(f"\nTop {len(results)} Relevant Documents:")
-        for idx, doc in enumerate(results, start=1):
-            page = doc.metadata.get('page', 'N/A')
-            source = doc.metadata.get('source', 'Unknown Source')
-            # Log the metadata and content
-            agent.logger.info(f"Document {idx}:")
-            agent.logger.info(f"Page: {page}, Source: {source}")
-            agent.logger.info(f"Content: {doc.page_content}")
-            agent.logger.info("-" * 60)
-            # Display a snippet or relevant information to the user
-            snippet = (doc.page_content[:200] + '...') if len(doc.page_content) > 200 else doc.page_content
-            print(f"\nDocument {idx}:")
-            print(f"Page: {page}, Source: {source}")
-            print(f"Snippet: {snippet}")
-            print("-" * 60)
+        except ValueError as ve:
+            print(f"Input Error: {ve}")
+            continue
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            continue
 
 
 def main():
@@ -296,7 +401,7 @@ def main():
     load_dotenv(find_dotenv())
 
     # Configuration
-    PDF_DIRECTORY = ".././data/Restaurants_data"       
+    PDF_DIRECTORY = ".././data/Restaurants_data"
     LOG_FILE = "bm25_retriever_agent.log"  # Log file path
     WHOOSH_INDEX_DIR = "whoosh_index"       # Whoosh index directory
 
@@ -305,19 +410,13 @@ def main():
         print(f"PDF directory does not exist: {PDF_DIRECTORY}")
         sys.exit(1)
 
-    # Optionally, clear existing Whoosh index to re-index
-    # Uncomment the following lines if you need to rebuild the index
-    # if os.path.exists(WHOOSH_INDEX_DIR):
-    #     shutil.rmtree(WHOOSH_INDEX_DIR)
-    #     print(f"Cleared existing Whoosh index at: {WHOOSH_INDEX_DIR}")
-
     # Initialize the BM25RetrieverAgent
     agent = BM25RetrieverAgent(
         pdf_directory=PDF_DIRECTORY,
         log_file=LOG_FILE,
         chunk_size=2000,
         chunk_overlap=200,
-        bm25_params={"k1": 1.0, "b": 0.75},
+        bm25_params={"k1": 0.5, "b": 0.75},
         whoosh_index_dir=WHOOSH_INDEX_DIR
     )
 

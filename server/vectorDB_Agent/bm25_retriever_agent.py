@@ -1,11 +1,11 @@
 """
-BM25 Retriever Agent Module with Structured JSON Input for Terms and Entities
+BM25 Retriever Agent Module with Structured JSON Input for Entities Only
 
 This module provides functionality to perform BM25-based document retrieval
-with support for structured JSON input (separated keywords and entities) to optimize search
+with support for structured JSON input containing only entities to optimize search
 results. It allows loading and splitting PDF documents, annotating them with metadata,
 initializing the BM25 retriever, setting up Whoosh indexing, and performing
-queries to retrieve relevant documents based on specified terms and entities.
+queries to retrieve relevant documents based on specified entities.
 """
 
 import os
@@ -23,13 +23,13 @@ from whoosh import index
 from whoosh.fields import Schema, TEXT, ID
 from whoosh.qparser import QueryParser, OrGroup
 from whoosh.analysis import StemmingAnalyzer
-from whoosh.query import Or
 from whoosh.scoring import BM25F
 from query_pre_processor import LLMQueryPreProcessor
 import nltk
 
 # Ensure the necessary NLTK data is downloaded
-nltk.download('punkt_tab')
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
 
 
 class BM25RetrieverAgent:
@@ -124,7 +124,7 @@ class BM25RetrieverAgent:
 
     def _initialize_whoosh_index(self, whoosh_index_dir: str):
         """
-        Initializes the Whoosh index for phrase matching.
+        Initializes the Whoosh index for phrase matching with proximity searches.
 
         Args:
             whoosh_index_dir (str): Directory to store Whoosh index.
@@ -133,7 +133,7 @@ class BM25RetrieverAgent:
             os.mkdir(whoosh_index_dir)
             self.logger.info(f"Created Whoosh index directory at: {whoosh_index_dir}")
 
-        # Define Whoosh schema
+        # Define Whoosh schema with StemmingAnalyzer
         schema = Schema(
             id=ID(stored=True, unique=True),
             content=TEXT(stored=True, analyzer=StemmingAnalyzer()),
@@ -163,20 +163,20 @@ class BM25RetrieverAgent:
 
     def _search_whoosh(self, query: str, top_k: int = 5) -> List[Tuple[float, Document]]:
         """
-        Performs phrase matching using Whoosh and returns relevant documents.
+        Performs phrase matching using Whoosh with proximity search and returns relevant documents.
 
         Args:
-            query (str): The search query with possible boosts.
+            query (str): The search query with possible boosts and proximity operators.
             top_k (int, optional): Number of top results to return. Defaults to 5.
 
         Returns:
             List[Tuple[float, Document]]: List of tuples containing score and Document.
         """
         with self.index.searcher(weighting=BM25F()) as searcher:
-            # Use QueryParser to search in 'content' field
+            # Initialize QueryParser
             parser = QueryParser("content", schema=self.index.schema, group=OrGroup.factory(0.9))
+            # No NearPlugin to be added
 
-            # Allow boosts in the query
             try:
                 parsed_query = parser.parse(query)
             except Exception as e:
@@ -192,118 +192,99 @@ class BM25RetrieverAgent:
                         retrieved_docs.append((hit.score, self.documents[doc_id]))
                 except (ValueError, IndexError) as e:
                     self.logger.error(f"Error retrieving document ID {hit['id']}: {e}")
+            self.logger.info(f"Whoosh search executed successfully. Retrieved {len(retrieved_docs)} results.")
         return retrieved_docs
 
-    def _construct_bm25_query_from_json(self, query_dict: Dict[str, Any]) -> str:
+    def _construct_bm25_query_from_json(self, query_dict: Dict[str, Any], proximity: int = 5) -> str:
         """
-        Constructs a weighted BM25 query string from a JSON object containing terms and entities.
-        Entities are given higher importance by boosting their weight.
+        Constructs a BM25 query string focusing solely on entities.
+        Multi-word entities include both original and reversed word orders to handle variations.
 
         Args:
-            query_dict (Dict[str, Any]): Dictionary with 'terms' and 'entities' lists.
+            query_dict (Dict[str, Any]): Dictionary with 'entities' list.
+            proximity (int): The maximum number of words allowed between terms in a proximity search.
 
         Returns:
             str: Constructed BM25 query string.
         """
         if not isinstance(query_dict, dict):
-            raise ValueError("Input must be a dictionary with 'terms' and 'entities'.")
-
-        terms = query_dict.get("terms", [])
+            raise ValueError("Input must be a dictionary with 'entities'.")
+        
         entities = query_dict.get("entities", [])
-
-        if not isinstance(terms, list) or not all(isinstance(term, str) for term in terms):
-            raise ValueError("'terms' must be a list of strings.")
         if not isinstance(entities, list) or not all(isinstance(ent, str) for ent in entities):
             raise ValueError("'entities' must be a list of strings.")
-
-        # Define boosting factors
+        
+        # Define boosting factor for entities
         ENTITY_BOOST = 3
-        TERM_BOOST = 1
-
-        # Apply boosting to entities and terms
-        boosted_entities = [f'"{entity}"^{ENTITY_BOOST}' for entity in entities if entity]
-        boosted_terms = [f'"{term}"^{TERM_BOOST}' for term in terms if term]
-
-        # Combine entities and terms using OR within their groups and AND between groups
-        # Ensuring that documents contain at least one entity and any of the terms
-        if boosted_entities and boosted_terms:
-            bm25_query = f"({' OR '.join(boosted_entities)}) AND ({' OR '.join(boosted_terms)})"
-        elif boosted_entities:
-            bm25_query = ' OR '.join(boosted_entities)
-        elif boosted_terms:
-            bm25_query = ' OR '.join(boosted_terms)
+        
+        # Function to create proximity queries, including reversed word order for multi-word entities
+        def create_proximity_queries(entity: str, boost: int) -> str:
+            words = entity.strip().split()
+            if len(words) > 1:
+                # Original Order: "curry chicken"~5^3
+                prox_query_1 = f'"{entity}"~{proximity}^{boost}'
+                # Reversed Order: "chicken curry"~5^3
+                reversed_entity = " ".join(reversed(words))
+                prox_query_2 = f'"{reversed_entity}"~{proximity}^{boost}'
+                # Combine both with OR
+                prox_query = f'({prox_query_1} OR {prox_query_2})'
+                return prox_query
+            else:
+                # Single word: "indian"^3
+                return f'"{entity}"^{boost}'
+        
+        # Apply boosting and create queries for all entities
+        boosted_entities = [create_proximity_queries(entity, ENTITY_BOOST) for entity in entities if entity]
+        
+        # Combine all boosted entities with OR (documents matching any entity)
+        if boosted_entities:
+            bm25_query = " OR ".join(boosted_entities)
         else:
             bm25_query = ""
-
+        
+        self.logger.debug(f"Boosted Entities: {boosted_entities}")
         self.logger.debug(f"Constructed BM25 Query: {bm25_query}")
         return bm25_query
 
     def query_documents(self, query: Dict[str, Any], top_k: int = 5) -> List[Document]:
         """
-        Performs a BM25 query using separate lists of terms and entities,
-        applying term weighting to prioritize entities.
+        Performs a BM25 query using only entities to retrieve documents.
 
         Args:
-            query (Dict[str, Any]): The search query as a JSON object with 'terms' and 'entities'.
+            query (Dict[str, Any]): The search query as a JSON object with 'entities'.
                                       Example:
                                       {
-                                          "terms": ["oyster", "offer", "seafood"],
-                                          "entities": ["Oyster Bar", "Grand Central Terminal"]
+                                          "entities": ["indian", "curry chicken"]
                                       }
             top_k (int, optional): The number of top results to return. Defaults to 5.
 
         Returns:
-            List[Document]: A list of Document objects ranked by combined relevance.
+            List[Document]: A list of Document objects ranked by relevance.
         """
         if not self.retriever or not hasattr(self, 'index'):
             self.logger.error("BM25 Retriever or Whoosh Index is not initialized. Cannot perform queries.")
             return []
 
         if not isinstance(query, dict):
-            self.logger.error("Query must be a dictionary with 'terms' and 'entities'.")
+            self.logger.error("Query must be a dictionary with 'entities'.")
             return []
 
         try:
             # Construct the BM25 query string from the JSON object
             bm25_query = self._construct_bm25_query_from_json(query)
             if not bm25_query:
-                self.logger.error("Constructed BM25 query is empty. Check your 'terms' and 'entities'.")
+                self.logger.error("Constructed BM25 query is empty. Check your 'entities'.")
                 return []
 
             self.logger.info(f"Constructed BM25 Query: {bm25_query}")
 
-            # BM25 based retrieval
-            bm25_results = self.retriever.invoke(bm25_query)[:top_k]
+            # BM25-based retrieval using Whoosh
+            bm25_results = self._search_whoosh(query=bm25_query, top_k=top_k)
             self.logger.info(f"BM25 query executed successfully. Retrieved {len(bm25_results)} results.")
 
-            # Whoosh phrase matching using the weighted BM25 query
-            whoosh_results = self._search_whoosh(query=bm25_query, top_k=top_k)
-            self.logger.info(f"Whoosh phrase matching retrieved {len(whoosh_results)} results.")
+            self.logger.info(f"Retrieved {len(bm25_results)} BM25 results.")
 
-            # Combine results: Prefer Whoosh results for exact phrase matches
-            combined_docs = []
-            seen_sources = set()
-
-            # Add Whoosh results first
-            for score, doc in whoosh_results:
-                key = (doc.metadata.get('source'), doc.metadata.get('page'))
-                if key not in seen_sources:
-                    combined_docs.append(doc)
-                    seen_sources.add(key)
-                if len(combined_docs) >= top_k:
-                    break
-
-            # Fill remaining slots with BM25 results
-            for doc in bm25_results:
-                key = (doc.metadata.get('source'), doc.metadata.get('page'))
-                if key not in seen_sources:
-                    combined_docs.append(doc)
-                    seen_sources.add(key)
-                if len(combined_docs) >= top_k:
-                    break
-
-            self.logger.info(f"Combined and de-duplicated results. Total returned: {len(combined_docs)}")
-            return combined_docs
+            return [doc for score, doc in bm25_results]
 
         except ValueError as ve:
             self.logger.error(f"ValueError during query_documents: {ve}")
@@ -317,8 +298,9 @@ def test_module(agent: BM25RetrieverAgent):
     """
     A test method to interactively query the BM25 retriever via the terminal.
     """
-    print("=== Enhanced BM25 Retriever Agent Test Module ===")
+    print("=== BM25 Retriever Agent Test Module ===")
     print("Enter 'exit' or 'quit' to terminate the test.\n")
+    load_dotenv(find_dotenv())
     os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
     os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
     os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
@@ -351,14 +333,14 @@ def test_module(agent: BM25RetrieverAgent):
             continue
 
         try:
-            # call the query_pre_processor.py file to process the query
-            query_json =query_pre_processor.process_query(user_input)
+            # Process the query using the query pre-processor to extract entities
+            query_json = query_pre_processor.process_query(user_input)
             if not isinstance(query_json, dict):
-                raise ValueError("Input must be a JSON object with 'terms' and 'entities'.")
+                raise ValueError("Input must be a JSON object with 'entities'.")
 
-            # Validate presence of 'terms' and 'entities'
-            if 'terms' not in query_json and 'entities' not in query_json:
-                raise ValueError("JSON object must contain at least 'terms' or 'entities'.")
+            # Validate presence of 'entities'
+            if 'entities' not in query_json or not query_json['entities']:
+                raise ValueError("JSON object must contain at least 'entities'.")
 
             # Query the BM25RetrieverAgent
             results = agent.query_documents(query=query_json, top_k=5)

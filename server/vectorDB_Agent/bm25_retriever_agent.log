@@ -1,0 +1,228 @@
+2024-10-03 17:15:30,693 - INFO - Loading PDF file: .././data/Restaurants_data\2024-National-Meeting-Restaurant-Guide.pdf
+2024-10-03 17:21:29,105 - INFO - Loading PDF file: .././data/Restaurants_data\2024-National-Meeting-Restaurant-Guide.pdf
+2024-10-03 17:21:29,328 - INFO - Loaded and split 10 documents from .././data/Restaurants_data\2024-National-Meeting-Restaurant-Guide.pdf.
+2024-10-03 17:21:29,328 - INFO - Loading PDF file: .././data/Restaurants_data\A Guide to New York City_Bumble and bumble University Edition.pdf
+2024-10-03 17:21:29,458 - INFO - Loaded and split 17 documents from .././data/Restaurants_data\A Guide to New York City_Bumble and bumble University Edition.pdf.
+2024-10-03 17:21:29,458 - INFO - Loading PDF file: .././data/Restaurants_data\big_bear_Rice_Noodles.pdf
+2024-10-03 17:21:29,484 - INFO - Loaded and split 5 documents from .././data/Restaurants_data\big_bear_Rice_Noodles.pdf.
+2024-10-03 17:21:29,484 - INFO - Loading PDF file: .././data/Restaurants_data\Friedman's - Chelsea Market Restaurant.pdf
+2024-10-03 17:21:29,529 - INFO - Loaded and split 5 documents from .././data/Restaurants_data\Friedman's - Chelsea Market Restaurant.pdf.
+2024-10-03 17:21:29,529 - INFO - Loading PDF file: .././data/Restaurants_data\Gui Kitchen reviews.pdf
+2024-10-03 17:21:29,613 - INFO - Loaded and split 8 documents from .././data/Restaurants_data\Gui Kitchen reviews.pdf.
+2024-10-03 17:21:29,613 - INFO - Loading PDF file: .././data/Restaurants_data\Local New Yorker's Secret List_by Cherie Chen.pdf
+2024-10-03 17:21:29,657 - INFO - Loaded and split 9 documents from .././data/Restaurants_data\Local New Yorker's Secret List_by Cherie Chen.pdf.
+2024-10-03 17:21:29,657 - INFO - Loading PDF file: .././data/Restaurants_data\My First Time at Gui Kitchen.pdf
+2024-10-03 17:21:29,670 - INFO - Loaded and split 3 documents from .././data/Restaurants_data\My First Time at Gui Kitchen.pdf.
+2024-10-03 17:21:29,670 - INFO - Loading PDF file: .././data/Restaurants_data\New York Gui kitchen Diary.pdf
+2024-10-03 17:21:29,686 - INFO - Loaded and split 3 documents from .././data/Restaurants_data\New York Gui kitchen Diary.pdf.
+2024-10-03 17:21:29,686 - INFO - Loading PDF file: .././data/Restaurants_data\Restaurant_Guide_to_NYC.pdf
+2024-10-03 17:21:31,572 - INFO - Loaded and split 256 documents from .././data/Restaurants_data\Restaurant_Guide_to_NYC.pdf.
+2024-10-03 17:21:31,575 - INFO - Loading PDF file: .././data/Restaurants_data\Top 10 Must Reserve Restaurants in New York City.pdf
+2024-10-03 17:21:31,586 - INFO - Loaded and split 1 documents from .././data/Restaurants_data\Top 10 Must Reserve Restaurants in New York City.pdf.
+2024-10-03 17:21:31,586 - INFO - Total documents loaded and split: 317
+2024-10-03 17:22:15,617 - INFO - Loading PDF file: .././data/Restaurants_data\2024-National-Meeting-Restaurant-Guide.pdf
+2024-10-03 17:22:15,820 - INFO - Loaded and split 10 documents from .././data/Restaurants_data\2024-National-Meeting-Restaurant-Guide.pdf.
+2024-10-03 17:22:15,820 - INFO - Loading PDF file: .././data/Restaurants_data\A Guide to New York City_Bumble and bumble University Edition.pdf
+2024-10-03 17:22:15,951 - INFO - Loaded and split 17 documents from .././data/Restaurants_data\A Guide to New York City_Bumble and bumble University Edition.pdf.
+2024-10-03 17:22:15,951 - INFO - Loading PDF file: .././data/Restaurants_data\big_bear_Rice_Noodles.pdf
+2024-10-03 17:22:15,983 - INFO - Loaded and split 5 documents from .././data/Restaurants_data\big_bear_Rice_Noodles.pdf.
+2024-10-03 17:22:15,983 - INFO - Loading PDF file: .././data/Restaurants_data\Friedman's - Chelsea Market Restaurant.pdf
+2024-10-03 17:22:16,023 - INFO - Loaded and split 5 documents from .././data/Restaurants_data\Friedman's - Chelsea Market Restaurant.pdf.
+2024-10-03 17:22:16,023 - INFO - Loading PDF file: .././data/Restaurants_data\Gui Kitchen reviews.pdf
+2024-10-03 17:22:16,110 - INFO - Loaded and split 8 documents from .././data/Restaurants_data\Gui Kitchen reviews.pdf.
+2024-10-03 17:22:16,110 - INFO - Loading PDF file: .././data/Restaurants_data\Local New Yorker's Secret List_by Cherie Chen.pdf
+2024-10-03 17:22:16,153 - INFO - Loaded and split 9 documents from .././data/Restaurants_data\Local New Yorker's Secret List_by Cherie Chen.pdf.
+2024-10-03 17:22:16,153 - INFO - Loading PDF file: .././data/Restaurants_data\My First Time at Gui Kitchen.pdf
+2024-10-03 17:22:16,170 - INFO - Loaded and split 3 documents from .././data/Restaurants_data\My First Time at Gui Kitchen.pdf.
+2024-10-03 17:22:16,170 - INFO - Loading PDF file: .././data/Restaurants_data\New York Gui kitchen Diary.pdf
+2024-10-03 17:22:16,181 - INFO - Loaded and split 3 documents from .././data/Restaurants_data\New York Gui kitchen Diary.pdf.
+2024-10-03 17:22:16,181 - INFO - Loading PDF file: .././data/Restaurants_data\Restaurant_Guide_to_NYC.pdf
+2024-10-03 17:22:18,066 - INFO - Loaded and split 256 documents from .././data/Restaurants_data\Restaurant_Guide_to_NYC.pdf.
+2024-10-03 17:22:18,068 - INFO - Loading PDF file: .././data/Restaurants_data\Top 10 Must Reserve Restaurants in New York City.pdf
+2024-10-03 17:22:18,078 - INFO - Loaded and split 1 documents from .././data/Restaurants_data\Top 10 Must Reserve Restaurants in New York City.pdf.
+2024-10-03 17:22:18,078 - INFO - Total documents loaded and split: 317
+2024-10-03 17:22:18,096 - INFO - Created new Whoosh index.
+2024-10-03 17:22:18,400 - INFO - Whoosh indexing completed.
+2024-10-03 17:22:18,404 - INFO - BM25 Retriever and Whoosh Index initialized successfully.
+2024-10-03 17:22:44,371 - INFO - Processing query: I like to have some spicy noodles, prefer chinese cuisine
+2024-10-03 17:22:45,812 - INFO - LLM response: ```json
+{
+  "entities": ["Chinese"]
+}
+```
+2024-10-03 17:22:45,812 - INFO - Extracted entities: ['Chinese']
+2024-10-03 17:22:45,812 - INFO - Constructed BM25 Query: "Chinese"^3
+2024-10-03 17:22:45,826 - INFO - Whoosh search executed successfully. Retrieved 5 results.
+2024-10-03 17:22:45,826 - INFO - BM25 query executed successfully. Retrieved 5 results.
+2024-10-03 17:22:45,828 - INFO - Retrieved 5 BM25 results.
+2024-10-03 17:22:45,828 - INFO - Document 1:
+2024-10-03 17:22:45,828 - INFO - Page: 251, Source: Restaurant_Guide_to_NYC.pdf
+2024-10-03 17:22:45,829 - INFO - Content: Grade: B+, date: March 2013, Comments: Chinese.
+Very tasty.
+The green 
+beans with pork were the best dish; the steamed buns were a bit boring.
+Servings were s ubstantial; this is good value for the price.
+The waiter 
+who took our order was surly, but the rest of the staff was pleasant 
+enough.
+Restaurant: Wu Liang Ye West 40s;  
+Neighborhood: West 40s;  
+Grade: A -, date: October 2018, Comments: Chinese.
+Tasty food, g ood-
+sized portions, a bit pricey but not too expensive.
+Try the Grand Marnier 
+prawns.
+Restaurant: Xian Famous Foods Chinatown;  
+Neighborhood: Chinatown;  
+Grade: A, date: September 2014, Comments: Chinese.
+Interesting and 
+intensively flavored food.
+The noodl es were a special treat, as was the 
+spicy lamb burger.
+Servings were ample, and prices were dirt cheap.
+It’s 
+really a lot of fun, but note that it is seriously no frills.
+By no frills, I 
+mean no waiters, no free water, no reservations, plastic forks, and 
+communal tables.
+Of course, no credit cards either.
+Restaurant: Xing Hell’s Kitchen;
+2024-10-03 17:22:45,830 - INFO - ------------------------------------------------------------
+2024-10-03 17:22:45,830 - INFO - Document 2:
+2024-10-03 17:22:45,830 - INFO - Page: 165, Source: Restaurant_Guide_to_NYC.pdf
+2024-10-03 17:22:45,830 - INFO - Content: Restaurant: Miriam;  
+Neighborhood: Brooklyn;  
+Grade: A, Date: March 2012, Comments: Middle Eastern.
+Fabulous.
+Worth the trip to Brooklyn.
+Restaurant: Miss Lily’s;  
+Neighborhood: West Village;  
+Grade: A -, Date: January 2016, Comments: Caribbean.
+Ample portions 
+of tasty food at a reasonable price.
+The co rn on the cob appetizer and 
+the jerk chicken were exceptional.
+Pleasant service; the atmosphere is 
+fun and noisy.
+Restaurant: Mission Chinese Food;  
+Neighborhood: Lower East Side;  
+Grade: A -, Date: June 2018, Comments: Chinese.
+Tasty, spicy and 
+innovative S zechuan food.
+Try the Kung Pao Pastrami and the Green Tea 
+Noodles.
+Service was exceptionally pleasant and efficient.
+Restaurant: Miznon;  
+Neighborhood: Chelsea;  
+Grade: A, Date: May 2019, Comments: Israeli.
+Upscale versions of 
+middle eastern dishes.
+The foo d was interesting, tasty, and not very
+2024-10-03 17:22:45,831 - INFO - ------------------------------------------------------------
+2024-10-03 17:22:45,832 - INFO - Document 3:
+2024-10-03 17:22:45,832 - INFO - Page: 193, Source: Restaurant_Guide_to_NYC.pdf
+2024-10-03 17:22:45,832 - INFO - Content: creative..
+There was a lot of stuff on the menu that didn’t appeal to me 
+(e.g., pig ’s head), but there were plenty of dishes for those with more 
+conventional tastes.
+Grade: A+, Date: January 2017, Comments: Everything was tasty.
+Try 
+the noodles with chicken (a little bit on the spicy side), the ribs, and the 
+prawns.
+Also loved the coconu t rice.
+The service was super efficient.
+The 
+music was too loud, but the food was so good that I didn’t care.
+Restaurant: Pinch Chinese;  
+Neighborhood: SoHo;  
+Grade: A, Date: June 2017, Comments: Chinese.
+This place is best 
+known for its soup dumplings, but  I thought that the cumin ribs and 
+dan-dan noodles were really great —creative and tasty.
+Service was very 
+pleasant, although a bit slow.
+Restaurant: Pio Pio;  
+Neighborhood: East 40s;  
+Grade: A, Date: September 2012, Comments: Peruvian.
+Simple and 
+hearty foo d, good prices.
+Try the Pio chicken.
+Service was pleasant and 
+efficient.
+I wish the music hadn't been so loud, but it was still possible 
+to have a conversation.
+This place is certainly worth a visit.
+2024-10-03 17:22:45,833 - INFO - ------------------------------------------------------------
+2024-10-03 17:22:45,833 - INFO - Document 4:
+2024-10-03 17:22:45,833 - INFO - Page: 9, Source: 2024-National-Meeting-Restaurant-Guide.pdf
+2024-10-03 17:22:45,833 - INFO - Content: 9 
+ Ocean Prime: 6 private spaces for groups of 14, 18, 40, 48  
+Cuisine:  Seafood  
+123 W 52nd Street between 6th and 7th Avenue  
+(212) 956- 1404  
+(Approximately a 3-minute walk from the hotel)  
+$$$$  
+  
+The Modern:  The Modern's  Private Dining Room can accommodate a maximum of 30 guests at one long table, 
+64 guests seated, or 80 guests for a standing cocktail reception.
+Cuisine : French/American  
+9 West 53rd Street, between 5th and 6th Avenue  
+(212) 333- 1220  
+(Less than a 5 -minute walk from the hotel)  
+$$$$  
+  
+Oceana:  Four private rooms with a prix fixe menu.
+Moderate to high price point  
+Cuisine : Seafood  
+120 West 49th Street and 6th Avenue  
+(212) 759-5941  
+(Less than a 10 -minute walk from the hotel)  
+$$$$
+ 
+TOP LOW -NOISE RESTAURANTS  
+For more information about Sound Print and to see a complete restaurant list visit www.soundprint.co/quiet -lists/nyc/   
+ 
+Average sound level of 66 decibels is considered a quiet noise level.
+Utsav Restaurant:  Authentic Indo -Chinese here in Midtown offers a captivating culinary journey led by 
+Nandita Khanna .
+Cuisine : Indian  
+1180 Avenue of the Americas, between 46th and 47th Streets (Approximately an 8 -minute walk from the hotel)  
+(212) 575- 2525  
+73 D ecibels  
+$$ 
+  
+Tang Pavilion:  Classic Chinese restaurant specializing in Shanghainese food .
+Cuisine: Asian  
+65 West 55th Street, between 5th and 6th Avenues  
+(212) 956- 6888  
+(Approximately a 3 minute walk from the hotel)  
+66 Decibels  
+$$
+2024-10-03 17:22:45,835 - INFO - ------------------------------------------------------------
+2024-10-03 17:22:45,835 - INFO - Document 5:
+2024-10-03 17:22:45,835 - INFO - Page: 94, Source: Restaurant_Guide_to_NYC.pdf
+2024-10-03 17:22:45,835 - INFO - Content: Grade: C+, Date: November 2011;  
+Comments: Chinese.
+Not very interesting and not very tasty.
+Restaurant: Grano Trattoria;  
+Neighborhood: West Village;  
+Grade: B+, Date: June 2011;  
+Comments: Italian.
+Food was tasty, although not particularly  
+interesting.
+Service was pleasant and attentive.
+Restaurant: Gray’s Papaya;  
+Neighborhood: Upper West;  
+Grade: B+, Date: August 2008;  
+Comments: Hot dogs.
+What you see  is what you get —a very good  
+hot dog, not very expensive.
+And that’s it.
+Restaurant: Greek Kitchen;  
+Neighborhood: Upper West;  
+Grade: B+, Date: December 2006;  
+Comments: Greek.
+This unpretentious neighborhood restaurant  
+serves substantial quantities of tas ty, solid food at a  
+reasonable price.
+2024-10-03 17:22:45,835 - INFO - ------------------------------------------------------------

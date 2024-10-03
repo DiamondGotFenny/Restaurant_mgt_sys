@@ -28,6 +28,7 @@ from query_pre_processor import LLMQueryPreProcessor
 import nltk
 
 # Ensure the necessary NLTK data is downloaded
+nltk.download('punkt_tab')
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 

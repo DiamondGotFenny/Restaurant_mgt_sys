@@ -2,16 +2,17 @@ import os
 import sys
 from dotenv import load_dotenv, find_dotenv
 from vector_store_agent import VectorStoreAgent
-from llm_processor import LLMProcessor
+from llm_post_processor import LLMProcessor
 from logger_config import setup_logger
+from combined_keyword_retriever import CombinedKeywordRetriever
 
 def vectorDB_Engine():
     """
     Main function to initialize the agent and start the interactive test module.
     """
-    # Configuration - Replace these with your actual paths and Azure OpenAI credentials
+   
     _ = load_dotenv(find_dotenv())
-    LOG_FILE = ".././logs/vector_store_agent.log" 
+    LOG_FILE = ".././logs/hybrid_search_agent.log" 
     
    
     os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -19,15 +20,15 @@ def vectorDB_Engine():
     os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
     os.environ["AZURE_OPENAI_EMBEDDING_MODEL"] = os.getenv("OPENAI_EMBEDDING_MODEL")
     os.environ["AZURE_OPENAI_4O"] = os.getenv("OPENAI_MODEL_4o")
-    # Configuration - Replace these with your actual paths and Azure OpenAI credentials
-    PDF_DIRECTORY = ".././data/Restaurants_data"  # e.g., "./pdfs"
+  
+    PDF_DIRECTORY = ".././data/Restaurants_data"  
     PERSIST_DIRECTORY = ".././data/vectorDB/chroma"
     AZURE_OPENAI_API_KEY = os.environ["AZURE_OPENAI_API_KEY"]
     AZURE_OPENAI_ENDPOINT = os.environ["AZURE_OPENAI_ENDPOINT"] 
     AZURE_OPENAI_EMBEDDING = os.environ["AZURE_OPENAI_EMBEDDING_MODEL"]
     AZURE_OPENAI_4O = os.environ["AZURE_OPENAI_4o"]
     AZURE_API_VERSION = os.environ["AZURE_OPENAI_API_VERSION"]
-
+    WHOOSH_INDEX_DIR = "whoosh_index" 
     # Setup logger
     logger = setup_logger(LOG_FILE)
 
@@ -51,13 +52,27 @@ def vectorDB_Engine():
             sys.exit(1)
 
     # Initialize the VectorStoreAgent
-    agent = VectorStoreAgent(
+    agent_vector_search = VectorStoreAgent(
         pdf_directory=PDF_DIRECTORY,
         persist_directory=PERSIST_DIRECTORY,
         azure_openai_api_key=AZURE_OPENAI_API_KEY,
         azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
         azure_openai_embedding_deployment=AZURE_OPENAI_EMBEDDING,
         log_file=LOG_FILE
+    )
+    # Initialize the CombinedKeywordRetriever
+    agent_keyword_search = CombinedKeywordRetriever(
+        pdf_directory=PDF_DIRECTORY,
+        log_file_pre_processor="llm_processor.log",
+        log_file_retriever="bm25_retriever_agent.log",
+        chunk_size=2000,
+        chunk_overlap=200,
+        bm25_params={"k1": 0.5, "b": 0.75},
+        whoosh_index_dir=WHOOSH_INDEX_DIR,
+        azure_openai_api_key=AZURE_OPENAI_API_KEY,
+        azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
+        azure_openai_deployment=AZURE_OPENAI_4O,
+        azure_api_version=AZURE_API_VERSION
     )
 
     # Initialize the LLMProcessor
@@ -70,8 +85,28 @@ def vectorDB_Engine():
     )
 
     def qa_chain(query):
-        raw_results = agent.query(query)
-        summary = llm_processor.process_query_response(query, raw_results)
+        raw_vector_results = agent_vector_search.query(query)
+        #log the full raw results
+        logger.info(f"Raw raw_vector_results: {raw_vector_results}")
+        raw_keyword_results= agent_keyword_search.retrieve_documents(query, top_k=5)
+        logger.info(f"Raw raw_keyword_results: {raw_keyword_results}")
+        #combined the two results
+        combined_results = raw_vector_results + raw_keyword_results
+        
+        # Remove duplicates based on normalized page content
+        seen_contents = set()
+        unique_documents = []
+
+        for doc in combined_results:
+            # Normalize the page_content
+            normalized_content = doc.page_content.strip().lower()
+            
+            if normalized_content not in seen_contents:
+                unique_documents.append(doc)
+                seen_contents.add(normalized_content)
+                
+        logger.info(f"Combined raw results: {unique_documents}")
+        summary = llm_processor.process_query_response(query, unique_documents)
         return summary
 
     def test_module():

@@ -65,6 +65,7 @@ class LLMQueryPreProcessor:
    - **Restaurant Names:** Specific names of restaurants.
    - **Locations:** Neighborhoods, landmarks, or areas in New York (e.g., "Grand Central Terminal", "Upper West Side").
    - **Cuisine Types:** General types of cuisine using single words (e.g., "Indian", "Chinese").
+   - **Specific Items:** Specific dishes or items (e.g., "curry chicken", "sushi","steak").
 
 2. **Exclude:**
    - **Generic Terms:** Words like "restaurant", "food", "eatery", etc.

@@ -1,4 +1,4 @@
-# llm_processor.py
+# llm_post_processor.py
 
 import os
 from typing import List
@@ -41,16 +41,37 @@ class LLMProcessor:
         self.prompt = PromptTemplate(
             input_variables=["query", "documents"],
             template="""
-You are an intelligent assistant. Based on the user query and the provided documents, extract the most relevant information that directly answers the query. \
-just ignore the unrelated information, but return all related information.\
-don't miss the key entities infomation, such as address, phone number, business hours etc.\ 
-don't try to make up an answer don't generate hallucination. only extract the information from context or Retrieved Documents.
+You are a data processing assistant. your task is extracting and organizing facts and relevant information from provided documents based on user queries. Adhere to the following guidelines:
+
+**1. Understand the Query:
+Carefully read and comprehend the user’s query to determine the specific information being requested.** \
+**2. Extract Relevant Information:
+Analyze the combined documents to identify and extract all information directly related to the user’s query.**\
+Ensure inclusion of key entities such as addresses, phone numbers, business hours, email addresses, websites, and other pertinent details.**\
+**3. Exclude Unrelated Information:
+Disregard any information that does not directly pertain to the user’s query.
+Maintain focus on relevance to avoid cluttering the summary with extraneous details.** \
+**4. Maintain Accuracy:
+Do not fabricate or infer information. Only use data explicitly present in the provided documents.
+Avoid generating any content that is not supported by the source material to prevent hallucinations.**\
+**5. Organize the Output:
+Present the extracted information in a clear, concise, and structured format.
+Use bullet points, headings, or tables as necessary to enhance readability and organization.**\
+**6. Quality Assurance:
+Double-check the extracted information to ensure completeness and accuracy.
+Make sure no key entities related to the query are omitted.**\
 
 **User Query:**
 {query}
 
 **Retrieved Documents:**
 {documents}
+
+**Notes:
+Ensure all extracted details are accurate and directly related to the query.
+Maintain a professional and neutral tone.
+If certain key entities are not available in the documents, indicate them as "Not Provided" or omit based on relevance.
+you should also provide the document name and page of the source, so that user can judge the credibility **
 
 **Summary of Relevant Information:**
 """
@@ -81,7 +102,8 @@ don't try to make up an answer don't generate hallucination. only extract the in
             return "Insufficient information found to answer your query."
 
         # Concatenate the content of all retrieved documents
-        documents_content = "\n\n".join([doc.page_content for doc in raw_results])
+        #add source and page number to the content
+        documents_content = "\n\n".join([f"Source: {doc.metadata['source']}\nPage: {doc.metadata['page']}\n{doc.page_content}" for doc in raw_results])
 
         try:
             # Use the RunnableSequence to process the documents

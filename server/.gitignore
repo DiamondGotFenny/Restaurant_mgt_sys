@@ -3,3 +3,7 @@ data/
 logs/
 vectorDB_Agent/__pycache__/
 resAgentV/
+whoosh_index/
+*.log
+*.wav
+*.pyc

@@ -1,3 +1,4 @@
+#vector_store_agent.py
 import os
 import glob
 import sys
@@ -15,7 +16,7 @@ class VectorStoreAgent:
         persist_directory: str,
         azure_openai_api_key: str,
         azure_openai_endpoint: str,
-        azure_openai_deployment: str,
+        azure_openai_embedding_deployment: str,
         log_file: str,
     ):
         """
@@ -40,7 +41,7 @@ class VectorStoreAgent:
             model="text-embedding-3-small",
             api_key=azure_openai_api_key,
             azure_endpoint=azure_openai_endpoint,
-            deployment=azure_openai_deployment,
+            deployment=azure_openai_embedding_deployment,
         )
         self.vector_store = self._load_or_create_vector_store()
     def _load_or_create_vector_store(self) -> Chroma:
@@ -178,7 +179,7 @@ def main():
         persist_directory=PERSIST_DIRECTORY,
         azure_openai_api_key=AZURE_OPENAI_API_KEY,
         azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
-        azure_openai_deployment=AZURE_OPENAI_DEPLOYMENT,
+        azure_openai_embedding_deployment=AZURE_OPENAI_DEPLOYMENT,
         log_file="vector_store_agent_test.log"
     )
     # Start the test module

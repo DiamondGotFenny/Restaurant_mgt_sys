@@ -41,16 +41,16 @@ class LLMProcessor:
         self.prompt = PromptTemplate(
             input_variables=["query", "documents"],
             template="""
-You are a data processing assistant. your task is extracting and organizing facts and relevant information from provided documents based on user queries. Adhere to the following guidelines:
+You are a data processing assistant. your task is extracting and organizing relevant information from provided documents based on user queries. The information will be used for passing to next data processor, so lossless informatition is important at this stage. Adhere to the following guidelines:
 
 **1. Understand the Query:
 Carefully read and comprehend the user’s query to determine the specific information being requested.** \
 **2. Extract Relevant Information:
-Analyze the combined documents to identify and extract all information directly related to the user’s query.**\
+Analyze the combined documents to identify and extract all information directly related to the user’s query. \
+do not do any summarization or abstract, just retrieve full relevant information from that chunk.**\
 Ensure inclusion of key entities such as addresses, phone numbers, business hours, email addresses, websites, and other pertinent details.**\
 **3. Exclude Unrelated Information:
-Disregard any information that does not directly pertain to the user’s query.
-Maintain focus on relevance to avoid cluttering the summary with extraneous details.** \
+Disregard any information that does not directly pertain to the user’s query.** \
 **4. Maintain Accuracy:
 Do not fabricate or infer information. Only use data explicitly present in the provided documents.
 Avoid generating any content that is not supported by the source material to prevent hallucinations.**\
@@ -73,7 +73,7 @@ Maintain a professional and neutral tone.
 If certain key entities are not available in the documents, indicate them as "Not Provided" or omit based on relevance.
 you should also provide the document name and page of the source, so that user can judge the credibility **
 
-**Summary of Relevant Information:**
+* Relevant Information:**
 """
         )
         self.output_parser = StrOutputParser()

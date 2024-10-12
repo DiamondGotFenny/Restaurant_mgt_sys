@@ -69,9 +69,10 @@ class LLMQueryPreProcessor:
    - **Specific Items:** Specific dishes or items (e.g., "curry chicken", "sushi","steak").
 
 2. **Exclude:**
-   - **Generic Terms:** Words like "restaurant", "food", "eatery", etc.
+   - **Generic Terms:** Words like "restaurant", "food", "eatery", "cuisine" etc.
    - **Specific Items that user says that don't want** e.g., "no curry chicken", "I don't like oyster", then don't put 'curry chicken' or 'oyster' in the keyword list.
    - **Descriptive Phrases:** Phrases that describe preferences without adding unique information.
+   -**New York City:** The city name itself or general terms like "NYC" or "New York" or "Big Apple".
 
 3. **Formatting:**
    - Provide the output as a JSON object with a single key `"entities"` mapping to a list of relevant entities.

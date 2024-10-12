@@ -1,0 +1,679 @@
+{
+  "qa_pairs": [
+    {
+      "id": 1,
+      "question": "I'm visiting NYC for a long weekend and want to try diverse cuisines without making reservations. Suggest a Saturday lunch and Sunday brunch spot, one in Midtown and one in the Lower East Side, considering both food quality and wait times.",
+      "question_keywords": ["Midtown", "Lower East Side", "Diverse"],
+      "answer_keywords": [
+        "Beyond Sushi",
+        "Clinton Street Baking Company",
+        "La Esquina",
+        "Sweet Chick",
+        "Vegan",
+        "Mexican",
+        "Chicken and Waffles",
+        "Pancakes"
+      ],
+      "restaurants": {
+        "Beyond Sushi": ["Beyond Sushi", "Vegan", "Sushi"],
+        "Clinton Street Baking Company": [
+          "Clinton Street Baking Company",
+          "Pancakes"
+        ],
+        "La Esquina": ["La Esquina", "Mexican"],
+        "Sweet Chick": ["Sweet Chick", "Chicken and Waffles"]
+      },
+      "answers": {
+        "A1": "For a diverse Saturday lunch and Sunday brunch experience in New York City, here are my recommendations based on food quality and wait times:\n\n**Midtown:**\n\n**Saturday Lunch:**\n\n*Beyond Sushi (Vegan)* - Located at 62 West 56th Street, between 5th and 6th Avenues. This vegan restaurant offers a unique twist on sushi by using fruits and vegetables instead of fish. It is known for quick service making it a good option if avoiding long waits.\n\n**Sunday Brunch:**\n*Clinton Street Baking Company* - 4 Clinton Street, renowned for its perfect pancakes and other great breakfast items. Although the wait can be more than an hour during peak times, the food quality is exceptional. Arriving early can help avoid long waits.\n\n**Lower East Side:**\n\n**Saturday Lunch:**\n*La Esquina* - Offers a take-out spot and a sit-down restaurant. Located at 106 Kenmare Street, it provides excellent Mexican food in an unusual setting. Be prepared for a lively atmosphere, but the food quality is worth the experience.\n\n**Sunday Brunch:**\n*Sweet Chick* - Famous for its chicken and waffles. Located on the Lower East Side, it's a great spot for a hearty brunch with a lively yet cozy atmosphere. Avoid peak times for shorter wait periods.\n\nThese establishments provide a variety of cuisines, and they are well-regarded for both their food quality and manageable wait times if planned properly."
+      }
+    },
+    {
+      "id": 2,
+      "question": "I have a $50 budget for dinner in Chelsea Market. What's the best value meal I can get, considering both food quality and portion size?",
+      "question_keywords": ["Budget", "Chelsea Market"],
+      "answer_keywords": [
+        "Amy’s Bread",
+        "Giovanni Rana",
+        "Los Tacos No. 1",
+        "The Lobster Place",
+        "Friedman's Lunch",
+        "Mighty Quinn's BBQ",
+        "Cull and Pistol",
+        "Margon",
+        "44 & X",
+        "Cuban Sandwiches",
+        "Homestyle Breakfast",
+        "Ramen"
+      ],
+      "restaurants": {
+        "Amy’s Bread": ["Amy’s Bread", "Bread", "Pastries", "Sandwiches"],
+        "Giovanni Rana": ["Giovanni Rana", "Pasta", "Italian"],
+        "Los Tacos No. 1": ["Los Tacos No. 1", "Tacos", "Quesadillas"],
+        "The Lobster Place": [
+          "The Lobster Place",
+          "Seafood",
+          "Sushi",
+          "Chowder"
+        ],
+        "Friedman's Lunch": [
+          "Friedman's Lunch",
+          "Mac N’ Cheese",
+          "Smoothies",
+          "Juices"
+        ],
+        "Mighty Quinn's BBQ": [
+          "Mighty Quinn's BBQ",
+          "Pulled Pork",
+          "Brisket",
+          "Ribs",
+          "Chicken"
+        ],
+        "Cull and Pistol": ["Cull and Pistol", "Oyster Bar", "Seafood"],
+        "Margon": ["Margon", "Cuban Sandwiches"],
+        "44 & X": ["44 & X", "American", "Seasonal Menu"]
+      },
+      "answers": {
+        "A1": "Amy’s Bread\nOffers fresh, handmade bread and pastries, along with sandwiches. Good quality and reasonable prices.\nPrice Point: $\nGiovanni Rana\nSpecializes in fresh, homemade pasta. Known for delicious Italian dishes that provide good portion sizes.\nPrice Point: $$\nLos Tacos No. 1\nAn authentic taqueria serving tacos and quesadillas. Highly recommended for quality and portion size.\nPrice Point: $\nThe Lobster Place\nOffers a variety of seafood options, including prepared dishes like sushi and chowder. Known for freshness and quality.\nPrice Point: $\nChelsea Market’s Food Vendors\nVarious vendors with small plates and unique offerings. Explore to find filling options that fit your budget while allowing for sampling different foods.\nPrice Point: Varies, generally $",
+        "A2": "For a $50 budget, considering both food quality and portion size in Chelsea Market, you might want to try \"Friedman's Lunch.\" This restaurant serves up homestyle breakfast, lunch, and dinner in a modern diner setting with reasonable prices. Another option is \"Los Tacos No. 1,\" which is an authentic and very popular taqueria serving tacos, quesadillas, and more. Both places offer good value for money and substantial portions.\n\nSource: A Guide to New York City_Bumble and bumble University Edition.pdf, page 7.",
+        "A3": "Los Tacos No. 1: This authentic and popular taqueria serves tacos, quesadillas, and more. The portions are generous, and the food quality is excellent for the price.\nMighty Quinn's BBQ: Located nearby, this restaurant offers fantastic pulled pork, brisket, ribs, and chicken served in generous portions cafeteria-style. It's a great choice if you're looking for hearty and flavorful BBQ.\nCull and Pistol: This sit-down oyster bar serves a variety of seafood and raw items. The portions are ample, and the quality of the seafood is top-notch, making it a great value for your money.\nThe Lobster Place: Known for its bounty of fish, lobster, and prepared eats like sushi and chowder, The Lobster Place offers excellent seafood options with substantial portions and reasonable prices.\n\nThese options should provide you with a satisfying meal experience within your budget at Chelsea Market.\n\nSources:\nA Guide to New York City_Bumble and bumble University Edition.pdf\nRestaurant_Guide_to_NYC.pdf",
+        "A4": "For a $50 budget at Friedman's in Chelsea Market, you can enjoy a satisfying meal with good quality and portion size. Here are some recommendations from their menu:\n\nMac N’ Cheese (GF): Made with cheddar and fontina, this dish is priced at 15.You can add MamaLil’s pickled peppers for an additional 15. You can add MamaLil’s pickled peppers for an additional 3,making it a total of $18.\nSmoothies: Options like Mixed Berry Banana, Mango Banana, and Strawberry Banana are available for $10 each. Juices: Fresh juices like Grapefruit and Orange Juice are priced at $6 each. Soft Drinks: Options like soda and sparkling water are available for 4 each.; Combining these items, you can have a well-rounded meal within your budget. For example, you could have the Mac N’ Cheese (18), a smoothie (10 ), and a juice (10),and a juice(6), totaling $34, leaving room for an additional drink or starter if desired.\nSource:\nFriedman's - Chelsea Market Restaurant",
+        "A5": "For a great value meal in Chelsea Market, considering both food quality and portion size, you might want to try \"Los Tacos No. 1\". This taqueria is known for its authentic and popular tacos, quesadillas, and more, all at a reasonable price. This spot is highly recommended for its delicious food and good portion sizes, making it a great choice within your $50 budget"
+      }
+    },
+    {
+      "id": 3,
+      "question": "I'm celebrating an anniversary and want a high-end, romantic dinner with excellent seafood in a quieter setting. Suggest a restaurant near the New York Hilton Midtown.",
+      "question_keywords": [
+        "Anniversary",
+        "High-end",
+        "Romantic",
+        "Seafood",
+        "New York Hilton Midtown"
+      ],
+      "answer_keywords": [
+        "Oceana",
+        "The Modern",
+        "Quality Meats",
+        "Lobster Bar",
+        "Becco",
+        "Ocean Prime",
+        "French/American",
+        "Steakhouse",
+        "Italian"
+      ],
+      "restaurants": {
+        "Oceana": ["Oceana", "Seafood"],
+        "The Modern": ["The Modern", "French/American"],
+        "Quality Meats": ["Quality Meats", "Steakhouse", "Seafood"],
+        "Lobster Bar": ["Lobster Bar", "Seafood", "Lobster"],
+        "Becco": ["Becco", "Italian", "Seafood"],
+        "Ocean Prime": ["Ocean Prime", "Seafood"]
+      },
+      "answers": {
+        "A1": "For a high-end, romantic dinner with excellent seafood in a quieter setting near the New York Hilton Midtown, consider the following restaurant:\n\n**Oceana**\n- **Cuisine:** Seafood\n- **Description:** Renowned for exceptional hospitality and world-class cuisine. The ambiance is elegant and perfect for a special occasion.\n- **Location:** 120 West 49th Street and 6th Avenue\n- **Phone:** (212) 759-5941\n\nThis restaurant is well-suited for an anniversary celebration, offering a refined atmosphere and delicious seafood options.",
+        "A2": "**The Modern**\n- **Cuisine:** French/American\n- **Description:** Features refined, contemporary cooking in a beautiful setting overlooking MoMA’s sculpture garden. Ideal for a romantic evening.\n- **Location:** 9 West 53rd Street, between 5th and 6th Avenue\n- **Phone:** (212) 333-1220",
+        "A3": "**Quality Meats**\n- **Cuisine:** Steakhouse (also offers seafood)\n- **Description:** Offers a rustic New American menu with a focus on steaks and seafood. The atmosphere is stylish and inviting, suitable for a special celebration.\n- **Location:** 57 West 58th Street, between 5th and 6th Avenue\n- **Phone:** (212) 371-7777",
+        "A4": "**Lobster Bar**\n- **Cuisine:** Seafood\n- **Description:** A classic seafood restaurant known for its lobster and other fresh seafood options. The elegant decor provides a romantic atmosphere.\n- **Location:** 135 West 55th Street\n- **Phone:** (212) 586-7770",
+        "A5": "**Becco**\n- **Cuisine:** Italian (also features seafood)\n- **Description:** Located in the theater district, Becco is known for its innovative pasta-tasting menu and extensive wine list, making it a great choice for a special night.\n- **Location:** 355 West 46th Street, near 9th Avenue\n- **Phone:** (212) 397-7597",
+        "A6": "**Ocean Prime**\n- **Cuisine:** Seafood\n- **Location:** 123 W 52nd Street between 6th and 7th Avenue\n- **Distance:** Approximately a 3-minute walk from the hotel\n- **Price:** $$$$\n- **Setting:** Upscale and sophisticated decor, suitable for a romantic dinner."
+      }
+    },
+    {
+      "id": 4,
+      "question": "My company is having a holiday dinner for 30 people near the New York Hilton Midtown. What restaurant offers a private room, is within walking distance, and serves high-quality American food?",
+      "question_keywords": [
+        "Holiday Dinner",
+        "30 People",
+        "New York Hilton Midtown",
+        "Private Room",
+        "American"
+      ],
+      "answer_keywords": [
+        "Faces & Names",
+        "Redeye Grill",
+        "Bobby Van’s Grill & Steakhouse",
+        "American",
+        "Seafood",
+        "Steakhouse",
+        "Grill"
+      ],
+      "restaurants": {
+        "Faces & Names": ["Faces & Names", "American"],
+        "Redeye Grill": ["Redeye Grill", "American", "Seafood"],
+        "Bobby Van’s Grill & Steakhouse": [
+          "Bobby Van’s Grill & Steakhouse",
+          "Steakhouse",
+          "Seafood"
+        ]
+      },
+      "answers": {
+        "A1": "For a holiday dinner for 30 people near the New York Hilton Midtown that offers a private room and serves high-quality American food, you can consider the following restaurant:\n\n**Faces & Names**\n- **Cuisine:** Contemporary American Food\n- **Location:** 159 W 54th Street near 7th Avenue\n- **Private Spaces:** 6 private spaces for groups of all types and sizes\n- **Distance:** Less than a 5-minute walk from the hotel\n- **Contact:** (212) 586-9311\n- **Price Range:** $$\n\nThis restaurant offers a variety of private spaces suitable for different group sizes and is conveniently located within walking distance from the New York Hilton Midtown.",
+        "A2": "**Redeye Grill**\n- **Description:** Features five private rooms for groups up to 50. Offers a menu focused on seafood, prime steak, and American cuisine.\n- **Location:** 890 West 56th Street and 7th Avenue\n- **Phone:** (212) 541-9000",
+        "A3": "**Bobby Van’s Grill & Steakhouse**\n- **Description:** Accommodates private or semi-private events ranging from 10 to 300. Offers an elegant menu with superb steaks and seafood.\n- **Location:** 135 West 50th Street and 7th Avenue\n- **Phone:** (212) 957-5050"
+      }
+    },
+    {
+      "id": 5,
+      "question": "I'm gluten-free and want a delicious brunch near the House of Bumble. Where should I go, and what should I order?",
+      "question_keywords": ["Gluten-free", "Brunch", "House of Bumble"],
+      "answer_keywords": [
+        "Friedman's",
+        "Jack's Wife Freda",
+        "Westville",
+        "The Standard Grill",
+        "Pancakes",
+        "Crab Cake Benny",
+        "Farm Egg Omelette",
+        "Avocado Toast",
+        "Shakshuka"
+      ],
+      "restaurants": {
+        "Friedman's": [
+          "Friedman's",
+          "Pancakes",
+          "Crab Cake Benny",
+          "Farm Egg Omelette",
+          "Avocado Toast"
+        ],
+        "Jack's Wife Freda": ["Jack's Wife Freda", "Shakshuka"],
+        "Westville": ["Westville", "Avocado Toast"],
+        "The Standard Grill": ["The Standard Grill", "Burger"]
+      },
+      "answers": {
+        "A1": "Based on the information provided in the documents, I can recommend Friedman's in Chelsea Market as a good option for a gluten-free brunch near the House of Bumble. Friedman's offers gluten-free options and is located at 75 9th Ave, which should be close to the House of Bumble.\n\nSome gluten-free brunch items you could order at Friedman's include:\n\n- **Gluten-free pancakes** (available in blueberry, strawberry, chocolate chip, or plain)\n- **Crab Cake Benny** served on potato latkes instead of an English muffin\n- **Farm Egg Omelette** (request gluten-free bread)\n- **Avocado Toast** (request gluten-free bread)\n\nThey also offer gluten-free substitutions for many of their dishes, so you can likely customize other menu items to be gluten-free as well.\n\n**Source:** \"Friedman's - Chelsea Market Restaurant.pdf\"",
+        "A2": "**Jack's Wife Freda**: Located in the West Village, this restaurant is described as offering \"homestyle food inspired by American and Mediterranean dishes.\" While the document doesn't specifically mention gluten-free options, Mediterranean cuisine often includes naturally gluten-free dishes. The guide recommends trying their Malva Pudding.\n\n- **Description:** Offers a charming atmosphere with a menu inspired by American and Mediterranean dishes.\n- **Recommended Dish:** Shakshuka (ensure it's gluten-free) served with a side of their delicious salad.\n- **Location:** 50 Carmine Street\n- **Phone:** (646) 669-9888",
+        "A3": "**Westville**: With locations in the East Village and West Village, Westville is known for its wide variety of fresh, seasonal vegetables. While not explicitly stated as gluten-free, their focus on vegetables and simple preparations might offer good gluten-free options.\n\n- **Description:** Known for its fresh, seasonal ingredients and a variety of healthy options.\n- **Recommended Dish:** Avocado Toast (substitute gluten-free bread) with a side of seasonal vegetables.\n- **Location:** 173 Avenue A / 210 West 12th Street\n- **Phone:** (212) 741-7971",
+        "A4": "**The Standard Grill**: Located right down the street from Bumble and bumble University, this restaurant offers burgers and sandwiches. You could potentially order a burger without the bun for a gluten-free option.\n\n**Source:** \"A Guide to New York City_Bumble and bumble University Edition.pdf\""
+      }
+    },
+    {
+      "id": 6,
+      "question": "I work near the New York Hilton Midtown and need a fast, affordable, and tasty lunch. What's my best option if I don't want a chain restaurant?",
+      "question_keywords": [
+        "New York Hilton Midtown",
+        "Fast",
+        "Affordable",
+        "Tasty",
+        "Lunch"
+      ],
+      "answer_keywords": [
+        "Beyond Sushi",
+        "Tribhaanga Indo-Nepali Restaurant",
+        "Blue Willow",
+        "Wagamama",
+        "Roxy Delicatessen",
+        "Vegan",
+        "Indo-Nepali",
+        "Asian",
+        "Ramen",
+        "Pastrami Sandwich"
+      ],
+      "restaurants": {
+        "Beyond Sushi": ["Beyond Sushi", "Vegan", "Sushi"],
+        "Tribhaanga Indo-Nepali Restaurant": [
+          "Tribhaanga Indo-Nepali Restaurant",
+          "Indo-Nepali"
+        ],
+        "Blue Willow": ["Blue Willow", "Asian", "Hunan", "Szechuan"],
+        "Wagamama": ["Wagamama", "Ramen"],
+        "Roxy Delicatessen": ["Roxy Delicatessen", "Pastrami Sandwich"]
+      },
+      "answers": {
+        "A1": "**Beyond Sushi**\n- **Cuisine:** Vegan\n- **Location:** 62 West 56th Street, between 5th and 6th Avenues\n- **Description:** A vegan restaurant with a unique twist on sushi, utilizing fruits and vegetables instead of fish.\n- **Price:** $$\n- **Distance:** Approximately a 5-minute walk from the hotel.",
+        "A2": "**Tribhaanga Indo-Nepali Restaurant**\n- **Cuisine:** South Asian\n- **Location:** 234 West 56th Street, between Broadway and 8th Avenue\n- **Description:** An Indo-Nepali restaurant serving delicious flavors with an authentic Indo-Nepali dining experience.\n- **Price:** $$\n- **Distance:** Approximately an 8-minute walk from the hotel.",
+        "A3": "**Blue Willow**\n- **Cuisine:** Asian\n- **Location:** 40 W 56th Street, between 5th and 6th Avenues\n- **Description:** Serving traditional Hunan & Szechuan dishes in a 1920s vintage China setting with a modern twist.\n- **Price:** $\n- **Distance:** Approximately a 5-minute walk from the hotel.",
+        "A4": "**Wagamama**\n- **Description:** Offers a modern take on Asian dining with a focus on ramen and craft cocktails.\n- **Recommended Dish:** Signature Ramen Bowl for a quick and satisfying meal.\n- **Location:** 100 West 55th Street, off 6th Avenue\n- **Phone:** (332) 900-6111",
+        "A5": "**Roxy Delicatessen**\n- **Description:** A casual setting serving familiar Jewish deli favorites.\n- **Recommended Dish:** Classic Pastrami Sandwich for a hearty and delicious option.\n- **Location:** 834 7th Ave\n- **Phone:** (646) 688-3055"
+      }
+    },
+    {
+      "id": 7,
+      "question": "I'm out late in the Lower East Side and want a casual, fun place with good food and drinks. Where should I go?",
+      "question_keywords": ["Lower East Side", "Casual", "Fun"],
+      "answer_keywords": [
+        "Death and Co.",
+        "Schiller’s Liquor Bar",
+        "Sugar Sweet Sunshine",
+        "La Esquina",
+        "Cocktails",
+        "Oyster Bar",
+        "Desserts",
+        "Mexican"
+      ],
+      "restaurants": {
+        "Death and Co.": ["Death and Co.", "Cocktails"],
+        "Schiller’s Liquor Bar": ["Schiller’s Liquor Bar"],
+        "Sugar Sweet Sunshine": [
+          "Sugar Sweet Sunshine",
+          "Cupcakes",
+          "Puddings"
+        ],
+        "La Esquina": ["La Esquina", "Mexican"]
+      },
+      "answers": {
+        "A1": "**Death and Co.**\n- **Location:** 433 East 6th Street\n- **Description:** One of the pioneers of New York’s cocktail revival, Death and Co. is still a master of the craft. They only allow in as many people as there are seats, so go early or on a weeknight.\n- **Features:** Great cocktails, intimate setting.\n- **Contact:** 212.388.0882\n- **Source:** A Guide to New York City_Bumble and bumble University Edition",
+        "A2": "**Schiller’s Liquor Bar**\n- **Location:** 131 Rivington Street\n- **Description:** A cross between the old Lower East Side and owner Keith McNally’s trademarked bistro-style restaurant, Schiller’s offers a tasty mix of French, English, and American classics. The atmospheric, warmly lit, tile-lined dining room becomes engagingly clamorous at night.\n- **Features:** Fun atmosphere, diverse menu.\n- **Contact:** 212.260.4555\n- **Source:** A Guide to New York City_Bumble and bumble University Edition",
+        "A3": "**Sugar Sweet Sunshine**\n- **Location:** Lower East Side\n- **Description:** This sweet and unpretentious dessert shop offers adorable and memorable cupcakes and puddings. It has a cozy, living room-like atmosphere with friendly staff and a great selection of desserts.\n- **Features:** Cozy atmosphere, great desserts.\n- **Source:** Local New Yorker's Secret List_by Cherie Chen",
+        "A4": "**La Esquina**\n- **Description:** This place has a small take-out spot on the street, but for a more interesting late-night experience, you can venture behind an unmarked door to find a cavernous restaurant below. It offers untypical and excellent Mexican food. The hidden aspect and underground location suggest a fun, casual atmosphere for a late night out."
+      }
+    },
+    {
+      "id": 8,
+      "question": "I want to try authentic Guangxi cuisine in NYC. Is Gui Kitchen worth the potential wait, and what dishes should I prioritize?",
+      "question_keywords": ["Authentic", "Guangxi", "Gui Kitchen"],
+      "answer_keywords": [
+        "Gui Kitchen",
+        "Big Bear Rice Noodles",
+        "Liuzhou-style",
+        "Rice Noodles",
+        "Snail Soup",
+        "Old Friend Fish",
+        "Flaxseed Crispy Duckling",
+        "Sour Bamboo Shoot and Perilla Fried Beef",
+        "Chili Oil"
+      ],
+      "restaurants": {
+        "Gui Kitchen": [
+          "Gui Kitchen",
+          "Old Friend Fish",
+          "Flaxseed Crispy Duckling",
+          "Sour Bamboo Shoot and Perilla Fried Beef"
+        ],
+        "Big Bear Rice Noodles": [
+          "Big Bear Rice Noodles",
+          "Liuzhou-style",
+          "Rice Noodles",
+          "Snail Soup",
+          "Chili Oil"
+        ]
+      },
+      "answers": {
+        "A1": "Is Gui Kitchen worth the potential wait?\n\nGui Kitchen in Manhattan is highly recommended for its authentic Guangxi cuisine. Reviews suggest that the wait time can be long, especially during peak hours, but many diners felt that the food was worth the wait. The restaurant is known for its variety of dishes from different regions of Guangxi, providing a one-stop experience for Guangxi flavors. The environment is described as comfortable and the service as high quality.\n\n**Recommended Dishes at Gui Kitchen:**\n\nSeveral dishes come highly recommended at Gui Kitchen. These include:\n\n- **Nanning Osmanthus Honey Roasted Ribs:** Tender and delicious with a slightly sweet taste, especially good when dipped in osmanthus honey.\n- **Signature Old Friend Fish:** A must-order dish that is tender and flavorful, often topped with sour bamboo shoots.\n- **Flaxseed Crispy Duckling:** Crispy on the outside and tender on the inside, with a strong sesame aroma.\n- **Sour Bamboo Shoot and Perilla Fried Beef:** A home-style dish that pairs well with rice.\n\n**Experience and Atmosphere:**\n\nThe dining experience at Gui Kitchen is generally positive. The restaurant is noted for its ethnic minority style decoration, which adds to the dining atmosphere. The service is often praised, with attentive and friendly staff. Some reviewers mentioned that the restaurant can get crowded and the space might feel small, but the overall experience is enhanced by the high quality of food and service.\n\n**Source:** \"Gui Kitchen reviews.pdf\"",
+        "A2": "Recommended Dishes at Gui Kitchen:\n\n- **Nanning Osmanthus Honey Roasted Ribs:** Tender and delicious with a slightly sweet taste, especially good when dipped in osmanthus honey.\n- **Signature Old Friend Fish:** A must-order dish that is tender and flavorful, often topped with sour bamboo shoots.\n- **Flaxseed Crispy Duckling:** Crispy on the outside and tender on the inside, with a strong sesame aroma.\n- **Sour Bamboo Shoot and Perilla Fried Beef:** A home-style dish that pairs well with rice.\n\nThese dishes showcase the authentic flavors and traditional cooking methods of Guangxi cuisine, making Gui Kitchen a worthwhile destination for enthusiasts.\n\n**Source:** \"Gui Kitchen reviews.pdf\""
+      }
+    },
+    {
+      "id": 9,
+      "question": "I'm visiting NYC with my family, including elderly parents. We want a restaurant near Columbus Circle with good food, comfortable seating, and isn't overly noisy. What's a good option?",
+      "question_keywords": [
+        "Family",
+        "Elderly Parents",
+        "Columbus Circle",
+        "Comfortable Seating",
+        "Not Overly Noisy"
+      ],
+      "answer_keywords": [
+        "Utsav Restaurant",
+        "Tang Pavilion",
+        "Loi Estiatorio",
+        "Redeye Grill",
+        "Indian",
+        "Shanghainese",
+        "Greek",
+        "American",
+        "Seafood",
+        "Steakhouse"
+      ],
+      "restaurants": {
+        "Utsav Restaurant": ["Utsav Restaurant", "Indian"],
+        "Tang Pavilion": ["Tang Pavilion", "Shanghainese"],
+        "Loi Estiatorio": ["Loi Estiatorio", "Greek"],
+        "Redeye Grill": ["Redeye Grill", "American", "Seafood"]
+      },
+      "answers": {
+        "A1": "**Utsav Restaurant**\n- **Cuisine:** Indian\n- **Location:** 1180 Avenue of the Americas, between 46th and 47th Streets\n- **Noise Level:** 73 Decibels\n- **Comments:** Authentic Indo-Chinese cuisine in Midtown, led by Nandita Khanna. It offers a captivating culinary journey with a quieter dining atmosphere, making it suitable for family dining including elderly parents.\n- **Distance:** Approximately an 8-minute walk from Columbus Circle.\n- **Price:** $$\n- **Source:** 2024-National-Meeting-Restaurant-Guide.pdf",
+        "A2": "**Tang Pavilion**\n- **Cuisine:** Asian (Shanghainese)\n- **Location:** 65 West 55th Street, between 5th and 6th Avenues\n- **Noise Level:** 66 Decibels\n- **Comments:** Specializes in classic Chinese dishes, providing a quiet dining experience with an average sound level of 66 decibels, making it easy to have conversations without excessive noise.\n- **Distance:** Approximately a 3-minute walk from Columbus Circle.\n- **Price:** $$\n- **Source:** 2024-National-Meeting-Restaurant-Guide.pdf",
+        "A3": "**Loi Estiatorio**\n- **Cuisine:** Greek\n- **Location:** 132 West 58th Street, between 6th and 7th Avenue\n- **Noise Level:** 72 Decibels\n- **Comments:** Traditional Greek seafood and other classics in refined preparations served in sleek, minimalist digs. The quiet environment with a noise level of 72 decibels ensures a comfortable dining experience.\n- **Distance:** Approximately a 6-minute walk from Columbus Circle.\n- **Price:** $$$\n- **Source:** 2024-National-Meeting-Restaurant-Guide.pdf",
+        "A4": "**Redeye Grill**\n- **Description:** This restaurant is described as a \"classy Midtowner\" that's been steadily busy for nearly two decades. It's located directly opposite Carnegie Hall, which is close to Columbus Circle. The menu is described as dependable American cuisine starring tons of seafood. They offer prompt service and a dramatic setting. While the noise level isn't specifically mentioned, the description of \"classy\" suggests it might be suitable for a family dinner with elderly parents."
+      }
+    },
+    {
+      "id": 10,
+      "question": "I'm looking for a truly unique and memorable dining experience in NYC, something beyond typical American or Italian fare. Suggest a restaurant that prioritizes innovative dishes and a distinctive atmosphere, and indicate whether reservations are usually required.",
+      "question_keywords": [
+        "Unique Dining Experience",
+        "Innovative Cuisine",
+        "Distinctive Atmosphere",
+        "Reservations"
+      ],
+      "answer_keywords": [
+        "The Chef's Table at Brooklyn Fare",
+        "Freeman's",
+        "Mr. Taka Ramen",
+        "Spice Market",
+        "PDT (Please Don't Tell)",
+        "Chikalicious Dessert Bar",
+        "Michelin",
+        "Ramen",
+        "Duck Curry",
+        "Cocktails",
+        "Desserts"
+      ],
+      "restaurants": {
+        "The Chef's Table at Brooklyn Fare": [
+          "The Chef's Table at Brooklyn Fare",
+          "Michelin"
+        ],
+        "Freeman's": ["Freeman's"],
+        "Mr. Taka Ramen": ["Mr. Taka Ramen", "Ramen"],
+        "Spice Market": ["Spice Market", "Duck Curry"],
+        "PDT (Please Don't Tell)": ["PDT (Please Don't Tell)", "Cocktails"],
+        "Chikalicious Dessert Bar": ["Chikalicious Dessert Bar", "Desserts"]
+      },
+      "answers": {
+        "A1": "**The Chef's Table at Brooklyn Fare**: This restaurant offers an exclusive 18-seat supper club experience, known for its inventive and highly sought-after cuisine. It is Brooklyn's only three-Michelin-starred restaurant. **Reservations** are usually required well in advance due to its limited seating and high demand.",
+        "A2": "**Freeman's**: Located at the end of Freeman Alley, this restaurant offers rustic American food with adventurous game items such as venison or wild boar. The unique and semi-hidden location adds to the distinctive dining atmosphere. **Reservations** are recommended to ensure a spot at this popular venue.",
+        "A3": "**Mr. Taka Ramen**: Known for its authentic and flavorful ramen, Mr. Taka Ramen offers a rich and spicy broth experience that is a feast for both taste and vision. Despite the frequent queues, this ramen shop is worth the wait for its delicious offerings. **Reservations** are not typically required, but be prepared for a wait during peak times.",
+        "A4": "**Spice Market**: This restaurant is described as 'magnificent' with a visually stunning room and excellent dishes. The menu features Asian fusion cuisine, with even 'routine' items like spring rolls being described as the best ever. More unusual dishes like duck curry are noted as creative and delicious. The tasting menu is recommended. While reservation information isn't explicitly stated, given its high praise and reputation, it would be wise to make a reservation.",
+        "A5": "**PDT (Please Don't Tell)**: This unique cocktail bar features a faux-speakeasy entrance through a phone booth at Crif Dogs. While it's primarily known for cocktails, it also serves food from the adjacent Crif Dogs. The hidden entrance and speakeasy concept provide a distinctive atmosphere. Reservation information isn't provided, but given its hidden nature and popularity, it's likely that reservations would be recommended.",
+        "A6": "**Chikalicious Dessert Bar**: This is a restaurant wholly dedicated to delicious desserts made by world-renowned pastry chef Chika Tillman. While not a full meal, it offers a truly unique dining experience focused entirely on innovative desserts. The document doesn't mention whether reservations are required, but given its specialty nature and the reputation of the chef, it would be advisable to check if reservations are needed."
+      }
+    },
+    {
+      "id": 11,
+      "question": "What makes Big Bear Rice Noodles unique in New York City?",
+      "question_keywords": ["Big Bear Rice Noodles"],
+      "answer_keywords": [
+        "Big Bear Rice Noodles",
+        "Gui Kitchen",
+        "Liuzhou-style",
+        "Rice Noodles",
+        "Snail Soup",
+        "Nanning Osmanthus Honey Roasted Ribs",
+        "Old Friend Fish",
+        "Flaxseed Crispy Duckling",
+        "Sour Bamboo Shoot and Perilla Fried Beef",
+        "Chili Oil"
+      ],
+      "restaurants": {
+        "Big Bear Rice Noodles": [
+          "Big Bear Rice Noodles",
+          "Liuzhou-style",
+          "Rice Noodles",
+          "Snail Soup",
+          "Chili Oil"
+        ],
+        "Gui Kitchen": [
+          "Gui Kitchen",
+          "Nanning Osmanthus Honey Roasted Ribs",
+          "Old Friend Fish",
+          "Flaxseed Crispy Duckling",
+          "Sour Bamboo Shoot and Perilla Fried Beef"
+        ]
+      },
+      "answers": {
+        "A1": "Big Bear Rice Noodles is unique in NYC for offering authentic Liuzhou-style rice noodles with snail soup. The restaurant was founded by a boss from Liuzhou at the end of 2019 and quickly became popular in Nanning, Guangxi. They adhere to traditional Liuzhou cooking methods, use carefully selected ingredients, and have strict quality control. The restaurant separates the broth and marinade to maintain flavor integrity and avoid repeated high-temperature cooking of seasonings.\n\n**A2:**\n\n**Big Bear Rice Noodles** is unique in New York City for several reasons:\n\n- **Authentic Taste and Ingredients:** Big Bear Rice Noodles adheres to the traditional Liuzhou cooking method, offering an authentic taste that is reminiscent of the founder's hometown in Liuzhou, China. The ingredients, including rice noodles, pickled bamboo shoots, dried tofu skin, pickled long beans, and dried radish, are transported directly from Liuzhou to ensure authenticity.\n\n- **Distinct Cooking Process:** The restaurant separates the broth and the marinade to maintain the quality and taste of the soup. The broth contains pure pork bones, chicken bones, and river snails without any seasonings, which are added separately to the rice noodles in strict proportions. This method prevents the broth from being repeatedly boiled, which can affect the taste and produce nitrites that are not good for the body.\n\n- **Unique Flavor Profile:** The broth is boiled until it becomes milky white, a result of the chef's mastery of heat control and seasoning. This creates a rich and flavorful soup base. The chili oil used in the store is made in-house with high-quality chilies, providing a unique spicy and fragrant flavor that enhances the overall taste experience.\n\nThese factors make Big Bear Rice Noodles stand out as a unique and authentic dining experience in New York City."
+      }
+    },
+    {
+      "id": 12,
+      "question": "What are some recommended dishes at Big Bear Rice Noodles?",
+      "question_keywords": ["Big Bear Rice Noodles", "Dishes"],
+      "answer_keywords": [
+        "Big Bear Rice Noodles",
+        "Rice Noodles",
+        "Snail Soup",
+        "Pickled Bamboo Shoots",
+        "Dried Tofu Skin",
+        "Pickled Long Beans",
+        "Dried Radish",
+        "Chili Oil"
+      ],
+      "restaurants": {
+        "Big Bear Rice Noodles": [
+          "Big Bear Rice Noodles",
+          "Rice Noodles",
+          "Snail Soup",
+          "Pickled Bamboo Shoots",
+          "Dried Tofu Skin",
+          "Pickled Long Beans",
+          "Chili Oil"
+        ]
+      },
+      "answers": {
+        "A1": "While specific dish recommendations aren't provided, the document emphasizes the authenticity of their rice noodles with snail soup. Key components of their dishes include rice noodles, pickled bamboo shoots, dried tofu skin, pickled long beans, and dried radish, all transported from Liuzhou. The broth is made from pork bones, chicken bones, and river snails, cooked for over 6 hours. They also offer house-made chili oil with a unique spicy and fragrant flavor.",
+        "A2": "**Recommended Dishes at Big Bear Rice Noodles:**\n\n- **Rice Noodles with Snail Soup:** The signature dish, featuring authentic Liuzhou-style rice noodles served in a rich and flavorful snail-infused broth.\n- **Pickled Bamboo Shoots:** Adds a tangy and crunchy element to the noodles.\n- **Dried Tofu Skin:** Provides a chewy texture that complements the softness of the rice noodles.\n- **Pickled Long Beans:** Offers a slightly sweet and sour flavor that balances the dish.\n- **Chili Oil:** House-made with high-quality chilies, enhancing the overall spiciness and aroma of the meal.\n\nThese dishes showcase the authentic flavors and traditional cooking methods from Guangxi, making Big Bear Rice Noodles a standout choice for enthusiasts."
+      }
+    },
+    {
+      "id": 13,
+      "question": "What unique dessert places does Cherie Chen recommend in her secret list?",
+      "question_keywords": ["Dessert", "Cherie Chen"],
+      "answer_keywords": [
+        "Sugar Sweet Sunshine",
+        "Momofuku Bakery & Milk Bar",
+        "BAR GATO",
+        "Big Gay Ice Cream",
+        "Cupcakes",
+        "Puddings",
+        "Ice Cream",
+        "Trix Cereal",
+        "Nilla Wafers",
+        "Japanese Izakaya"
+      ],
+      "restaurants": {
+        "Sugar Sweet Sunshine": [
+          "Sugar Sweet Sunshine",
+          "Cupcakes",
+          "Puddings"
+        ],
+        "Momofuku Bakery & Milk Bar": [
+          "Momofuku Bakery & Milk Bar",
+          "Ice Cream",
+          "Donuts",
+          "Cookies"
+        ],
+        "BAR GATO": ["BAR GATO", "Japanese Izakaya", "Cocktails", "Sake"],
+        "Big Gay Ice Cream": [
+          "Big Gay Ice Cream",
+          "Ice Cream",
+          "Trix Cereal",
+          "Nilla Wafers"
+        ]
+      },
+      "answers": {
+        "A1": "Cherie Chen recommends two unique dessert places in her secret list:\n\n1. **Sugar Sweet Sunshine**\n - **Description:** A sweet and unpretentious dessert shop known for adorable and memorable cupcakes and puddings. It has a cozy atmosphere and offers a variety of flavors.\n\n2. **Momofuku Bakery & Milk Bar**\n - **Description:** This dessert stop is for non-traditionalists, offering unique ice cream flavors inspired by kids' cereals and donuts, as well as cookies incorporating unconventional ingredients like pretzels, potato chips, and coffee grounds.\n\n3. **BAR GATO**\n - **Description:** A trendy urban Japanese izakaya that focuses on creative and exquisite casual food and drinks. Although not a traditional dessert place, it offers innovative cocktails and a selection of Japanese sake that can complement a sweet ending to a meal.\n\n4. **Big Gay Ice Cream**\n - **Description:** Known for its creative soft-serve ice cream with unusual toppings such as olive oil and sea salt, toasted curried coconut, Trix cereal, and crushed Nilla wafers. It provides a unique and playful ice cream experience.\n\nThese dessert places offer a variety of innovative and delightful options that cater to different tastes and preferences.\n\n**Sources:** Local New Yorker's Secret List_by Cherie Chen",
+        "A2": "**Sugar Sweet Sunshine**\n- **Description:** A sweet and unpretentious dessert shop that offers a cozy atmosphere reminiscent of a warm and comfortable living room. Known for its adorable and memorable cupcakes and puddings. The Lemon Yummy and Ooey Gooey cupcakes are classic flavors, while the banana pudding is a popular item recommended by many on social media.\n- **Source:** Local New Yorker's Secret List by Cherie Chen\n\n**BAR GATO**\n- **Description:** A trendy urban Japanese izakaya that focuses on creative and exquisite casual food and drinks. Although not a traditional dessert place, it offers innovative cocktails and a selection of Japanese sake that can complement a sweet ending to a meal.\n- **Source:** Local New Yorker's Secret List by Cherie Chen\n\n**Big Gay Ice Cream**\n- **Description:** Known for its creative soft-serve ice cream with unusual toppings such as olive oil and sea salt, toasted curried coconut, Trix cereal, and crushed Nilla wafers. It provides a unique and playful ice cream experience.\n- **Source:** Local New Yorker's Secret List by Cherie Chen"
+      }
+    },
+    {
+      "id": 14,
+      "question": "What coffee shop does Cherie Chen particularly praise in her list?",
+      "question_keywords": ["Coffee Shop", "Cherie Chen"],
+      "answer_keywords": [
+        "MUD Coffee",
+        "MUD PARK",
+        "Hand-Drip Coffee",
+        "Coffee"
+      ],
+      "restaurants": {
+        "MUD Coffee": ["MUD Coffee", "Hand-Drip Coffee"],
+        "MUD PARK": ["MUD PARK", "Coffee"]
+      },
+      "answers": {
+        "A1": "Cherie Chen particularly praises **MUD Coffee** in her list. She describes herself as a loyal fan of MUD Coffee, recalling the early days when they operated mobile hand-drip coffee from trucks. Cherie highlights the rich coffee aroma and the cheerful and enthusiastic baristas. She appreciates the fair bitterness of the coffee and the warm atmosphere created by the vibrant orange trucks and the simple yet colorful slogans at their locations. MUD Coffee's presence in the East Village and their counter in First Park (also known as **MUD PARK**) are noted as spots where she enjoys replenishing her caffeine surrounded by greenery and a relaxing vibe."
+      }
+    },
+    {
+      "id": 15,
+      "question": "I want to have some oysters.",
+      "question_keywords": ["Oysters"],
+      "answer_keywords": [
+        "Cull and Pistol",
+        "Mermaid Inn",
+        "Oyster Bar",
+        "Oysters",
+        "Grand Central Terminal",
+        "East Village",
+        "Chelsea Market"
+      ],
+      "restaurants": {
+        "Cull and Pistol": ["Cull and Pistol", "Oyster Bar", "Seafood"],
+        "Mermaid Inn": ["Mermaid Inn", "Oysters"],
+        "Oyster Bar": ["Oyster Bar", "Grand Central Terminal"]
+      },
+      "answers": {
+        "A1": "**Cull and Pistol**: Located in Chelsea Market, this is described as a sit-down oyster bar serving seafood and raw items. While specific details about their oyster selection aren't provided, its designation as an oyster bar suggests it would be a good place to enjoy oysters.\n- **Source:** \"A Guide to New York City_Bumble and bumble University Edition.pdf\"",
+        "A2": "**Mermaid Inn**: This restaurant in the East Village is described as offering excellent seafood. While oysters aren't specifically mentioned, the document notes that they have \"half price oysters during happy hour.\" This suggests it would be a good and potentially cost-effective option for enjoying oysters.\n- **Source:** \"A Guide to New York City_Bumble and bumble University Edition.pdf\"",
+        "A3": "**Oyster Bar**: Located in the lower level of Grand Central Terminal, this restaurant has been serving fresh seafood for over 100 years. The guide suggests taking a seat at the bar with an order of raw oysters. The unique, vaulted setting adds to the experience.\n- **Source:** \"A Guide to New York City_Bumble and bumble University Edition.pdf\""
+      }
+    },
+    {
+      "id": 16,
+      "question": "I want to have some good indian food, and I like curry chicken.",
+      "question_keywords": ["Indian", "Curry Chicken"],
+      "answer_keywords": [
+        "Babu Ji",
+        "Awadh",
+        "Badshah Modern Indian Restaurant",
+        "Yuva",
+        "Amma",
+        "Tamarind",
+        "Chicken Curry",
+        "Butter Chicken",
+        "Chicken Masala Tikka",
+        "Cauliflower Appetizer"
+      ],
+      "restaurants": {
+        "Babu Ji": ["Babu Ji", "Chicken Curry"],
+        "Awadh": ["Awadh", "Chicken Curry"],
+        "Badshah Modern Indian Restaurant": [
+          "Badshah Modern Indian Restaurant",
+          "Butter Chicken"
+        ],
+        "Yuva": ["Yuva", "Indian"],
+        "Amma": ["Amma", "Chicken Masala Tikka"],
+        "Tamarind": ["Tamarind", "Indian", "Duck Curry"]
+      },
+      "answers": {
+        "A1": "**Babu Ji (East Village)**\n- **Comments:** Indian. Some of the dishes were “typical,” like tandoori lamb chops; others were unusual, like the tamarind sauce balls for an appetizer. Everything was delicious and well-prepared. Serving sizes were reasonable, not too expensive, and the service was excellent. It was too noisy, but with food like this, who cares?\n- **Grade:** A\n- **Date:** June 2016\n- **Neighborhood:** East Village\n- **Recommended Dish:** Chicken curry\n- **Source:** Restaurant_Guide_to_NYC.pdf",
+        "A2": "**Awadh (Upper West Side)**\n- **Comments:** Indian. Creative, delicious, and just spicy enough for an American palate. Try the chicken curry and the sea bass. Service was attentive but a bit slow. Not cheap, but prices quite reasonable.\n- **Grade:** A+\n- **Date:** August 2016\n- **Neighborhood:** Upper West Side\n- **Recommended Dish:** Chicken curry\n- **Source:** Restaurant_Guide_to_NYC.pdf",
+        "A3": "**Badshah Modern Indian Restaurant (Hell’s Kitchen)**\n- **Comments:** Indian. Every dish was at least very good, and the cauliflower appetizer and the butter chicken were superb. The service was friendly and attentive.\n- **Grade:** A\n- **Date:** March 2018\n- **Neighborhood:** Hell’s Kitchen\n- **Recommended Dish:** Butter chicken\n- **Source:** Restaurant_Guide_to_NYC.pdf",
+        "A4": "**Yuva**\n- **Comments:** Located in the East 50s, Yuva is described as offering tasty and interesting Indian food with good-sized portions. While curry chicken isn't specifically mentioned, the restaurant has consistently received high ratings (A grade) across multiple visits. One reviewer noted that \"every single dish was excellent,\" suggesting that their curry dishes, including chicken curry if available, would likely be good.\n- **Source:** \"A Guide to New York City_Bumble and bumble University Edition.pdf\"",
+        "A5": "**Amma**\n- **Comments:** Situated in the East 50s, Amma is praised for its delicious Indian cuisine. One reviewer specifically mentions that the \"chicken masala tikka\" was typical but good. While not explicitly curry chicken, this suggests that the restaurant does well with chicken dishes and likely offers good curry options as well.\n- **Source:** \"A Guide to New York City_Bumble and bumble University Edition.pdf\"",
+        "A6": "**Tamarind**\n- **Description:** There are two locations mentioned - one in Tribeca and one in Chelsea. Both are highly rated (A grade) for their Indian cuisine. The Tribeca location is described as offering \"tasty and innovative food,\" while the Chelsea location is praised for its \"perfect\" food. Although curry chicken isn't specifically mentioned, the high praise for their food in general suggests they would likely serve good curry dishes, including chicken curry if it's on their menu.\n- **Source:** \"A Guide to New York City_Bumble and bumble University Edition.pdf\""
+      }
+    },
+    {
+      "id": 17,
+      "question": "I'm looking for a unique dining experience in NYC that combines innovative cuisine with a distinctive atmosphere. What options are available, and do they require reservations?",
+      "question_keywords": ["Unique Dining Experience", "Innovative Cuisine"],
+      "answer_keywords": [
+        "Spice Market",
+        "Eleven Madison Park",
+        "Spring Rolls",
+        "Duck Curry",
+        "Tasting Menu"
+      ],
+      "restaurants": {
+        "Spice Market": ["Spice Market", "Spring Rolls", "Duck Curry"],
+        "Eleven Madison Park": ["Eleven Madison Park", "Tasting Menu"]
+      },
+      "answers": {
+        "A1": "**Spice Market**\n- **Description:** Described as \"magnificent\" with a visually stunning room and excellent dishes. The menu features Asian fusion cuisine, with even \"routine\" items like spring rolls being described as the best ever. More unusual dishes like duck curry are noted as creative and delicious. The tasting menu is recommended. While reservation information isn't explicitly stated, given its high praise and reputation, it would be wise to make a reservation.\n- **Source:** \"A Guide to New York City_Bumble and bumble University Edition.pdf\"",
+        "A2": "**Eleven Madison Park**\n- **Description:** Listed as one of the top 10 must-reserve restaurants in NYC. It's described as Chef Daniel Humm's elegant tasting menu-only restaurant, acclaimed for its conceptual and elaborate dishes. Given its status, **reservations** are definitely required.\n- **Source:** \"Top 10 Must Reserve Restaurants in New York City.pdf\""
+      }
+    },
+    {
+      "id": 18,
+      "question": "I'm interested in trying authentic Guangxi cuisine in New York. What options are available, and what dishes should I try?",
+      "question_keywords": ["Authentic", "Guangxi"],
+      "answer_keywords": [
+        "Gui Kitchen",
+        "Big Bear Rice Noodles",
+        "Old Friend Fish",
+        "Flaxseed Crispy Duckling",
+        "Sour Bamboo Shoots and Perilla Fried Beef",
+        "Rice Noodles",
+        "Snail Soup",
+        "Pickled Bamboo Shoots",
+        "Dried Tofu Skin",
+        "Pickled Long Beans",
+        "Chili Oil"
+      ],
+      "restaurants": {
+        "Gui Kitchen": [
+          "Gui Kitchen",
+          "Old Friend Fish",
+          "Flaxseed Crispy Duckling",
+          "Sour Bamboo Shoots and Perilla Fried Beef"
+        ],
+        "Big Bear Rice Noodles": [
+          "Big Bear Rice Noodles",
+          "Rice Noodles",
+          "Snail Soup",
+          "Pickled Bamboo Shoots",
+          "Dried Tofu Skin",
+          "Pickled Long Beans",
+          "Chili Oil"
+        ]
+      },
+      "answers": {
+        "A1": "For authentic Guangxi cuisine in New York, **Gui Kitchen** and **Big Bear Rice Noodles** are two notable options:\n\n**Gui Kitchen**:\n- **Offers:** A variety of Guangxi dishes, including specialties from Nanning, Liuzhou, and Guilin.\n- **Highly Recommended Dishes:**\n - **Signature Old Friend Fish:** Described as boneless, sweet, and ordered by every table.\n - **Flaxseed Crispy Duckling:** Noted for its fragrant and crispy texture with a strong sesame aroma.\n - **Sour Bamboo Shoots and Perilla Fried Beef:** A flavorful and hearty option that pairs well with rice.\n\n**Big Bear Rice Noodles**:\n- **Specializes:** Authentic Liuzhou-style rice noodles with snail soup.\n- **Key Components:**\n - **Rice Noodles with Snail Soup:** The signature dish, offering a rich and flavorful broth.\n - **Pickled Bamboo Shoots, Dried Tofu Skin, Pickled Long Beans:** Enhance the texture and flavor of the noodles.\n - **House-made Chili Oil:** Adds a unique spicy and fragrant kick to the dish.\n\nBoth restaurants emphasize authentic flavors and traditional cooking methods from Guangxi, making them excellent choices for enthusiasts seeking genuine Guangxi culinary experiences.\n\n**Sources:** \"Gui Kitchen reviews.pdf\" and \"Big Bear Rice Noodles.pdf\""
+      }
+    },
+    {
+      "id": 19,
+      "question": "I'm planning a foodie tour of New York City. What are some must-visit places for both high-end dining and unique local experiences?",
+      "question_keywords": [
+        "Foodie Tour",
+        "High-end Dining",
+        "Unique Local Experiences"
+      ],
+      "answer_keywords": [
+        "Le Bernardin",
+        "Eleven Madison Park",
+        "Katz's Deli",
+        "Gui Kitchen",
+        "Big Bear Rice Noodles",
+        "Sugar Sweet Sunshine",
+        "MUD Coffee",
+        "Seafood",
+        "Ramen",
+        "Pastrami Sandwiches",
+        "Cupcakes",
+        "Ice Cream",
+        "Shakshuka"
+      ],
+      "restaurants": {
+        "Le Bernardin": ["Le Bernardin", "Seafood"],
+        "Eleven Madison Park": ["Eleven Madison Park"],
+        "Katz's Deli": ["Katz's Deli", "Pastrami Sandwiches"],
+        "Gui Kitchen": ["Gui Kitchen"],
+        "Big Bear Rice Noodles": ["Big Bear Rice Noodles", "Seafood", "Ramen"],
+        "Sugar Sweet Sunshine": ["Sugar Sweet Sunshine", "Cupcakes"],
+        "MUD Coffee": ["MUD Coffee", "Ice Cream"]
+      },
+      "answers": {
+        "A1": "For a comprehensive foodie tour of NYC, consider these options:\n\n**High-end dining:**\n\n1. **Le Bernardin**: Seafood lovers' paradise by chef Eric Ripert, known for luxurious ambiance.\n2. **Eleven Madison Park**: Chef Daniel Humm's elegant tasting menu-only restaurant.\n\n**Unique local experiences:**\n\n1. **Katz's Deli**: Established in 1888, known for Jewish comfort food and pastrami sandwiches.\n2. **Gui Kitchen**: Offers authentic Guangxi cuisine, popular for dishes like Old Friend Fish.\n3. **Big Bear Rice Noodles**: Specializes in Liuzhou-style rice noodles with snail soup.\n4. **Sugar Sweet Sunshine**: A cozy dessert shop known for cupcakes and puddings.\n5. **MUD Coffee**: A local favorite for coffee, with a relaxing atmosphere in First Park.\n\nThis combination allows you to experience both high-end cuisine and authentic local flavors that New York City has to offer.\n\n**Sources:** \"Top 10 Must Reserve Restaurants in New York City.pdf\", \"Gui Kitchen reviews.pdf\", \"Big Bear Rice Noodles.pdf\", and \"Local New Yorker's Secret List_by Cherie Chen.pdf\""
+      }
+    },
+    {
+      "id": 20,
+      "question": "I'm looking for good seafood options in New York City, particularly places known for oysters. What are my best choices?",
+      "question_keywords": ["Seafood", "Oysters"],
+      "answer_keywords": [
+        "Le Bernardin",
+        "Oyster Bar",
+        "Mermaid Inn",
+        "Cull and Pistol",
+        "Oceana",
+        "Grand Central Terminal",
+        "East Village",
+        "Chelsea Market",
+        "Seafood",
+        "Oysters"
+      ],
+      "restaurants": {
+        "Le Bernardin": ["Le Bernardin", "Seafood"],
+        "Oyster Bar": ["Oyster Bar", "Grand Central Terminal"],
+        "Mermaid Inn": ["Mermaid Inn", "Oysters"],
+        "Cull and Pistol": ["Cull and Pistol", "Oyster Bar"],
+        "Oceana": ["Oceana", "Seafood"]
+      },
+      "answers": {
+        "A1": "New York City offers several excellent seafood options, particularly for oyster lovers:\n\n1. **Le Bernardin**: Listed as one of the top 10 must-reserve restaurants, it's described as a \"seafood lovers' paradise\" by chef Eric Ripert.\n2. **Oyster Bar**: Located in Grand Central Terminal, it has been serving fresh seafood for over 100 years. The guide suggests taking a seat at the bar with an order of raw oysters.\n3. **Mermaid Inn**: Located in the East Village, it offers excellent seafood and has \"half price oysters during happy hour.\" This suggests it would be a good and potentially cost-effective option for enjoying oysters.\n4. **Cull and Pistol**: Found in Chelsea Market, this sit-down oyster bar serves seafood and raw items.\n5. **Oceana**: While not specifically mentioned for oysters, it's described as a beloved NYC dining destination renowned for exceptional hospitality and world-class cuisine, specializing in seafood.\n\nThese options range from high-end dining experiences to more casual settings, all known for their quality seafood offerings.\n\n**Sources:** \"Top 10 Must Reserve Restaurants in New York City.pdf\", \"A Guide to New York City_Bumble and bumble University Edition.pdf\", and \"2024-National-Meeting-Restaurant-Guide.pdf\""
+      }
+    }
+  ]
+}

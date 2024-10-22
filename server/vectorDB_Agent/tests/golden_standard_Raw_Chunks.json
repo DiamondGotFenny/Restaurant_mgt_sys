@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "question": "I'm visiting NYC for a long weekend and want to try diverse cuisines without making reservations. Suggest a Saturday lunch and Sunday brunch spot, one in Midtown and one in the Lower East Side, considering both food quality and wait times.",
     "answers": [
       {
@@ -25,6 +26,7 @@
     ]
   },
   {
+    "id": 2,
     "question": "I have a $50 budget for dinner in Chelsea Market. What's the best value meal I can get, considering both food quality and portion size?",
     "answers": [
       {
@@ -75,6 +77,7 @@
     ]
   },
   {
+    "id": 3,
     "question": "I'm celebrating an anniversary and want a high-end, romantic dinner with excellent seafood in a quieter setting. Suggest a restaurant near the New York Hilton Midtown.",
     "answers": [
       {
@@ -105,6 +108,7 @@
     ]
   },
   {
+    "id": 4,
     "question": "My company is having a holiday dinner for 30 people near the New York Hilton Midtown. What restaurant offers a private room, is within walking distance, and serves high-quality American food?",
     "answers": [
       {
@@ -125,6 +129,7 @@
     ]
   },
   {
+    "id": 5,
     "question": "I'm gluten-free and want a delicious brunch near the House of Bumble. Where should I go, and what should I order?",
     "answers": [
       {
@@ -150,6 +155,7 @@
     ]
   },
   {
+    "id": 6,
     "question": "I work near the New York Hilton Midtown and need a fast, affordable, and tasty lunch. What's my best option if I don't want a chain restaurant?",
     "answers": [
       {
@@ -180,6 +186,7 @@
     ]
   },
   {
+    "id": 7,
     "question": "I'm out late in the Lower East Side and want a casual, fun place with good food and drinks. Where should I go?",
     "answers": [
       {
@@ -205,6 +212,7 @@
     ]
   },
   {
+    "id": 8,
     "question": "I want to try authentic Guangxi cuisine in NYC. Is Gui Kitchen worth the potential wait, and what dishes should I prioritize?",
     "answers": [
       {
@@ -220,6 +228,7 @@
     ]
   },
   {
+    "id": 9,
     "question": "I'm visiting NYC with my family, including elderly parents. We want a restaurant near Columbus Circle with good food, comfortable seating, and isn't overly noisy. What's a good option?",
     "answers": [
       {
@@ -245,6 +254,7 @@
     ]
   },
   {
+    "id": 10,
     "question": "I'm looking for a truly unique and memorable dining experience in NYC, something beyond typical American or Italian fare. Suggest a restaurant that prioritizes innovative dishes and a distinctive atmosphere, and indicate whether reservations are usually required.",
     "answers": [
       {
@@ -270,6 +280,7 @@
     ]
   },
   {
+    "id": 11,
     "question": "What makes Big Bear Rice Noodles unique in New York City?",
     "answers": [
       {
@@ -285,6 +296,7 @@
     ]
   },
   {
+    "id": 12,
     "question": "What are some recommended dishes at Big Bear Rice Noodles?",
     "answers": [
       {
@@ -295,6 +307,7 @@
     ]
   },
   {
+    "id": 13,
     "question": "What unique dessert places does Cherie Chen recommend in her secret list?",
     "answers": [
       {
@@ -320,6 +333,7 @@
     ]
   },
   {
+    "id": 14,
     "question": "What coffee shop does Cherie Chen particularly praise in her list?",
     "answers": [
       {
@@ -335,6 +349,7 @@
     ]
   },
   {
+    "id": 15,
     "question": "I want to have some oysters.",
     "answers": [
       {
@@ -355,6 +370,7 @@
     ]
   },
   {
+    "id": 16,
     "question": "I want to have some good indian food, and I like curry chicken.",
     "answers": [
       {
@@ -390,6 +406,7 @@
     ]
   },
   {
+    "id": 17,
     "question": "I'm looking for a unique dining experience in NYC that combines innovative cuisine with a distinctive atmosphere. What options are available, and do they require reservations?",
     "answers": [
       {
@@ -405,6 +422,7 @@
     ]
   },
   {
+    "id": 18,
     "question": "I'm interested in trying authentic Guangxi cuisine in New York. What options are available, and what dishes should I try?",
     "answers": [
       {
@@ -420,6 +438,7 @@
     ]
   },
   {
+    "id": 19,
     "question": "I'm planning a foodie tour of New York City. What are some must-visit places for both high-end dining and unique local experiences?",
     "answers": [
       {
@@ -460,6 +479,7 @@
     ]
   },
   {
+    "id": 20,
     "question": "I'm looking for good seafood options in New York City, particularly places known for oysters. What are my best choices?",
     "answers": [
       {
@@ -490,6 +510,7 @@
     ]
   },
   {
+    "id": 21,
     "question": "I want to eat some oysters, can you recommand me some restaurants in New York City?",
     "answers": [
       {
@@ -520,6 +541,7 @@
     ]
   },
   {
+    "id": 22,
     "question": "What are some highly-rated Italian restaurants in NYC?",
     "answers": [
       {

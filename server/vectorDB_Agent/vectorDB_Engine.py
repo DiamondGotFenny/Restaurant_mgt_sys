@@ -1,4 +1,4 @@
-#vectorDB_Engine.py
+# vectorDB_Engine.py
 import os
 import sys
 from dotenv import load_dotenv, find_dotenv
@@ -7,91 +7,151 @@ from llm_post_processor import LLMProcessor
 from logger_config import setup_logger
 from combined_keyword_retriever import CombinedKeywordRetriever
 
-def vectorDB_Engine():
-    """
-    Main function to initialize the agent and start the interactive test module.
-    """
-   
-    _ = load_dotenv(find_dotenv())
-    LOG_FILE = ".././logs/hybrid_search_agent.log" 
+class VectorDBEngine:
+    def __init__(self):
+        """
+        Initializes the VectorDBEngine by setting up environment variables,
+        directories, logger, and agents.
+        """
+        # Load environment variables
+        load_dotenv(find_dotenv())
+
+        # Define the base directory as the parent of the current file's directory
+        self.BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+        # Define paths using absolute paths
+        self.LOG_FILE = os.path.join(self.BASE_DIR, 'logs', 'hybrid_search_agent.log')
+        self.PDF_DIRECTORY = os.path.join(self.BASE_DIR, 'data', 'Restaurants_data')
+        self.PERSIST_DIRECTORY = os.path.join(self.BASE_DIR, 'data', 'vectorDB', 'chroma')
+        self.WHOOSH_INDEX_DIR = os.path.join(self.BASE_DIR, 'data', 'whoosh_index') 
+
+        # Set environment variables
+        os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+        os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
+        os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
+        os.environ["AZURE_OPENAI_EMBEDDING_MODEL"] = os.getenv("OPENAI_EMBEDDING_MODEL")
+        os.environ["AZURE_OPENAI_4O"] = os.getenv("OPENAI_MODEL_4o")
+      
+        # Retrieve environment variables
+        self.AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY")
+        self.AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT") 
+        self.AZURE_OPENAI_EMBEDDING = os.environ.get("AZURE_OPENAI_EMBEDDING_MODEL")
+        self.AZURE_OPENAI_4O = os.environ.get("AZURE_OPENAI_4O")
+        self.AZURE_API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION")
+        
+        # Setup logger
+        self.logger = setup_logger(self.LOG_FILE)
+        
+        # Log the paths for debugging
+        self.logger.info(f"BASE_DIR: {self.BASE_DIR}")
+        self.logger.info(f"LOG_FILE: {self.LOG_FILE}")
+        self.logger.info(f"PDF_DIRECTORY: {self.PDF_DIRECTORY}")
+        self.logger.info(f"PERSIST_DIRECTORY: {self.PERSIST_DIRECTORY}")
+        self.logger.info(f"WHOOSH_INDEX_DIR: {self.WHOOSH_INDEX_DIR}")
     
-   
-    os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-    os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
-    os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-    os.environ["AZURE_OPENAI_EMBEDDING_MODEL"] = os.getenv("OPENAI_EMBEDDING_MODEL")
-    os.environ["AZURE_OPENAI_4O"] = os.getenv("OPENAI_MODEL_4o")
-  
-    PDF_DIRECTORY = ".././data/Restaurants_data"  
-    PERSIST_DIRECTORY = ".././data/vectorDB/chroma"
-    AZURE_OPENAI_API_KEY = os.environ["AZURE_OPENAI_API_KEY"]
-    AZURE_OPENAI_ENDPOINT = os.environ["AZURE_OPENAI_ENDPOINT"] 
-    AZURE_OPENAI_EMBEDDING = os.environ["AZURE_OPENAI_EMBEDDING_MODEL"]
-    AZURE_OPENAI_4O = os.environ["AZURE_OPENAI_4o"]
-    AZURE_API_VERSION = os.environ["AZURE_OPENAI_API_VERSION"]
-    WHOOSH_INDEX_DIR = "whoosh_index" 
-    # Setup logger
-    logger = setup_logger(LOG_FILE)
-
-    # Validate directories
-    if not os.path.isdir(PDF_DIRECTORY):
-        logger.error(f"PDF directory does not exist: {PDF_DIRECTORY}")
-        sys.exit(1)
-    if not os.path.exists(os.path.dirname(PERSIST_DIRECTORY)):
-        try:
-            os.makedirs(os.path.dirname(PERSIST_DIRECTORY), exist_ok=True)
-            logger.info(f"Created directory for vector store: {os.path.dirname(PERSIST_DIRECTORY)}")
-        except Exception as e:
-            logger.error(f"Failed to create directory {os.path.dirname(PERSIST_DIRECTORY)}: {e}")
-            sys.exit(1)
-    if not os.path.exists(os.path.dirname(LOG_FILE)):
-        try:
-            os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
-            logger.info(f"Created directory for logs: {os.path.dirname(LOG_FILE)}")
-        except Exception as e:
-            logger.error(f"Failed to create directory {os.path.dirname(LOG_FILE)}: {e}")
-            sys.exit(1)
-
-    # Initialize the VectorStoreAgent
-    agent_vector_search = VectorStoreAgent(
-        pdf_directory=PDF_DIRECTORY,
-        persist_directory=PERSIST_DIRECTORY,
-        azure_openai_api_key=AZURE_OPENAI_API_KEY,
-        azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
-        azure_openai_embedding_deployment=AZURE_OPENAI_EMBEDDING,
-        log_file=LOG_FILE
-    )
-    # Initialize the CombinedKeywordRetriever
-    agent_keyword_search = CombinedKeywordRetriever(
-        pdf_directory=PDF_DIRECTORY,
-        log_file_pre_processor="llm_processor.log",
-        log_file_retriever="bm25_retriever_agent.log",
-        chunk_size=2000,
-        chunk_overlap=200,
-        bm25_params={"k1": 0.5, "b": 0.75},
-        whoosh_index_dir=WHOOSH_INDEX_DIR,
-        azure_openai_api_key=AZURE_OPENAI_API_KEY,
-        azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
-        azure_openai_deployment=AZURE_OPENAI_4O,
-        azure_api_version=AZURE_API_VERSION
-    )
-
-    # Initialize the LLMProcessor
-    llm_processor = LLMProcessor(
-        azure_openai_api_key=AZURE_OPENAI_API_KEY,
-        azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
-        azure_openai_deployment=AZURE_OPENAI_4O,
-        azure_api_version=AZURE_API_VERSION,
-        log_file=LOG_FILE
-    )
-
-    def qa_chain(query):
-        raw_vector_results = agent_vector_search.query(query)
-        #log the full raw results
-        logger.info(f"Raw raw_vector_results: {raw_vector_results}")
-        raw_keyword_results= agent_keyword_search.retrieve_documents(query, top_k=5)
-        logger.info(f"Raw raw_keyword_results: {raw_keyword_results}")
-        #combined the two results
+        # Validate and create necessary directories
+        self._validate_and_create_directories()
+    
+        # Initialize the VectorStoreAgent
+        self.agent_vector_search = VectorStoreAgent(
+            pdf_directory=self.PDF_DIRECTORY,
+            persist_directory=self.PERSIST_DIRECTORY,
+            azure_openai_api_key=self.AZURE_OPENAI_API_KEY,
+            azure_openai_endpoint=self.AZURE_OPENAI_ENDPOINT,
+            azure_openai_embedding_deployment=self.AZURE_OPENAI_EMBEDDING,
+            log_file=self.LOG_FILE
+        )
+        
+        # Initialize the CombinedKeywordRetriever
+        self.agent_keyword_search = CombinedKeywordRetriever(
+            pdf_directory=self.PDF_DIRECTORY,
+            log_file_pre_processor=os.path.join(self.BASE_DIR, 'logs', 'llm_processor.log'),
+            log_file_retriever=os.path.join(self.BASE_DIR, 'logs', 'bm25_retriever_agent.log'),
+            chunk_size=2000,
+            chunk_overlap=200,
+            bm25_params={"k1": 0.5, "b": 0.75},
+            whoosh_index_dir=self.WHOOSH_INDEX_DIR,
+            azure_openai_api_key=self.AZURE_OPENAI_API_KEY,
+            azure_openai_endpoint=self.AZURE_OPENAI_ENDPOINT,
+            azure_openai_deployment=self.AZURE_OPENAI_4O,
+            azure_api_version=self.AZURE_API_VERSION
+        )
+    
+        # Initialize the LLMProcessor
+        self.llm_processor = LLMProcessor(
+            azure_openai_api_key=self.AZURE_OPENAI_API_KEY,
+            azure_openai_endpoint=self.AZURE_OPENAI_ENDPOINT,
+            azure_openai_deployment=self.AZURE_OPENAI_4O,
+            azure_api_version=self.AZURE_API_VERSION,
+            log_file=self.LOG_FILE
+        )
+    
+    def _validate_and_create_directories(self):
+        """
+        Validates the existence of required directories and creates them if necessary.
+        """
+        directories = {
+            "PDF_DIRECTORY": self.PDF_DIRECTORY,
+            "PERSIST_DIRECTORY": self.PERSIST_DIRECTORY,
+            "LOG_FILE_DIR": os.path.dirname(self.LOG_FILE),
+            "WHOOSH_INDEX_DIR": self.WHOOSH_INDEX_DIR
+        }
+        
+        for name, path in directories.items():
+            if name == "PDF_DIRECTORY":
+                if not os.path.isdir(path):
+                    self.logger.error(f"{name} does not exist: {path}")
+                    sys.exit(1)
+            else:
+                if not os.path.exists(path):
+                    try:
+                        os.makedirs(path, exist_ok=True)
+                        self.logger.info(f"Created directory for {name}: {path}")
+                    except Exception as e:
+                        self.logger.error(f"Failed to create directory {path}: {e}")
+                        sys.exit(1)
+    
+    def return_unique_documents(self, query):
+        """
+        Accepts a query and returns a list of unique documents retrieved 
+        from both vector and keyword searches.
+        
+        Args:
+            query (str): The search query.
+        
+        Returns:
+            list: A list of unique document objects.
+        """
+        raw_vector_results = self.agent_vector_search.query(query)
+        raw_keyword_results = self.agent_keyword_search.retrieve_documents(query, top_k=5)
+        combined_results = raw_vector_results + raw_keyword_results
+        seen_contents = set()
+        unique_documents = []
+        for doc in combined_results:
+            normalized_content = doc.page_content.strip().lower()
+            if normalized_content not in seen_contents:
+                unique_documents.append(doc)
+                seen_contents.add(normalized_content)
+        return unique_documents
+    
+    def qa_chain(self, query):
+        """
+        Processes a query through vector and keyword searches, summarizes the results 
+        using the LLMProcessor, and returns the summary.
+        
+        Args:
+            query (str): The search query.
+        
+        Returns:
+            str: The summarized response.
+        """
+        raw_vector_results = self.agent_vector_search.query(query)
+        # Log the full raw results
+        self.logger.info(f"Raw vector results: {raw_vector_results}")
+        
+        raw_keyword_results = self.agent_keyword_search.retrieve_documents(query, top_k=5)
+        self.logger.info(f"Raw keyword results: {raw_keyword_results}")
+        
         combined_results = raw_vector_results + raw_keyword_results
         
         # Remove duplicates based on normalized page content
@@ -106,44 +166,7 @@ def vectorDB_Engine():
                 unique_documents.append(doc)
                 seen_contents.add(normalized_content)
                 
-        logger.info(f"Combined raw results: {unique_documents}")
-        summary = llm_processor.process_query_response(query, unique_documents)
+        self.logger.info(f"Combined unique documents: {unique_documents}")
+        summary = self.llm_processor.process_query_response(query, unique_documents)
         return summary
-
-    def test_module():
-        """
-        A test method to interactively query the vector store via the terminal.
-        Displays both raw and summarized results, handles edge cases, and logs interactions.
-        """
-        print("=== Vector Store Agent Test Module ===")
-        print("Enter 'exit' to quit.")
-        while True:
-            try:
-                query = input("Enter your query: ")
-            except (KeyboardInterrupt, EOFError):
-                print("\nExiting test module.")
-                break
-            if query.strip().lower() in ['exit', 'quit']:
-                print("Exiting test module.")
-                break
-            if not query.strip():
-                print("Empty query. Please enter a valid query.")
-                continue
-
-            # Perform the query using the conversational chain
-            try:
-                response = qa_chain(query)
-            except Exception as e:
-                print(f"An error occurred during the query: {e}")
-                continue
-
-            # Display the summarized response
-            print("\n--- Summarized Response ---")
-            print(response)
-            print("\n--- End of Response ---\n")
-
-    # Start the test module
-    test_module()
-
-if __name__ == "__main__":
-    vectorDB_Engine()
+    

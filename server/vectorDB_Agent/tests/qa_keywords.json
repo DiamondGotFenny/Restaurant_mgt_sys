@@ -472,8 +472,8 @@
         ]
       },
       "answers": {
-        "A1": "Cherie Chen recommends two unique dessert places in her secret list:\n\n1. **Sugar Sweet Sunshine**\n - **Description:** A sweet and unpretentious dessert shop known for adorable and memorable cupcakes and puddings. It has a cozy atmosphere and offers a variety of flavors.\n\n2. **Momofuku Bakery & Milk Bar**\n - **Description:** This dessert stop is for non-traditionalists, offering unique ice cream flavors inspired by kids' cereals and donuts, as well as cookies incorporating unconventional ingredients like pretzels, potato chips, and coffee grounds.\n\n3. **BAR GATO**\n - **Description:** A trendy urban Japanese izakaya that focuses on creative and exquisite casual food and drinks. Although not a traditional dessert place, it offers innovative cocktails and a selection of Japanese sake that can complement a sweet ending to a meal.\n\n4. **Big Gay Ice Cream**\n - **Description:** Known for its creative soft-serve ice cream with unusual toppings such as olive oil and sea salt, toasted curried coconut, Trix cereal, and crushed Nilla wafers. It provides a unique and playful ice cream experience.\n\nThese dessert places offer a variety of innovative and delightful options that cater to different tastes and preferences.\n\n**Sources:** Local New Yorker's Secret List_by Cherie Chen",
-        "A2": "**Sugar Sweet Sunshine**\n- **Description:** A sweet and unpretentious dessert shop that offers a cozy atmosphere reminiscent of a warm and comfortable living room. Known for its adorable and memorable cupcakes and puddings. The Lemon Yummy and Ooey Gooey cupcakes are classic flavors, while the banana pudding is a popular item recommended by many on social media.\n- **Source:** Local New Yorker's Secret List by Cherie Chen\n\n**BAR GATO**\n- **Description:** A trendy urban Japanese izakaya that focuses on creative and exquisite casual food and drinks. Although not a traditional dessert place, it offers innovative cocktails and a selection of Japanese sake that can complement a sweet ending to a meal.\n- **Source:** Local New Yorker's Secret List by Cherie Chen\n\n**Big Gay Ice Cream**\n- **Description:** Known for its creative soft-serve ice cream with unusual toppings such as olive oil and sea salt, toasted curried coconut, Trix cereal, and crushed Nilla wafers. It provides a unique and playful ice cream experience.\n- **Source:** Local New Yorker's Secret List by Cherie Chen"
+        "A1": "Cherie Chen recommends two unique dessert places in her secret list:\n\n1. **Sugar Sweet Sunshine**\n - **Description:** A sweet and unpretentious dessert shop known for adorable and memorable cupcakes and puddings. It has a cozy atmosphere and offers a variety of flavors.\n\n2. **BAR GATO**\n - **Description:** A trendy urban Japanese izakaya that focuses on creative and exquisite casual food and drinks. Although not a traditional dessert place, it offers innovative cocktails and a selection of Japanese sake that can complement a sweet ending to a meal.\n\n**Sources:** Local New Yorker's Secret List_by Cherie Chen",
+        "A2": "**Sugar Sweet Sunshine**\n- **Description:** A sweet and unpretentious dessert shop that offers a cozy atmosphere reminiscent of a warm and comfortable living room. Known for its adorable and memorable cupcakes and puddings. The Lemon Yummy and Ooey Gooey cupcakes are classic flavors, while the banana pudding is a popular item recommended by many on social media.\n- **Source:** Local New Yorker's Secret List by Cherie Chen\n\n**BAR GATO**\n- **Description:** A trendy urban Japanese izakaya that focuses on creative and exquisite casual food and drinks. Although not a traditional dessert place, it offers innovative cocktails and a selection of Japanese sake that can complement a sweet ending to a meal.\n- **Source:** Local New Yorker's Secret List by Cherie Chen\n\n- **Source:** Local New Yorker's Secret List by Cherie Chen"
       }
     },
     {
@@ -673,6 +673,181 @@
       },
       "answers": {
         "A1": "New York City offers several excellent seafood options, particularly for oyster lovers:\n\n1. **Le Bernardin**: Listed as one of the top 10 must-reserve restaurants, it's described as a \"seafood lovers' paradise\" by chef Eric Ripert.\n2. **Oyster Bar**: Located in Grand Central Terminal, it has been serving fresh seafood for over 100 years. The guide suggests taking a seat at the bar with an order of raw oysters.\n3. **Mermaid Inn**: Located in the East Village, it offers excellent seafood and has \"half price oysters during happy hour.\" This suggests it would be a good and potentially cost-effective option for enjoying oysters.\n4. **Cull and Pistol**: Found in Chelsea Market, this sit-down oyster bar serves seafood and raw items.\n5. **Oceana**: While not specifically mentioned for oysters, it's described as a beloved NYC dining destination renowned for exceptional hospitality and world-class cuisine, specializing in seafood.\n\nThese options range from high-end dining experiences to more casual settings, all known for their quality seafood offerings.\n\n**Sources:** \"Top 10 Must Reserve Restaurants in New York City.pdf\", \"A Guide to New York City_Bumble and bumble University Edition.pdf\", and \"2024-National-Meeting-Restaurant-Guide.pdf\""
+      }
+    },
+    {
+      "id": 21,
+      "question": "I want to eat some oysters, can you recommand me some restaurants in New York City?",
+      "question_keywords": ["Oysters", "Restaurants"],
+      "answer_keywords": [
+        "Le Bernardin",
+        "Oyster Bar",
+        "Mermaid Inn",
+        "Cull and Pistol",
+        "Oceana",
+        "Grand Central Terminal",
+        "East Village",
+        "Chelsea Market",
+        "Seafood",
+        "Oysters"
+      ],
+      "restaurants": {
+        "Le Bernardin": ["Le Bernardin", "Seafood"],
+        "Oyster Bar": ["Oyster Bar", "Grand Central Terminal"],
+        "Mermaid Inn": ["Mermaid Inn", "Oysters"],
+        "Cull and Pistol": ["Cull and Pistol", "Oyster Bar"],
+        "Oceana": ["Oceana", "Seafood"]
+      },
+      "answers": {
+        "A1": "here are some recommended restaurants in New York City where you can enjoy oysters: Oyster Bar: Located in the lower level of Grand Central Terminal, this restaurant has been serving fresh seafood for over 100 years. It's specifically recommended for its raw oysters, and you can enjoy them while seated at the bar. The unique, vaulted setting adds to the experience. Mermaid Inn: This restaurant in the East Village offers excellent seafood. They have a special \"half price oysters during happy hour,\" which makes it a good and potentially cost-effective option for enjoying oysters. Cull and Pistol: Found in Chelsea Market, this is described as a sit-down oyster bar serving seafood and raw items. While specific details about their oyster selection aren't provided, its designation as an oyster bar suggests it would be a good place to enjoy oysters. Redeye Grill: While not specifically mentioned for oysters, this restaurant near Carnegie Hall is described as a \"classy Midtowner\" with a menu \"starring tons of seafood.\" Given its seafood focus, they likely serve oysters as well. Oceana: This is described as a beloved New York City dining destination renowned for exceptional hospitality and world-class seafood cuisine. While oysters aren't specifically mentioned, as a high-end seafood restaurant, they likely offer a good oyster selection. Remember to check the restaurants' current menus and possibly make reservations, especially for the more upscale options. Sources:A Guide to New York City_Bumble and bumble University Edition.pdf, 2024-National-Meeting-Restaurant-Guide.pdf"
+      }
+    },
+    {
+      "id": 22,
+      "question": "What are some highly-rated Italian restaurants in NYC?",
+      "question_keywords": ["Highly-rated", "Italian", "Restaurants"],
+      "answer_keywords": [
+        "Crispo",
+        "SANTINA",
+        "Nocello",
+        "Trattoria Dell'Arte",
+        "Bobby Van’s Grill & Steakhouse",
+        "Becco",
+        "Redeye Grill",
+        "Bice Cucina",
+        "Nino’s Tuscany",
+        "Nirvana",
+        "Noche Mexicana",
+        "L’Artusi",
+        "L’Impero",
+        "La Bergamote",
+        "La Carbonara",
+        "La Parisienne",
+        "La Piazzetta",
+        "La Ripaille",
+        "La Rivista",
+        "Earth —NYC",
+        "East 12th Osteria",
+        "Luzzo’s",
+        "Ma Peche [Closed]",
+        "Madison Bistro",
+        "Mai House"
+      ],
+      "restaurants": {
+        "Crispo": [
+          "Italian",
+          "240 West 14th Street",
+          "212.229.1818",
+          "Freshly-made Pasta",
+          "Large garden"
+        ],
+        "SANTINA": [
+          "Italian",
+          "820 Washington Street",
+          "212.254.3000",
+          "Sumptuous Italian fare",
+          "Festive Island-bar Aesthetic",
+          "Located below the High Line",
+          "Located next to The Whitney"
+        ],
+        "Nocello": [
+          "Italian",
+          "Midtown Manhattan",
+          "257 West 55th Street",
+          "212.713.0224",
+          "Fish",
+          "Veal",
+          "Homemade Pasta",
+          "Lamb",
+          "Ossobuco",
+          "Seafood"
+        ],
+        "Trattoria Dell'Arte": [
+          "Italian",
+          "900 7th Avenue",
+          "212.245.9800",
+          "Oversized Sculptures",
+          "Italian artist's studio",
+          "Wall gallery of famous Italian noses"
+        ],
+        "Bobby Van’s Grill & Steakhouse": [
+          "American Grill",
+          "Steak",
+          "Seafood",
+          "135 West 50th Street",
+          "212.957.5050",
+          "Private and semi-private events"
+        ],
+        "Becco": [
+          "Italian",
+          "355 West 46th Street",
+          "212.397.7597",
+          "Pasta-tasting menu",
+          "Extensive wine list",
+          "Restaurant Row",
+          "Theater district"
+        ],
+        "Redeye Grill": [
+          "American",
+          "Seafood",
+          "Prime Steak",
+          "Oyster Bar",
+          "890 West 56th Street and 7th Avenue",
+          "212.541.9000",
+          "Near Carnegie Hall"
+        ],
+        "Bice Cucina": [
+          "Italian",
+          "62 West 55th Street",
+          "212.757.2600",
+          "Fine Italian Dining",
+          "Mid-town Manhattan"
+        ],
+        "Nino’s Tuscany": ["Italian", "Midtown West", "240 West 14th Street"],
+        "Nirvana": ["Italian", "Murray Hill", "A Grade", "April 2010"],
+        "Noche Mexicana": ["Mexican", "Upper West Side"],
+        "L’Artusi": [
+          "Italian",
+          "West Village",
+          "A - Grade",
+          "September 2015",
+          "Tasty",
+          "Reasonable Prices"
+        ],
+        "L’Impero": [
+          "Italian",
+          "Midtown East",
+          "A Grade",
+          "Outstanding Pasta",
+          "May 2008"
+        ],
+        "La Bergamote": ["French", "West 50th Street", "B Grade"],
+        "La Carbonara": ["Italian", "West Village"],
+        "La Parisienne": ["Coffee Shop", "Midtown West", "Breakfast all day"],
+        "La Piazzetta": [
+          "Italian",
+          "Brooklyn",
+          "212.245.9800",
+          "Polenta appetizer"
+        ],
+        "La Ripaille": ["French", "West Village", "Friendly Service"],
+        "La Rivista": ["Italian", "Midtown West"],
+        "Earth —NYC": [
+          "American",
+          "Chelsea",
+          "High ceilings",
+          "Candles",
+          "Excellent service"
+        ],
+        "East 12th Osteria": ["Italian", "East Village"],
+        "Luzzo’s": ["Pizza", "East Village"],
+        "Ma Peche [Closed]": ["American", "West 50th Street"],
+        "Madison Bistro": ["Bistro", "East 30th Street"],
+        "Mai House": ["Tribeca"]
+      },
+      "answers": {
+        "A1": "Based on the information provided in the documents, here are some highly-rated Italian restaurants in New York City: Crispo: Located in the West Village, it's described as \"a cut above standard NY's many Italian restaurants, and head and shoulders above anything in Little Italy.\" They're known for delicious freshly-made pasta and have a large garden in the back. It's rated A. Lupa: Situated in the West Village, Lupa has a fine reputation, though one reviewer was initially disappointed. On a second visit, they found the pasta to be excellent. It's rated B+. Otto: Located at 1 Fifth Avenue, it's described as offering \"fancy pizza and delicious Italian dishes.\" It's from celebrity chef Mario Batali and has a boisterous atmosphere. It's rated A. Lavagna: This East Village restaurant is highly praised, with multiple A+ ratings. One reviewer describes it as having \"creative and well-prepared\" food, with substantial servings. The pork chop and ravioli in porcini cream sauce are specifically recommended. Del Posto: While not extensively reviewed in the documents, it's mentioned as part of the top 10 must-reserve restaurants in New York City. It's known for its exceptional handmade pasta dishes. Remi: Located in the West 50s, it's described as a little bit pricey, but the food is beautifully prepared, and the portions are ample. They recommend trying one of the pasta dishes. The room is described as striking, and the service as pleasant and attentive. It consistently receives A ratings. Remember that restaurant quality can change over time, so it's always a good idea to check recent reviews or call ahead for current information. Sources: \"A Guide to New York City_Bumble and bumble University Edition.pdf\" \"Top 10 Must Reserve Restaurants in New York City.pdf\" \"2024-National-Meeting-Restaurant-Guide.pdf\"",
+        "A2": "Based on the provided data, here are some highly-rated Italian restaurants in NYC: Nocello: Located in Midtown Manhattan, it's rated A and known for excellent food, including homemade pasta, fish, and veal. They offer a $37 fixed price menu with recommended ravioli stuffed with duck. Becco: In the Theater District, it's famous for its innovative pasta-tasting menu and extensive $35 wine list. Trattoria Dell'Arte: In Midtown Manhattan, it's designed to evoke an Italian artist's studio and is conveniently located near many hotels. L'Artusi: Located in the West Village, it's rated A- and praised for tasty food, reasonable prices, and good service. L'Impero: In Midtown East, it's rated A for outstanding pasta, though portions were noted to be small. La Piazzetta: Located in Brooklyn, it's rated A for delicious and interesting Italian food, with a particularly good polenta appetizer. Gonzo: In the West Village, it's rated A for excellent traditional Italian food with big servings. Pepolino: Located in Tribeca, it's rated A for terrific upscale Italian food, with a recommended spinach soufflé appetizer. Cucina 8 1/2: In Midtown Manhattan, it's a higher-end option close to many hotels. Lincoln Ristorante: Near Lincoln Center, it's the most upscale option on this list. Baci & Abbracci: In Brooklyn, it's rated A- for very good pasta dishes and excellent tiramisu. Gnocco: In the East Village, it's rated A with a notable appetizer of figs stuffed with ricotta. These restaurants offer a range of experiences from casual to upscale, and are spread across different neighborhoods in NYC."
       }
     }
   ]

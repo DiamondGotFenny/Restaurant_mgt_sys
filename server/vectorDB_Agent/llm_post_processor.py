@@ -41,39 +41,52 @@ class LLMProcessor:
         self.prompt = PromptTemplate(
             input_variables=["query", "documents"],
             template="""
-You are a data processing assistant. your task is extracting and organizing relevant information from provided documents based on user queries. The information will be used for passing to next data processor, so lossless informatition is important at this stage. Adhere to the following guidelines:
+You are a Data Processing Assistant. Your task is to extract and organize all relevant information from the provided documents based on the user's query. The extracted information will be passed to the next data processor, so it is crucial to preserve all details accurately. Lossless information retention is essential at this stage. Adhere to the following guidelines:
 
-**1. Understand the Query:
-Carefully read and comprehend the user’s query to determine the specific information being requested.** \
-**2. Extract Relevant Information:
-Analyze the combined documents to identify and extract all information directly relevant to the user’s query. \
-do not do any summarization or abstract, just retrieve full relevant information from that chunk.**\
-Ensure inclusion of key entities such as addresses, phone numbers, business hours, email addresses, websites, and other pertinent details.**\
-**3. Exclude Unrelated Information:
-Disregard any information that does not directly pertain to the user’s query.** \
-**4. Maintain Accuracy:
-Do not fabricate or infer information. Only use data explicitly present in the provided documents.
-Avoid generating any content that is not supported by the source material to prevent hallucinations.**\
-**5. Organize the Output:
-Present the extracted information in a clear, concise, and structured format.
-Use bullet points, headings, or tables as necessary to enhance readability and organization.**\
-**6. Quality Assurance:
-Double-check the extracted information to ensure completeness and accuracy.
-Make sure no key entities related to the query are omitted.**\
+**Guidelines**
+1. Understand the Query:
+Carefully read and comprehend the user’s query to determine the specific information being requested.
+Identify keywords and key concepts, such as locations, types of entities (e.g., restaurants, events, products), and any specific requirements or criteria.
+2. Extract Relevant Information:
+Analyze the provided documents to identify and extract all information directly related to the user’s query.
+Retrieve full relevant information from each pertinent section without summarizing or abstracting.
+Include key entities and details relevant to the query, such as:
+    -Name/Title
+    -Address/Location
+    -Phone Number/Contact Information
+    -Category/Type
+    -Business Hours/Operational Details
+    -Website or Email Address (if available)
+    -Additional Details (e.g., specialties, ambiance, ratings)
+    
+3. Exclude Unrelated Information:
+Disregard any data that does not directly pertain to the subject of the user’s query.
+Ignore mentions of unrelated topics, entities outside the scope of the query, or general information not pertinent.
+4. Maintain Accuracy:
+Do not fabricate, infer, or assume information not explicitly present in the documents.
+Ensure all extracted details are accurate and verifiable against the source material.
+Avoid any form of content generation that isn't supported by the source documents to prevent inaccuracies.
+5. Organize the Output:
+Present the information in a structured and clear format without using tables.
+Use clearly labeled sections and bullet points for each entity to enhance readability.
+Include the source document name and page number for each entry to allow the user to verify credibility.
+6. Re-Ranking Criteria:
+Prioritize entities based on criteria relevant to the query, such as:
+Quality/Rating: Indicators like grades, reviews, or specific comments on quality.
+Relevance to Requirements: Preference for entities that meet specified needs (e.g., no reservations needed, specific amenities).
+Other Relevant Criteria: Depending on the query, such as distance, price range, popularity, etc.
+List all relevant entities in each category or section, sorted first by the highest priority criteria, then by secondary criteria.
+7. Quality Assurance:
+Double-check all extracted information for completeness and accuracy.
+Ensure no key entities or details related to the query are omitted.
 
 **User Query:**
-{query}
+"{query}"
 
 **Retrieved Documents:**
-{documents}
+"{documents}"
 
-**Notes:
-Ensure all extracted details are accurate and directly related to the query.
-Maintain a professional and neutral tone.
-If certain key entities are not available in the documents, indicate them as "Not Provided" or omit based on relevance.
-you should also provide the document name and page of the source, so that user can judge the credibility **
-
-* Relevant Information:**
+**Relevant Information:**
 """
         )
         self.output_parser = StrOutputParser()
@@ -119,62 +132,3 @@ you should also provide the document name and page of the source, so that user c
             self.logger.error(f"Error during summarization: {e}")
             return "An error occurred while processing your request."
         
-def test_llm_processor():
-    """
-    Test function to interactively input query and content, and print the summarized result.
-    """
-
-    os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-    os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
-    os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-    os.environ["AZURE_OPENAI_4O"] = os.getenv("OPENAI_MODEL_4o")
-
-    AZURE_OPENAI_API_KEY = os.environ["AZURE_OPENAI_API_KEY"]
-    AZURE_OPENAI_ENDPOINT = os.environ["AZURE_OPENAI_ENDPOINT"] 
-    AZURE_OPENAI_4O = os.environ["AZURE_OPENAI_4o"]
-    AZURE_API_VERSION = os.environ["AZURE_OPENAI_API_VERSION"]
-
-    # Initialize LLMProcessor
-    llm_processor = LLMProcessor(
-         azure_openai_api_key=AZURE_OPENAI_API_KEY,
-        azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
-        azure_openai_deployment=AZURE_OPENAI_4O,
-        azure_api_version=AZURE_API_VERSION,
-        log_file="llm_processor_test.log"
-    )
-
-    print("=== LLM Processor Test Module ===")
-    print("Enter 'exit' to quit.")
-    while True:
-        try:
-            query = input("Enter your query: ")
-            if query.strip().lower() in ['exit', 'quit']:
-                print("Exiting test module.")
-                break
-            if not query.strip():
-                print("Empty query. Please enter a valid query.")
-                continue
-
-            content = input("Enter the content from retrieved documents: ")
-            if content.strip().lower() in ['exit', 'quit']:
-                print("Exiting test module.")
-                break
-            if not content.strip():
-                print("Empty content. Please enter valid content.")
-                continue
-
-            # Create a mock 'Document' list
-            Document = namedtuple("Document", ["page_content"])
-            raw_results = [Document(page_content=content)]
-
-            # Process the query
-            summary = llm_processor.process_query_response(query, raw_results)
-
-            print(summary)
-            print("\n--- End of Response ---\n")
-        except (KeyboardInterrupt, EOFError):
-            print("\nExiting test module.")
-            break
-
-if __name__ == "__main__":
-    test_llm_processor()

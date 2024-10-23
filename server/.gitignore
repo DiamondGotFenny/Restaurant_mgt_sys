@@ -7,3 +7,4 @@ whoosh_index/
 *.log
 *.wav
 *.pyc
+*.json

@@ -36,7 +36,7 @@ class VectorStoreAgent:
 
         # Initialize Embeddings
         self.embeddings = AzureOpenAIEmbeddings(
-            model="text-embedding-3-small",
+            model=azure_openai_embedding_deployment,
             api_key=azure_openai_api_key,
             azure_endpoint=azure_openai_endpoint,
             deployment=azure_openai_embedding_deployment,

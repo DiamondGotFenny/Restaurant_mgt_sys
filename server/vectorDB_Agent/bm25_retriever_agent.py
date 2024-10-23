@@ -10,21 +10,16 @@ queries to retrieve relevant documents based on specified entities.
 """
 
 import os
-import glob
 import sys
-import json
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Optional, Dict, Any
 from logger_config import setup_logger
-from dotenv import load_dotenv, find_dotenv
 from langchain_community.retrievers import BM25Retriever
 from langchain.schema import Document
 from document_processor import DocumentProcessor
 from whoosh import index
 from whoosh.fields import Schema, TEXT, ID
 from whoosh.qparser import QueryParser, OrGroup
-from whoosh.analysis import StemmingAnalyzer
 from whoosh.scoring import BM25F
-from query_pre_processor import LLMQueryPreProcessor
 
 
 

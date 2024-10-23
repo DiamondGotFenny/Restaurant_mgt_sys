@@ -206,17 +206,12 @@ def main(logger: logging.Logger, test_log_filepath: str):
     # Load environment variables
     load_dotenv(find_dotenv())
 
-    os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-    os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
-    os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-    os.environ["AZURE_OPENAI_4O"] = os.getenv("OPENAI_MODEL_4o")
-    os.environ["AZURE_OPENAI_EMBEDDING_MODEL"] = os.getenv("OPENAI_EMBEDDING_MODEL")
-
-    AZURE_OPENAI_API_KEY = os.environ["AZURE_OPENAI_API_KEY"]
-    AZURE_OPENAI_ENDPOINT = os.environ["AZURE_OPENAI_ENDPOINT"] 
-    AZURE_OPENAI_4O = os.environ["AZURE_OPENAI_4o"]
-    AZURE_API_VERSION = os.environ["AZURE_OPENAI_API_VERSION"]
-    AZURE_OPENAI_EMBEDDING_MODEL = os.environ.get("AZURE_OPENAI_EMBEDDING_MODEL")
+    AZURE_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    AZURE_OPENAI_ENDPOINT = os.getenv("OPENAI_API_BASE")
+    AZURE_OPENAI_4O = os.getenv("OPENAI_MODEL_4o")
+    AZURE_OPENAI_4OMINI = os.getenv("OPENAI_MODEL_4OMINI")
+    AZURE_API_VERSION = os.getenv("AZURE_API_VERSION")
+    AZURE_OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL")
 
     # Validate environment variables
     if not all([AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_EMBEDDING_MODEL, AZURE_API_VERSION]):
@@ -246,7 +241,7 @@ def main(logger: logging.Logger, test_log_filepath: str):
     llm_processor = LLMProcessor(
          azure_openai_api_key=AZURE_OPENAI_API_KEY,
         azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
-        azure_openai_deployment=AZURE_OPENAI_4O,
+        azure_openai_deployment=AZURE_OPENAI_4OMINI,
         azure_api_version=AZURE_API_VERSION,
         log_file="llm_post_processor_test.log"
     )

@@ -6,11 +6,9 @@ from typing import List, Dict
 from dotenv import load_dotenv, find_dotenv
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Import necessary components from vectorDB_Engine.py
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from vectorDB_Engine import VectorDBEngine
-from llm_post_processor import LLMProcessor
 from langchain_openai import AzureOpenAIEmbeddings
 from logger_config import setup_logger
 
@@ -81,17 +79,11 @@ def test_vectorDB_engine(logger: logging.Logger):
     # Load environment variables
     load_dotenv(find_dotenv())
 
-    # Set Azure OpenAI environment variables
-    os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-    os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
-    os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-    os.environ["AZURE_OPENAI_EMBEDDING_MODEL"] = os.getenv("OPENAI_EMBEDDING_MODEL")
-
     # Retrieve environment variables
-    AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY")
-    AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT")
-    AZURE_OPENAI_EMBEDDING_MODEL = os.environ.get("AZURE_OPENAI_EMBEDDING_MODEL")
-    AZURE_API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION")
+    AZURE_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    AZURE_OPENAI_ENDPOINT =os.getenv("OPENAI_API_BASE")
+    AZURE_OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL")
+    AZURE_API_VERSION = os.getenv("AZURE_API_VERSION")
 
     # Validate environment variables
     if not all([AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_EMBEDDING_MODEL, AZURE_API_VERSION]):

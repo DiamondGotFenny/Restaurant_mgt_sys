@@ -260,17 +260,11 @@ def main(logger: logging.Logger, test_log_filepath: str):
     # Load environment variables
     load_dotenv(find_dotenv())
 
-    # Set Azure OpenAI environment variables
-    os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-    os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
-    os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-    os.environ["AZURE_OPENAI_EMBEDDING_MODEL"] = os.getenv("OPENAI_EMBEDDING_MODEL")
-
     # Retrieve environment variables
-    AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY")
-    AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT")
-    AZURE_OPENAI_EMBEDDING_MODEL = os.environ.get("AZURE_OPENAI_EMBEDDING_MODEL")
-    AZURE_API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION")
+    AZURE_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    AZURE_OPENAI_ENDPOINT = os.getenv("OPENAI_API_BASE")
+    AZURE_OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL")
+    AZURE_API_VERSION = os.getenv("AZURE_API_VERSION")
 
     # Validate environment variables
     if not all([AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_EMBEDDING_MODEL, AZURE_API_VERSION]):

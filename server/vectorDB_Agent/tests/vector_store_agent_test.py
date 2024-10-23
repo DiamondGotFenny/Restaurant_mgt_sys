@@ -224,11 +224,6 @@ def main(logger:logging.Logger,test_log_filepath:str):
     # Load environment variables
     load_dotenv(find_dotenv())
 
-    # Set Azure OpenAI environment variables
-    os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-    os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
-    os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-    os.environ["AZURE_OPENAI_EMBEDDING_MODEL"] = os.getenv("OPENAI_EMBEDDING_MODEL")
 
     # Configuration - Replace these with your actual paths and Azure OpenAI credentials
     PDF_DIRECTORY = "../.././data/Restaurants_data"  # e.g., "./pdfs"

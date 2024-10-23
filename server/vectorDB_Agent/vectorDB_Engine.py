@@ -24,20 +24,14 @@ class VectorDBEngine:
         self.PDF_DIRECTORY = os.path.join(self.BASE_DIR, 'data', 'Restaurants_data')
         self.PERSIST_DIRECTORY = os.path.join(self.BASE_DIR, 'data', 'vectorDB', 'chroma')
         self.WHOOSH_INDEX_DIR = os.path.join(self.BASE_DIR, 'data', 'whoosh_index') 
-
-        # Set environment variables
-        os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-        os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
-        os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-        os.environ["AZURE_OPENAI_EMBEDDING_MODEL"] = os.getenv("OPENAI_EMBEDDING_MODEL")
-        os.environ["AZURE_OPENAI_4O"] = os.getenv("OPENAI_MODEL_4o")
       
         # Retrieve environment variables
-        self.AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY")
-        self.AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT") 
-        self.AZURE_OPENAI_EMBEDDING = os.environ.get("AZURE_OPENAI_EMBEDDING_MODEL")
-        self.AZURE_OPENAI_4O = os.environ.get("AZURE_OPENAI_4O")
-        self.AZURE_API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION")
+        self.AZURE_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+        self.AZURE_OPENAI_ENDPOINT = os.getenv("OPENAI_API_BASE")
+        self.AZURE_OPENAI_EMBEDDING = os.getenv("OPENAI_EMBEDDING_MODEL")
+        self.AZURE_OPENAI_4O = os.getenv("OPENAI_MODEL_4o")
+        self.AZURE_OPENAI_4OMINI = os.getenv("OPENAI_MODEL_4OMINI")
+        self.AZURE_API_VERSION = os.getenv("AZURE_API_VERSION")
         
         # Setup logger
         self.logger = setup_logger(self.LOG_FILE)
@@ -81,7 +75,7 @@ class VectorDBEngine:
         self.llm_processor = LLMProcessor(
             azure_openai_api_key=self.AZURE_OPENAI_API_KEY,
             azure_openai_endpoint=self.AZURE_OPENAI_ENDPOINT,
-            azure_openai_deployment=self.AZURE_OPENAI_4O,
+            azure_openai_deployment=self.AZURE_OPENAI_4OMINI,
             azure_api_version=self.AZURE_API_VERSION,
             log_file=self.LOG_FILE
         )

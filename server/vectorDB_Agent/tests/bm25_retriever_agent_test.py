@@ -24,7 +24,7 @@ class EmbeddingSimilarityEvaluator:
             azure_openai_embedding_deployment (str): Azure OpenAI embedding deployment name.
         """
         self.embeddings = AzureOpenAIEmbeddings(
-                model="text-embedding-3-small",
+                model=azure_openai_embedding_deployment,
                 api_key=azure_openai_api_key,
                 azure_endpoint=azure_openai_endpoint,
                 deployment=azure_openai_embedding_deployment,
@@ -262,7 +262,7 @@ def main(logger: logging.Logger, test_log_filepath: str):
 
     # Retrieve environment variables
     AZURE_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    AZURE_OPENAI_ENDPOINT = os.getenv("OPENAI_API_BASE")
+    AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
     AZURE_OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL")
     AZURE_API_VERSION = os.getenv("AZURE_API_VERSION")
 

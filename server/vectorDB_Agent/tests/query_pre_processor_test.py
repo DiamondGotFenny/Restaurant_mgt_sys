@@ -59,7 +59,7 @@ def test_module(logger:logging.Logger,test_log_filepath:str):
 
     # Retrieve environment variables
     AZURE_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    AZURE_OPENAI_ENDPOINT = os.getenv("OPENAI_API_BASE")
+    AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
     AZURE_OPENAI_4O = os.getenv("OPENAI_MODEL_4o")
     AZURE_API_VERSION = os.getenv("AZURE_API_VERSION")
     

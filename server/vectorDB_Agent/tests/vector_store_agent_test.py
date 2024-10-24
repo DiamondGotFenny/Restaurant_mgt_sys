@@ -231,7 +231,7 @@ def main(logger:logging.Logger,test_log_filepath:str):
     GS_FILEPATH = "golden_standard_Raw_Chunks.json"  # Path to your GS JSON file
 
     AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
-    AZURE_OPENAI_ENDPOINT = os.getenv("OPENAI_API_BASE")
+    AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
     AZURE_OPENAI_DEPLOYMENT = os.getenv("OPENAI_EMBEDDING_MODEL")
 
     # Validate directories

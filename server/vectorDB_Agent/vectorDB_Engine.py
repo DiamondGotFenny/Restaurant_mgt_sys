@@ -27,7 +27,7 @@ class VectorDBEngine:
       
         # Retrieve environment variables
         self.AZURE_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-        self.AZURE_OPENAI_ENDPOINT = os.getenv("OPENAI_API_BASE")
+        self.AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
         self.AZURE_OPENAI_EMBEDDING = os.getenv("OPENAI_EMBEDDING_MODEL")
         self.AZURE_OPENAI_4O = os.getenv("OPENAI_MODEL_4o")
         self.AZURE_OPENAI_4OMINI = os.getenv("OPENAI_MODEL_4OMINI")
@@ -62,7 +62,7 @@ class VectorDBEngine:
             log_file_pre_processor=os.path.join(self.BASE_DIR, 'logs', 'llm_processor.log'),
             log_file_retriever=os.path.join(self.BASE_DIR, 'logs', 'bm25_retriever_agent.log'),
             chunk_size=2000,
-            chunk_overlap=200,
+            chunk_overlap=400,
             bm25_params={"k1": 0.5, "b": 0.75},
             whoosh_index_dir=self.WHOOSH_INDEX_DIR,
             azure_openai_api_key=self.AZURE_OPENAI_API_KEY,
@@ -164,3 +164,42 @@ class VectorDBEngine:
         summary = self.llm_processor.process_query_response(query, unique_documents)
         return summary
     
+def test_module():
+        """
+        A test method to interactively query the vector store via the terminal.
+        Displays both raw and summarized results, handles edge cases, and logs interactions.
+        """
+        print("=== Vector Store Agent Test Module ===")
+        print("Enter 'exit' to quit.")
+        os.environ.pop('OPENAI_API_BASE', None) 
+        engine = VectorDBEngine()
+        while True:
+            try:
+                query = input("Enter your query: ")
+            except (KeyboardInterrupt, EOFError):
+                print("\nExiting test module.")
+                break
+            if query.strip().lower() in ['exit', 'quit']:
+                print("Exiting test module.")
+                break
+            if not query.strip():
+                print("Empty query. Please enter a valid query.")
+                continue
+
+            # Perform the query using the conversational chain
+            try:
+                response = engine.qa_chain(query)
+            except Exception as e:
+                print(f"An error occurred during the query: {e}")
+                continue
+
+            # Display the summarized response
+            print("\n--- Summarized Response ---")
+            print(response)
+            print("\n--- End of Response ---\n")
+
+   
+
+if __name__ == "__main__":
+     # Start the test module
+    test_module()

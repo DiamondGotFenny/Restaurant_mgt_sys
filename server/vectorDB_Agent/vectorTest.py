@@ -166,16 +166,12 @@ def main():
     Main function to initialize the agent and start the test module.
     """
     _ = load_dotenv(find_dotenv())
-    os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-    os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("OPENAI_API_BASE")
-    os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-    os.environ["AZURE_OPENAI_EMBEDDING_MODEL"] = os.getenv("OPENAI_EMBEDDING_MODEL")
-    # Configuration - Replace these with your actual paths and Azure OpenAI credentials
+
     PDF_DIRECTORY = ".././data/Restaurants_data"  # e.g., "./pdfs"
     PERSIST_DIRECTORY = ".././data/vectorDB/chroma"
-    AZURE_OPENAI_API_KEY = os.environ["AZURE_OPENAI_API_KEY"]
-    AZURE_OPENAI_ENDPOINT = os.environ["AZURE_OPENAI_ENDPOINT"] 
-    AZURE_OPENAI_DEPLOYMENT = os.environ["AZURE_OPENAI_EMBEDDING_MODEL"]
+    AZURE_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
+    AZURE_OPENAI_DEPLOYMENT = os.getenv("OPENAI_EMBEDDING_MODEL")
 
     # Validate directories
     if not os.path.isdir(PDF_DIRECTORY):

@@ -7,7 +7,6 @@ from fastapi import HTTPException
 from langchain_community.utilities.sql_database import SQLDatabase
 from langchain_openai import AzureChatOpenAI
 from langchain.chains import create_sql_query_chain
-from langchain.chains.openai_tools import create_extraction_chain_pydantic
 from pydantic import BaseModel, Field
 from langchain_community.tools.sql_database.tool import QuerySQLDataBaseTool
 from langchain_core.output_parsers import StrOutputParser
@@ -128,6 +127,7 @@ class TextToSQLEngine:
                 (
                     "system",
                     """You are a PostgreSQL expert. Your task is to create a syntactically correct PostgreSQL query based on the input question.
+                    Remember the returned rows should be limited to 20. 
 
     Available Database Schema:
     {table_info}
@@ -203,6 +203,8 @@ QUERY GUIDELINES:
    - Use appropriate JOIN type based on data requirements
    - Include proper error handling for potential NULL values
 
+3. LIMIT THE RETURNED ROWS TO 20, add limit 20 at the end of the query;
+
 Example Query Patterns:
 
 1. Joining reviews with restaurant details:
@@ -265,28 +267,45 @@ WHERE rhm.name = 'Restaurant Name';
         self.logger.info(f"---------Cleaned SQL query end-------")
         return query
 
-    def _get_relevant_tables(self, query: str) -> List[str]:
-        """Get relevant tables for the query."""
-        self.logger.info(f"Getting relevant tables for query: {query}")
+    def add_limit_to_query(self, sql_query: str, default_limit: int = 20) -> str:
+        """
+        Add LIMIT clause to SQL query if not present, or keep existing LIMIT.
         
-        table_chain = create_extraction_chain_pydantic(
-            Table, 
-            self.model_4o_mini, 
-            system_message=f"""Return the names of ALL the PostgreSQL tables that MIGHT be relevant to the user question. \
-The tables are:
-
-{self.table_info}
-
-Remember to include ALL POTENTIALLY RELEVANT tables, even if you're not sure that they're needed."""
-        )
+        Args:
+            sql_query (str): The SQL query to process
+            default_limit (int): Default limit to add if no LIMIT clause exists (default: 20)
+            
+        Returns:
+            str: SQL query with LIMIT clause
+        """
+        self.logger.debug(f"Processing query for LIMIT clause: {sql_query}")
         
-        result = table_chain.invoke(query)
-        tables = [table.name for table in result]
+        # Remove any trailing semicolon and extra whitespace
+        clean_query = sql_query.strip().rstrip(';')
         
-        self.logger.info(f"Relevant tables: {tables}")
-        return tables
+        # Convert to uppercase for easier pattern matching
+        upper_query = clean_query.upper()
+        
+        try:
+            # Check if query already contains LIMIT
+            if 'LIMIT' in upper_query:
+                self.logger.debug("Query already contains LIMIT clause")
+                return f"{clean_query};"
+                
+            # Check if query contains ORDER BY
+            if 'ORDER BY' in upper_query:
+                # Add LIMIT after ORDER BY clause
+                return f"{clean_query} LIMIT {default_limit};"
+            else:
+                # Add LIMIT at the end of query
+                return f"{clean_query} LIMIT {default_limit};"
+                
+        except Exception as e:
+            self.logger.error(f"Error processing LIMIT clause: {str(e)}")
+            # Return original query with semicolon if there's an error
+            return f"{clean_query};"
 
-    def _generate_sql_query(self, query: str, tables: List[str]) -> str:
+    def _generate_sql_query(self, query: str) -> str:
         """Generate SQL query from natural language query."""
         self.logger.info(f"Generating SQL query for: {query}")
         
@@ -304,9 +323,11 @@ Remember to include ALL POTENTIALLY RELEVANT tables, even if you're not sure tha
             "table_info": self.table_info
         })
         cleaned_query = self.clean_sql_query(sql_query)
+         # Add LIMIT clause if needed
+        final_query = self.add_limit_to_query(cleaned_query)
         
-        self.logger.info(f"Generated SQL query: {cleaned_query}")
-        return cleaned_query
+        self.logger.info(f"Generated SQL query: {final_query}")
+        return final_query
 
     def rephrase_answer(self, question: str, query: str, result: str) -> str:
         """Process the answer using the model."""
@@ -336,11 +357,9 @@ Remember to include ALL POTENTIALLY RELEVANT tables, even if you're not sure tha
         try:
             self.logger.info(f"Processing query: {query}")
             
-            # Get relevant tables
-            tables = self._get_relevant_tables(query)
             
             # Generate SQL query
-            sql_query = self._generate_sql_query(query, tables)
+            sql_query = self._generate_sql_query(query)
             
             # Execute query
             query_result = self.execute_query.run(sql_query)
@@ -349,7 +368,10 @@ Remember to include ALL POTENTIALLY RELEVANT tables, even if you're not sure tha
             final_result = self.rephrase_answer(query, sql_query, query_result)
             
             self.logger.info(f"Query processed successfully")
-            return {"result": final_result}
+            return {"result": final_result,
+                    "sql_query": sql_query,
+                    "query_result": query_result
+                    }
             
         except Exception as e:
             self.logger.error(f"Error processing query: {str(e)}")

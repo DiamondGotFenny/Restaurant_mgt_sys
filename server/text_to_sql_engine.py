@@ -1,12 +1,13 @@
 import os
 import json
-from typing import List
+from typing import List,Optional
 from dotenv import load_dotenv, find_dotenv
 import pandas as pd
 from fastapi import HTTPException
 from langchain_community.utilities.sql_database import SQLDatabase
-from langchain_openai import AzureChatOpenAI
-from langchain.chains import create_sql_query_chain
+from langchain_openai import AzureChatOpenAI,AzureOpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_core.example_selectors import SemanticSimilarityExampleSelector
 from pydantic import BaseModel, Field
 from langchain_community.tools.sql_database.tool import QuerySQLDataBaseTool
 from langchain_core.output_parsers import StrOutputParser
@@ -14,14 +15,23 @@ from langchain_core.prompts import (
     ChatPromptTemplate,
     FewShotChatMessagePromptTemplate,
     PromptTemplate,
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate,ChatPromptTemplate, MessagesPlaceholder
 )
+from langchain.schema import HumanMessage, AIMessage
 
 from logger_config import setup_logger
 from get_tables_info import get_tables_info
 
-class Table(BaseModel):
-    """Table in SQL database."""
-    name: str = Field(description="Name of table in PostgreSQL database.")
+class RequiredTables(BaseModel):
+    """Output from Step 2"""
+    tables: List[str] = Field(description="Tables that are directly needed for the main query")
+
+class TableSchema(BaseModel):
+    """Schema information for a single table"""
+    columns: dict = Field(description="Column definitions")
+    primary_key: List[str] = Field(description="Primary key columns")
+    foreign_keys: Optional[dict] = Field(description="Foreign key relationships")
 
 class TextToSQLEngine:
     def __init__(self):
@@ -54,6 +64,7 @@ class TextToSQLEngine:
         self.azure_openai_deployment_mini = os.getenv("OPENAI_MODEL_4OMINI")
         self.azure_openai_deployment = os.getenv("OPENAI_MODEL_4O")
         self.azure_api_version = os.getenv("AZURE_API_VERSION")
+        self.azure_openai_embedding_deployment = os.getenv("OPENAI_EMBEDDING_MODEL")
 
     def _initialize_components(self):
         """Initialize database and AI models."""
@@ -81,16 +92,56 @@ class TextToSQLEngine:
             temperature=0.2,
             max_tokens=3000
         )
+        self.embeddings = AzureOpenAIEmbeddings(
+                model=self.azure_openai_embedding_deployment,
+                api_key=self.azure_openai_api_key,
+                azure_endpoint=self.azure_openai_endpoint,
+                deployment=self.azure_openai_embedding_deployment,
+            )
         
         self.execute_query = QuerySQLDataBaseTool(db=self.db)
         self.logger.info("AI models initialized successfully")
 
     def _setup_prompts(self):
-        """Setup prompts and load examples."""
-        self.logger.info("Setting up prompts")
+        """Setup all prompts for the multi-step process"""
         
-        # Get database schema information
-        self.table_info = get_tables_info()
+         # Load dynamic examples from JSON
+        try:
+            with open('dynamic_examples.json', 'r', encoding='utf-8') as f:
+                dynamic_examples = json.load(f)['cases']
+            
+        except Exception as e:
+            self.logger.error(f"Error loading dynamic examples: {str(e)}")
+            dynamic_examples = []
+        
+        # Setup for Analysis Prompt
+        analysis_example_prompt = ChatPromptTemplate.from_messages([
+        ("human", "Question: {question}"),
+        ("assistant", """**Analysis**:
+{analysis}
+
+**Query Strategy**:
+{query_strategy}""")
+        ])
+
+
+        # Prepare examples
+        analysis_examples = [
+        {
+            "question": ex["question"],
+            "analysis": ex["analysis"],
+            "query_strategy": ex["query_strategy"]
+        }
+        for ex in dynamic_examples
+    ]
+        
+        analysis_example_selector = SemanticSimilarityExampleSelector.from_examples(
+        examples=analysis_examples,
+        embeddings=self.embeddings,
+        vectorstore_cls=Chroma(),
+        k=2,
+        input_keys=["question"]  
+        )
         
         # Define answer prompt
         self.answer_prompt = PromptTemplate.from_template(
@@ -101,140 +152,147 @@ class TextToSQLEngine:
     PostgreSQL Result: {result}
     Answer: """
         )
+        
+       
+        
+        #load  table descriptions 
+        try:
+            df = pd.read_csv('database_table_descriptions.csv')
+            # Convert to a formatted string with table name and description
+            self.table_descriptions = "\n\n".join([
+                f"Table: {row['Table']}\n"
+                f"Description: {row['Description']}"
+                for _, row in df.iterrows()
+            ])
+            self.logger.info("Table descriptions loaded successfully")
+        except Exception as e:
+            self.logger.error(f"Error loading table descriptions: {str(e)}")
+            self.table_descriptions = "Error loading table descriptions"
+            
+        # Step 1: Analysis Prompt     
+        self.analysis_prompt = ChatPromptTemplate.from_messages([
+         ("system", """You are a SQL query analyzer specializing in restaurant and dining data analysis. Your task is to analyze natural language questions and provide a strategy for query construction.
 
-        # Load examples
-        with open('text_to_sql_examples.json', 'r') as f:
-            self.examples = json.load(f)
+        # Inputs:
+        1. A user's question about restaurants/dining
+        2. You have access to the following a brief list of available tables and their high-level descriptions: {table_descriptions}
 
-        # Create example prompt
-        self.example_prompt = ChatPromptTemplate.from_messages(
-            [
-                ("human", "{input}\nSQLQuery:"),
-                ("ai", "{query}"),
-            ]
+        # Structure your response with only an "Analysis" section and a "Query Strategy" section, in the following format:
+        **Analysis**:
+        [Explain the logic and approach needed to answer the question]
+
+        **Query Strategy** :
+        1. [First step in query construction]
+        2. [Second step]
+        ...
+        [Each step should be specific and actionable]
+        --------------------------------
+
+        # Requirements:
+        - let's think step by step.
+        - Focus on the logic rather than specific SQL syntax.
+        - Identify the most relevant tables that can answer the user's question, considering relationships.
+        - try to access multiple tables to get the required information, and consider the join conditions.
+        - Consider data aggregations, groupings, and orderings needed.
+        - Think about potential NULL values or data quality issues.
+        - Consider performance implications.
+        - Do not handle 'New York' or 'New York City' or 'NYC' that metioned in the question, as the default location is New York City.
+        
+        here is some examples:"""),
+        FewShotChatMessagePromptTemplate(
+            example_selector=analysis_example_selector,
+            example_prompt=analysis_example_prompt,
+            input_variables=["question"]
+        ),
+        HumanMessagePromptTemplate.from_template("{question}")
+    ])
+
+        
+
+        # Step 2: Table Extraction Prompt
+        table_extraction_template = """
+        You are a table identifier for a database system. Your task is to extract the exact table names needed based on the previous analysis and query strategy.
+
+Input analysis:
+{analysis}
+
+Output requirements:
+- Return ONLY a comma-separated list of table names
+- Include only tables that are absolutely necessary for the query
+- Don't include any explanations or additional text
+- Use exact table names as they appear in the database
+- Order tables based on their primary/dependency relationship
+
+Output format example:
+restaurant_inspections,restaurant_menu,restaurants_has_reviews
+        """
+        self.table_extraction_prompt = PromptTemplate.from_template(table_extraction_template)
+
+        # Step 3: Query Generation Prompt
+        # Setup for Query Generation Prompt
+        query_example_prompt = ChatPromptTemplate.from_messages([
+        ("human", "Question: {question}"),
+        ("assistant", "Query: {query}")
+    ])
+
+        query_examples = []
+        for ex in dynamic_examples:
+            query_examples.append({
+                "question": str(ex["question"]),
+                "query": str(ex.get("query", ""))
+            })
+
+        query_example_selector = SemanticSimilarityExampleSelector.from_examples(
+            examples=query_examples,
+            embeddings=self.embeddings,
+            vectorstore_cls=Chroma,
+            k=2
         )
+        
+        try:
+            with open('tables_info.json', 'r') as f:
+                table_info = json.load(f)
+                # Convert the list of tables to a dictionary format for easier access
+                self.all_table_schemas = {table['name']: table for table in table_info['tables']}
+                
+            self.query_generation_prompt = ChatPromptTemplate.from_messages([
+                ("system", """You are an expert PostgreSQL query generator. Generate a precise SQL query based on the provided strategy and table schemas.
 
-        # Create few-shot prompt with table_info
-        self.few_shot_prompt = FewShotChatMessagePromptTemplate(
-            example_prompt=self.example_prompt,
-            examples=self.examples,
-            input_variables=["input", "top_k", "table_info"],  # Add table_info here
-        )
+                Requirements:
+                1. Use only the necessary columns based on the strategy
+                2. Include columns needed for joins, filters, and calculations
+                3. Limit results to first 20 rows by default
+                4. Use COALESCE for handling NULL values
+                5. Use clear table aliases for readability
+                6. Ensure proper JOIN conditions to avoid cartesian products
+                7. Follow these join rules:
+                    - Use exact name matching for most table joins
+                    - Only use id-based joins when specifically required
+                    - Use LEFT/RIGHT joins when data presence isn't guaranteed
+                    - Consider case sensitivity in name-based joins
+                8. Format the query with proper indentation
+                9. End the query with a semicolon
+                10. DO NOT include SQL markdown tags or comments
+                11. When matching restaurant names between tables, ensure exact matching by:
+                    - Removing any leading or trailing spaces (TRIM)
+                    - Converting all letters to lowercase (LOWER)
+                12. Check available columns and their examples in the table schemas before using them, don't use non-existing columns
+                13. the query strategy may contain incorrect columns name or values, you should check the table schemas and correct them if any.
+                The output should be only the PostgreSQL query that follows SQL best practices and meets all requirements."""),
+                FewShotChatMessagePromptTemplate(
+                example_selector=query_example_selector,
+                example_prompt=query_example_prompt,
+                input_variables=["question"]
+            ),
+                ("human", """Strategy: {strategy}
+        Table Schemas: {table_schemas}""")
+            ])
 
-        # Create final prompt with schema information
-        self.final_prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    """You are a PostgreSQL expert. Your task is to create a syntactically correct PostgreSQL query based on the input question.
-                    Remember the returned rows should be limited to 20. 
-
-    Available Database Schema:
-    {table_info}
-
-    AVAILABLE DATABASE SCHEMA AND RELATIONSHIPS:
-
-1. restaurant_inspections (ri):
-   - Key columns: id, camis, dba, boro, cuisine_description, inspection_date, grade, score
-   - Primary key: id
-   - Note: This table must be joined with other tables using restaurant name (dba)
-
-2. restaurant_menu (rm):
-   - Key columns: id, restaurant_id, item, base_price, has_addons, max_price
-   - Primary key: id
-   - Foreign key: restaurant_id
-   - Common usage: Menu items and pricing information
-
-3. restaurant_reviews (rr):
-   - Key columns: id, review_id, restaurant_id, title, text, rating, date
-   - Primary key: id
-   - Foreign key: restaurant_id -> restaurants_has_reviews.id
-   - Common usage: Detailed review content and ratings
-
-4. restaurants_has_menu (rhm):
-   - Key columns: id, name, cuisine, address, restaurant_id
-   - Primary key: id
-   - Foreign key: restaurant_id -> restaurant_menu.restaurant_id
-   - Common usage: Basic restaurant information with menu data
-
-5. restaurants_has_reviews (rhr):
-   - Key columns: id, name, city, price_interval, rating, type
-   - Primary key: id
-   - Relationships: 
-     * id -> restaurant_reviews.restaurant_id
-     * name can be used to join with other tables
-   - Common usage: Basic restaurant information with aggregate review data
-
-6. restaurants_week_2018_final (rwf):
-   - Key columns: id, name, street_address, website, restaurant_type, average_review, 
-     food_review, service_review, ambience_review, value_review, restaurant_id
-   - Primary key: id
-   - Note: Must be joined with other tables using restaurant name
-
-7. trip_advisor_restaurants (tar):
-   - Key columns: id, title, number_of_reviews, category, online_order, restaurant_id
-   - Primary key: id
-   - Note: Must be joined with other tables using restaurant name (title)
-
-IMPORTANT RELATIONSHIP NOTES:
-1. Key Cross-Table Relationships:
-   - restaurants_has_reviews.id -> restaurant_reviews.restaurant_id (direct foreign key)
-   - restaurants_has_menu.restaurant_id -> restaurant_menu.restaurant_id (direct foreign key)
-   
-2. Name-Based Joins:
-   - Most cross-table relationships must use restaurant names for joining
-   - Example: restaurants_week_2018_final.name = restaurants_has_reviews.name
-   - Be careful with name matching as it must be exact
-
-3. Review System Structure:
-   - restaurant_reviews contains detailed reviews
-   - restaurants_has_reviews contains aggregate review data
-   - These tables are not guaranteed to have matching records
-   - Always use appropriate LEFT/RIGHT joins when combining review data
-
-QUERY GUIDELINES:
-1. Table Joining:
-   - Use exact name matching for joins between most tables
-   - Only use id-based joins where explicitly specified in relationships
-   - Always use LEFT/RIGHT joins when data presence is not guaranteed
-
-2. Best Practices:
-   - For name-based joins, consider case sensitivity
-   - Use appropriate JOIN type based on data requirements
-   - Include proper error handling for potential NULL values
-
-3. LIMIT THE RETURNED ROWS TO 20, add limit 20 at the end of the query;
-
-Example Query Patterns:
-
-1. Joining reviews with restaurant details:
-```sql
-SELECT rhr.name, rhr.rating, rwf.website
-FROM restaurants_has_reviews rhr
-LEFT JOIN restaurants_week_2018_final rwf ON rhr.name = rwf.name
-WHERE rhr.name = 'Restaurant Name'; \
-
-2.Getting detailed reviews for a restaurant:
-SELECT rhr.name, rr.text, rr.rating, rr.date
-FROM restaurants_has_reviews rhr
-LEFT JOIN restaurant_reviews rr ON rhr.id = rr.restaurant_id
-WHERE rhr.name = 'Restaurant Name'; \
-
-3.Combining menu and restaurant information:
-SELECT rhm.name, rhm.cuisine, rm.item, rm.base_price
-FROM restaurants_has_menu rhm
-LEFT JOIN restaurant_menu rm ON rhm.restaurant_id = rm.restaurant_id
-LEFT JOIN restaurants_week_2018_final rwf ON rhm.name = rwf.name
-WHERE rhm.name = 'Restaurant Name';
-```
-"""
-                ),
-                 self.few_shot_prompt,
-                ("human", "{input}"),
-            ]
-        )
-        self.logger.info("------Prompts setup completed-------")
-
+        except Exception as e:
+            self.logger.error(f"Error in _setup_prompts step 3: {str(e)}")
+            raise
+        
+       
     def clean_sql_query(self, query: str) -> str:
         """
         Clean SQL query by removing unnecessary SQL markers and fixing quote escaping.
@@ -262,11 +320,80 @@ WHERE rhm.name = 'Restaurant Name';
         if not query.endswith(';'):
             query += ';'
         
-        self.logger.info(f"---------Cleaned SQL query start-------")
-        self.logger.info(f"{query}")
-        self.logger.info(f"---------Cleaned SQL query end-------")
         return query
+    
+    def _analyze_question(self, question: str) -> str:
+        """Step 1: Analyze the question and generate strategy"""
+        model = self.model_4o
+        self.logger.info(f"-----------------_analyze_question question: {question} \n------------------\n" )
+        self.logger.info(f"-----------------_analyze_question table_descriptions: {self.table_descriptions} \n------------------\n" )
+        try:
+            prompt_format =  self.analysis_prompt.format_messages(
+                        table_descriptions=self.table_descriptions,
+                        question=question
+                    )
+            self.logger.info(f"-----------------_analyze_question prompt_format: {prompt_format} \n------------------\n" )
+        except Exception as e:
+            self.logger.error(f"Error in _analyze_question formatting prompt: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to _analyze_question format prompt: {str(e)}"
+            )
+        try:
+            result = model.invoke(
+                prompt_format
+            )
+            self.logger.info(f"-----------------_analyze_question result: {result} \n------------------\n" )
+            return result.content
+        except Exception as e:
+            self.logger.error(f"Error in _analyze_question analyzing question: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to _analyze_question analyze question: {str(e)}"
+            )
+    
+    def _extract_required_tables(self, analysis: str) -> RequiredTables:
+        """Step 2: Extract required tables"""
+        model = self.model_4o_mini.with_structured_output(RequiredTables)
+        result = model.invoke(
+            self.table_extraction_prompt.format(
+                analysis=analysis,
+            )
+        )
+        self.logger.info(f"_extract_required_tables result: {result}" )
+        return result
+    
+    def _load_table_schemas(self, required_tables: RequiredTables) -> dict:
+        """Step 3: Load relevant table schemas"""
+        schemas = {}
+        try:
+            for table in required_tables.tables:
+                if table in self.all_table_schemas:
+                    schemas[table] = self.all_table_schemas[table]
+                else:
+                    self.logger.warning(f"Schema not found for table: {table}")
+            return schemas
+        except Exception as e:
+            self.logger.error(f"Error loading table schemas: {str(e)}")
+            raise
+    
+    def _generate_sql_query(self, query: str,strategy:str, 
+                          schemas: dict) -> str:
+        """Step 4: Generate SQL query from natural language query."""
+        formatted_prompt = self.query_generation_prompt.format(
+        strategy=strategy,
+        table_schemas=json.dumps(schemas, indent=2)
+    )
+        model = self.model_4o
+        response = model.invoke(formatted_prompt)
+        sql_query = response.content
+        
+        cleaned_query = self.clean_sql_query(sql_query)
+         # Add LIMIT clause if needed
+        final_query = self.add_limit_to_query(cleaned_query)
 
+        return final_query
+    
     def add_limit_to_query(self, sql_query: str, default_limit: int = 20) -> str:
         """
         Add LIMIT clause to SQL query if not present, or keep existing LIMIT.
@@ -305,33 +432,10 @@ WHERE rhm.name = 'Restaurant Name';
             # Return original query with semicolon if there's an error
             return f"{clean_query};"
 
-    def _generate_sql_query(self, query: str) -> str:
-        """Generate SQL query from natural language query."""
-        self.logger.info(f"Generating SQL query for: {query}")
-        
-        query_chain = create_sql_query_chain(
-            self.model_4o_mini, 
-            self.db, 
-            self.final_prompt
-        )
-        
-        # Include table_info in the input dictionary
-        sql_query = query_chain.invoke({
-            "question": query,
-            "input": query,
-            "top_k": 5,
-            "table_info": self.table_info
-        })
-        cleaned_query = self.clean_sql_query(sql_query)
-         # Add LIMIT clause if needed
-        final_query = self.add_limit_to_query(cleaned_query)
-        
-        self.logger.info(f"Generated SQL query: {final_query}")
-        return final_query
+    
 
     def rephrase_answer(self, question: str, query: str, result: str) -> str:
         """Process the answer using the model."""
-        self.logger.info(f"Rephrasing answer for question: {question}")
         
         # Prepare the prompt
         prompt_input = {
@@ -342,36 +446,127 @@ WHERE rhm.name = 'Restaurant Name';
         
         # Get response from the model
         prompt_result = self.answer_prompt.format_prompt(**prompt_input)
-        self.logger.info(f"-----------Prompt Result start----------")
-        self.logger.info(f"Prompt Result: {prompt_result}")
-        self.logger.info(f"-----------Prompt Result end----------")
         model_response = self.model_4o.invoke(prompt_result.to_string())
-        self.logger.info(f"Model response: {model_response.content}")
         final_result = StrOutputParser().parse(model_response.content)
         
-        #self.logger.info(f"Generated answer: {final_result}")
         return final_result
+    
+    def _revise_sql_query(self, original_query: str, error_message: str) -> str:
+        """
+        Use LLM to revise the SQL query based on error message.
+        """
+        try:
+            revision_prompt = ChatPromptTemplate.from_messages([
+                ("system", """You are a PostgreSQL expert. Your task is to fix SQL queries that have errors.
+                Rules:
+                - Only output the corrected SQL query
+                - No explanations or comments
+                - Ensure proper type casting for mathematical functions
+                - Maintain the original query's intent
+                - The query must end with a semicolon
+                - Keep LIMIT clause if present"""),
+                ("human", """Original query:
+    {original_query}
 
-    def process_query(self, query: str):
+    Error message:
+    {error_message}
+
+    Please provide the corrected query:""")
+            ])
+
+            messages = revision_prompt.format_messages(
+                original_query=original_query,
+                error_message=error_message
+            )
+            
+            response = self.model_4o_mini.invoke(messages)
+            revised_query = self.clean_sql_query(response.content)
+            
+            self.logger.info(f"Revised query: ----{revised_query}----")
+            return revised_query
+            
+        except Exception as e:
+            self.logger.error(f"Error in query revision: {str(e)}")
+            raise
+    
+    def _execute_query_safely(self, query: str, max_retries: int = 2) -> str:
+        """
+        Execute SQL query with error handling and automatic revision.
+        """
+        retries = 0
+        current_query = query
+        
+        while retries <= max_retries:
+            try:
+                self.logger.info(f"------current_query in _execute_query_safely: {current_query}\n-----------------\n")
+                result = self.execute_query.run(current_query)
+                self.logger.info(f"------result in _execute_query_safely: {result}\n-----------------\n")
+                
+                # Check if result contains error message
+                if isinstance(result, str) and "Error:" in result:
+                    self.logger.warning(f"Query execution error: {result}")
+                    
+                    # Check if we've hit max retries
+                    if retries == max_retries:
+                        self.logger.error("Max retries reached, raising last error")
+                        raise HTTPException(status_code=500, detail=result)
+                    
+                    # Try to revise the query
+                    self.logger.info("Attempting to revise query...")
+                    current_query = self._revise_sql_query(current_query, result)
+                    retries += 1
+                    self.logger.info(f"Retry {retries} with revised query: {current_query}")
+                else:
+                    # Query executed successfully
+                    self.logger.info(f"Query executed successfully start---------\n{result}\n--------end")
+                    return result
+                    
+            except Exception as e:
+                self.logger.error(f"Database error executing query: {str(e)}")
+                if retries == max_retries:
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"Database error: {str(e)}"
+                    )
+                retries += 1
+                self.logger.info(f"Retry {retries} after database error")
+
+    def process_query(self, question: str):
         """Process a natural language query and return the result."""
         try:
-            self.logger.info(f"Processing query: {query}")
-            
-            
-            # Generate SQL query
-            sql_query = self._generate_sql_query(query)
-            
-            # Execute query
-            query_result = self.execute_query.run(sql_query)
-            
-            # Generate final answer
-            final_result = self.rephrase_answer(query, sql_query, query_result)
-            
-            self.logger.info(f"Query processed successfully")
-            return {"result": final_result,
-                    "sql_query": sql_query,
-                    "query_result": query_result
-                    }
+           # Step 1: Analyze question
+            analysis = self._analyze_question(question)
+            self.logger.info(f"Analysis: {analysis} \n-----------------\n")
+            # Step 2: Extract required tables
+            required_tables = self._extract_required_tables(analysis)
+            self.logger.info(f"Required Tables: {required_tables} \n-----------------\n")
+
+            # Step 3: Load schemas
+            schemas = self._load_table_schemas(required_tables)
+            self.logger.info(f"Table Schemas: {schemas} \n-----------------\n")
+
+            # Step 4: Generate SQL query
+            sql_query = self._generate_sql_query(
+                question,
+                analysis,
+                schemas
+            )
+            self.logger.info(f"SQL Query: {sql_query} \n-----------------\n")
+
+            # Execute query and generate response
+            # Step 5: Execute query with automatic revision if needed
+            executed_query_result = self._execute_query_safely(sql_query)
+            self.logger.info(f"Executed Query Result: {executed_query_result} \n-----------------\n")
+            # Return structured output with raw results and metadata
+            return {
+                'sql_query': sql_query,
+                'result': executed_query_result,
+                'question': question,
+                'metadata': {
+                    'tables_used': required_tables.tables,
+                    'analysis': analysis
+                }
+            }
             
         except Exception as e:
             self.logger.error(f"Error processing query: {str(e)}")

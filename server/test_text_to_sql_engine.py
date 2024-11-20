@@ -9,11 +9,14 @@ from logger_config import setup_logger
 import os
 import sys
 import ast
-from langchain_openai  import AzureOpenAIEmbeddings
+from langchain_openai  import AzureOpenAIEmbeddings,AzureChatOpenAI
 from sklearn.metrics.pairwise import cosine_similarity
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate
+   
 
 class QueryEvaluator:
-    def __init__(self, golden_standard_file: str,azure_openai_api_key: str, azure_openai_endpoint: str, azure_openai_embedding_deployment: str):
+    def __init__(self, golden_standard_file: str,azure_openai_api_key: str, azure_openai_endpoint: str, azure_openai_embedding_deployment: str,azure_openai_deployment_mini,azure_api_version):
         """Initialize the QueryEvaluator with golden standard data."""
         # Setup logger
         self.LOG_FILE = os.path.join('logs', 'test_text_to_sql_engine.log')
@@ -37,6 +40,16 @@ class QueryEvaluator:
                 azure_endpoint=azure_openai_endpoint,
                 deployment=azure_openai_embedding_deployment,
             )
+        
+        self.model_4o_mini=AzureChatOpenAI(
+            api_key=azure_openai_api_key,
+            azure_endpoint=azure_openai_endpoint,
+            deployment_name=azure_openai_deployment_mini,
+            api_version=azure_api_version,
+            temperature=0,
+            max_tokens=3000
+        )
+        
     def normalize_query(self, query: str) -> str:
         """Normalize SQL query for comparison."""
         self.logger.debug(f"Normalizing query: {query}")
@@ -154,46 +167,40 @@ class QueryEvaluator:
             self.logger.error(f"Error computing vector similarity: {str(e)}")
             return 0.0
     
+    def rephrase_answer(self, question: str, query: str, result: str) -> str:
+        """Process the answer using the model."""
+        answer_prompt = PromptTemplate.from_template(
+            """Given the following user question, corresponding PostgreSQL query, and PostgreSQL result, format the data to be a json object for better processing .
+    PostgreSQL Query: {query}
+    PostgreSQL Result: {result}
+    Answer: """
+        )
+        prompt_input = {
+            "query": query,
+            "result": result
+        }
+    
+        prompt_result = answer_prompt.format_prompt(**prompt_input)
+        model_response = self.model_4o_mini.invoke(prompt_result.to_string())
+        return {
+            "sql_query": query,
+            "result": StrOutputParser().parse(model_response.content)
+        }
+    
+    
+    
     def evaluate_single_query(self, test_case: Dict[str, Any]) -> Dict[str, Any]:
         """Evaluate a single query test case."""
         self.logger.info(f"Evaluating test case {test_case['id']}")
         input_query = test_case['input']
         
         try:
-            generated_output = self.engine.process_query(input_query)
-            
+            output = self.engine.process_query(input_query)
+            generated_output=self.rephrase_answer(input_query,output['sql_query'],output['result'])
             # Log the actual content for debugging
             self.logger.info("Generated output structure:")
-            self.logger.info(f"Query Result Type: {type(generated_output['query_result'])}")
+            self.logger.info(f"Query Result Type: {type(generated_output['result'])}")
             
-            # Parse the query result string into a list of dictionaries
-            try:
-                if isinstance(generated_output['query_result'], str):
-                    # Remove any 'text=' prefix if present
-                    result_str = generated_output['query_result']
-                    if result_str.startswith('text='):
-                        result_str = result_str[5:]
-                    # Convert string representation of tuples to list of tuples
-                    result_tuples = ast.literal_eval(result_str)
-                    
-                    # Extract column names from the query
-                    columns = self.extract_columns_from_query(generated_output['sql_query'])
-                    
-                    # Convert to list of dictionaries
-                    generated_result = []
-                    for row in result_tuples:
-                        result_dict = {}
-                        for i, value in enumerate(row):
-                            if i < len(columns):
-                                result_dict[columns[i]] = value
-                            else:
-                                result_dict[f'column_{i}'] = value
-                        generated_result.append(result_dict)
-                else:
-                    generated_result = generated_output['query_result']
-            except Exception as e:
-                self.logger.error(f"Error parsing query result: {str(e)}")
-                generated_result = []
             self.logger.info(f"user input: {test_case['input']}")
             self.logger.info(f"--------Generated query start--------")
             self.logger.info(f"Generated query: {generated_output['sql_query']}")
@@ -203,7 +210,7 @@ class QueryEvaluator:
             self.logger.info(f"--------Golden query end--------")
             self.logger.info(f"---------------------------------------- \n")
             self.logger.info(f"--------Generated query result start--------")
-            self.logger.info(f"Generated query result: {generated_result}")
+            self.logger.info(f"Generated query result: {generated_output['result']}")
             self.logger.info(f"--------Generated query result end--------\n")
             self.logger.info(f"--------Golden query result start--------")
             self.logger.info(f"Golden query result: {test_case['result']}")
@@ -217,7 +224,7 @@ class QueryEvaluator:
             )
             
             result_similarity = self.compare_results(
-                generated_result,
+                generated_output['result'],
                 test_case['result']
             )
             
@@ -240,7 +247,7 @@ class QueryEvaluator:
                 'generated_query': generated_output['sql_query'],
                 'golden_query': test_case['query'],
                 'query_similarity': query_similarity,
-                'generated_result': generated_result,
+                'generated_result': generated_output['result'],
                 'golden_result': test_case['result'],
                 'result_similarity': result_similarity,
                 'generated_answer': generated_output['result'],
@@ -259,6 +266,8 @@ class QueryEvaluator:
             self.logger.error(f"Error evaluating test case {test_case['id']}: {str(e)}")
             self.logger.error(f"Full error details: ", exc_info=True)
             raise
+    
+    
     
     def evaluate_all(self) -> Dict[str, Any]:
         """Evaluate all test cases and generate summary."""
@@ -353,15 +362,21 @@ def main():
     AZURE_OPENAI_ENDPOINT =os.getenv("AZURE_OPENAI_ENDPOINT")
     AZURE_OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL")
     AZURE_API_VERSION = os.getenv("AZURE_API_VERSION")
+    AZURE_OPENAI_DEPLOYMENT_MINI=os.getenv("OPENAI_MODEL_4OMINI")
     logger.info("Starting evaluation process")
     try:
           # Validate environment variables
         if not all([AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_EMBEDDING_MODEL, AZURE_API_VERSION]):
             logger.error("One or more Azure OpenAI environment variables are missing.")
             sys.exit(1)
-        evaluator = QueryEvaluator('query_results_test_set.json', azure_openai_api_key=AZURE_OPENAI_API_KEY,
-        azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
-        azure_openai_embedding_deployment=AZURE_OPENAI_EMBEDDING_MODEL)
+        model_config = {
+            "azure_openai_api_key": AZURE_OPENAI_API_KEY,
+            "azure_openai_endpoint": AZURE_OPENAI_ENDPOINT,
+            "azure_openai_embedding_deployment": AZURE_OPENAI_EMBEDDING_MODEL,
+            "azure_api_version": AZURE_API_VERSION,
+            "azure_openai_deployment_mini": AZURE_OPENAI_DEPLOYMENT_MINI
+        }
+        evaluator = QueryEvaluator('query_results_test_set.json', **model_config)
         results = evaluator.evaluate_all()
         
         

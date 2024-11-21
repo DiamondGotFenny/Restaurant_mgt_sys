@@ -5,14 +5,13 @@ from typing import List, Optional
 from dotenv import load_dotenv, find_dotenv
 import pandas as pd
 from fastapi import HTTPException
-from langchain_community.utilities.sql_database import SQLDatabase
 from langchain_openai import AzureChatOpenAI
 from pydantic import BaseModel, Field
-from langchain_community.tools.sql_database.tool import QuerySQLDataBaseTool
-from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from logger_config import setup_logger
 from dynamic_examples_store import DynamicExamplesStore
+import json
+from sqlalchemy import create_engine, text
 
 class RequiredTables(BaseModel):
     """Output from Step 2"""
@@ -61,8 +60,8 @@ class TextToSQLEngine:
         """Initialize database and AI models."""
         self.logger.info("Initializing database and AI models")
         
-        # Initialize database
-        self.db = SQLDatabase.from_uri(self.db_uri)
+        # Initialize database engine
+        self.engine = create_engine(self.db_uri)
         self.logger.info("Database initialized successfully")
 
         # Initialize Azure OpenAI models
@@ -93,9 +92,33 @@ class TextToSQLEngine:
             azure_openai_embedding_deployment=self.azure_openai_embedding_deployment
         )
         
-        self.execute_query = QuerySQLDataBaseTool(db=self.db)
         self.logger.info("All components initialized successfully")
-
+        
+    def execute_query(self, query: str) -> str:
+        """Execute SQL query and return results in JSON format."""
+        try:
+            with self.engine.connect() as connection:
+                result = connection.execute(text(query))
+                # Convert result to list of dictionaries
+                columns = result.keys()
+                data = [dict(zip(columns, row)) for row in result]
+                format_data = json.dumps(data, default=str, indent=2)
+                self.logger.info(f"Query executed successfully: {format_data}")
+                return format_data
+        except Exception as e:
+            error_msg = str(e)
+            self.logger.error(f"Error executing query: {error_msg}")
+            
+            # Check for specific types of SQL errors
+            if "UndefinedColumn" in error_msg:
+                return f"Error: Column referenced in query does not exist. Details: {error_msg}"
+            elif "UndefinedTable" in error_msg:
+                return f"Error: Table referenced in query does not exist. Details: {error_msg}"
+            elif "syntax error" in error_msg.lower():
+                return f"Error: SQL syntax error in query. Details: {error_msg}"
+            else:
+                return f"Error executing query: {error_msg}"
+    
     def _setup_prompts(self):
         """Setup all prompts for the multi-step process"""
         
@@ -108,7 +131,6 @@ class TextToSQLEngine:
                 f"Description: {row['Description']}"
                 for _, row in df.iterrows()
             ])
-            self.logger.info("Table descriptions loaded successfully")
         except Exception as e:
             self.logger.error(f"Error loading table descriptions: {str(e)}")
             self.table_descriptions = "Error loading table descriptions"
@@ -223,14 +245,16 @@ class TextToSQLEngine:
         
         try:
             # Get relevant examples using DynamicExamplesStore
-            relevant_examples = self.examples_store.get_relevant_examples(question, k=2)
+            relevant_examples = self.examples_store.get_relevant_examples(question, k=3)
             examples_text = ""
             for i, example in enumerate(relevant_examples, 1):
                 examples_text += f"\nExample {i}:\nQuestion: {example['question']}\n"
                 examples_text += f"Analysis: {example['analysis']}\n"
                 examples_text += f"Query Strategy: {example['query_strategy']}\n"
                 examples_text += "-" * 80 + "\n"
-                
+            
+            self.logger.info(f"Dynamic Examples: {examples_text} \n-----------------\n")
+            
             prompt_format = self.analysis_prompt.format_messages(
                 table_descriptions=self.table_descriptions,
                 examples=examples_text,
@@ -336,78 +360,157 @@ class TextToSQLEngine:
             self.logger.error(f"Error processing LIMIT clause: {str(e)}")
             return f"{clean_query};"
 
-    def _revise_sql_query(self, original_query: str, error_message: str) -> str:
-        """Use LLM to revise the SQL query based on error message."""
+    def _revise_sql_query(self, original_query: str, error_message: str, strategy: str, analysis: str, schemas: dict) -> str:
+        """Use LLM to revise the SQL query based on error message and context."""
         try:
             revision_prompt = ChatPromptTemplate.from_messages([
-                ("system", """You are a PostgreSQL expert. Your task is to fix SQL queries that have errors.
-                Rules:
-                - Only output the corrected SQL query
-                - No explanations or comments
-                - Ensure proper type casting for mathematical functions
-                - Maintain the original query's intent
-                - The query must end with a semicolon
-                - Keep LIMIT clause if present"""),
-                ("human", """Original query:
+                ("system", """You are a PostgreSQL expert. Your task is to fix SQL queries that have errors. 
+                Use the provided context (analysis, strategy, and table schemas) to ensure the revised query maintains the original intent while fixing the errors.
+
+                Requirements for the revised query:
+                1. Fix the specific error mentioned in the error message
+                2. Maintain consistency with the original analysis and strategy
+                3. Use only columns that exist in the provided table schemas
+                4. Follow proper PostgreSQL syntax and best practices
+                5. Include appropriate JOIN conditions
+                6. Handle NULL values appropriately
+                7. Maintain any existing LIMIT clauses
+                8. Ensure type compatibility in comparisons and calculations
+                9. Use table aliases consistently
+                10. End the query with a semicolon
+
+                The output should be ONLY the corrected SQL query, no explanations."""),
+                ("human", """Context:
+                Analysis:
+                {analysis}
+
+                Strategy:
+                {strategy}
+
+                Table Schemas:
+                {table_schemas}
+
+                Original Query:
                 {original_query}
 
-                Error message:
+                Error Message:
                 {error_message}
 
                 Please provide the corrected query:""")
             ])
 
             messages = revision_prompt.format_messages(
+                analysis=analysis,
+                strategy=strategy,
+                table_schemas=json.dumps(schemas, indent=2),
                 original_query=original_query,
                 error_message=error_message
             )
             
-            response = self.model_4o_mini.invoke(messages)
+            response = self.model_4o.invoke(messages)
             revised_query = self.clean_sql_query(response.content)
             
-            self.logger.info(f"Revised query: ----{revised_query}----")
+            self.logger.info(f"Original query: {original_query}")
+            self.logger.info(f"Error message: {error_message}")
+            self.logger.info(f"Revised query: {revised_query}")
+            
             return revised_query
             
         except Exception as e:
             self.logger.error(f"Error in query revision: {str(e)}")
             raise
 
-    def _execute_query_safely(self, query: str, max_retries: int = 2) -> str:
+    def _execute_query_safely(self, query: str, max_retries: int = 3, strategy: str = None, analysis: str = None, schemas: dict = None) -> str:
         """Execute SQL query with error handling and automatic revision."""
         retries = 0
         current_query = query
+        last_error = None
         
         while retries <= max_retries:
             try:
                 self.logger.info(f"------current_query in _execute_query_safely: {current_query}\n-----------------\n")
-                result = self.execute_query.run(current_query)
-                self.logger.info(f"------result in _execute_query_safely: {result}\n-----------------\n")
+                result = self.execute_query(current_query)
                 
-                if isinstance(result, str) and "Error:" in result:
+                # Check if result is a string containing error messages
+                if isinstance(result, str) and (
+                    "Error:" in result 
+                    or "error" in result.lower() 
+                    or "psycopg2.errors" in result
+                ):
                     self.logger.warning(f"Query execution error: {result}")
+                    last_error = result
                     
                     if retries == max_retries:
-                        self.logger.error("Max retries reached, raising last error")
-                        raise HTTPException(status_code=500, detail=result)
+                        self.logger.error("Max retries reached, preparing error response")
+                        error_response = {
+                            "error": "Query execution failed after multiple attempts",
+                            "details": {
+                                "last_error": last_error,
+                                "attempted_queries": [query, current_query],
+                                "message": "There was an error executing your query. Please try rephrasing your question or simplifying your request.",
+                                "suggestion": "Please verify the column names and table structure in your query."
+                            }
+                        }
+                        return json.dumps(error_response, indent=2)
                     
                     self.logger.info("Attempting to revise query...")
-                    current_query = self._revise_sql_query(current_query, result)
+                    try:
+                        current_query = self._revise_sql_query(
+                            current_query, 
+                            result,
+                            strategy,
+                            analysis,
+                            schemas
+                        )
+                    except Exception as revision_error:
+                        self.logger.error(f"Error during query revision: {str(revision_error)}")
+                        error_response = {
+                            "error": "Failed to revise query",
+                            "details": {
+                                "original_error": str(last_error),
+                                "revision_error": str(revision_error),
+                                "message": "The system encountered an error while trying to fix the query. Please try rephrasing your question."
+                            }
+                        }
+                        return json.dumps(error_response, indent=2)
+                        
                     retries += 1
                     self.logger.info(f"Retry {retries} with revised query: {current_query}")
                 else:
-                    self.logger.info(f"Query executed successfully start---------\n{result}\n--------end")
-                    return result
-                    
+                    try:
+                        # Try to parse the result as JSON to verify it's valid
+                        if isinstance(result, str):
+                            json.loads(result)
+                        return result
+                    except json.JSONDecodeError:
+                        self.logger.error(f"Invalid JSON result: {result}")
+                        error_response = {
+                            "error": "Invalid query result format",
+                            "details": {
+                                "message": "The query executed but produced invalid results. Please try a different query."
+                            }
+                        }
+                        return json.dumps(error_response, indent=2)
+                        
             except Exception as e:
                 self.logger.error(f"Database error executing query: {str(e)}")
+                last_error = str(e)
+                
                 if retries == max_retries:
-                    raise HTTPException(
-                        status_code=500,
-                        detail=f"Database error: {str(e)}"
-                    )
+                    self.logger.error("Max retries reached after exceptions, preparing error response")
+                    error_response = {
+                        "error": "Query execution failed after multiple attempts",
+                        "details": {
+                            "last_error": last_error,
+                            "attempted_queries": [query, current_query],
+                            "message": "There was an error executing your query. Please try rephrasing your question or simplifying your request."
+                        }
+                    }
+                    return json.dumps(error_response, indent=2)
+                
                 retries += 1
                 self.logger.info(f"Retry {retries} after database error")
-
+                
     def process_query(self, question: str):
         """Process a natural language query and return the result."""
         try:
@@ -418,7 +521,7 @@ class TextToSQLEngine:
             self.logger.info(f"Required Tables: {required_tables} \n-----------------\n")
 
             schemas = self._load_table_schemas(required_tables)
-            self.logger.info(f"Table Schemas: {schemas} \n-----------------\n")
+            self.logger.info(f"Table Schemas Length: {len(schemas)} \n----------------\n")
 
             sql_query = self._generate_sql_query(
                 question,
@@ -427,9 +530,30 @@ class TextToSQLEngine:
             )
             self.logger.info(f"SQL Query: {sql_query} \n-----------------\n")
 
-            executed_query_result = self._execute_query_safely(sql_query)
-            self.logger.info(f"Executed Query Result: {executed_query_result} \n-----------------\n")
-
+            executed_query_result = self._execute_query_safely(
+            sql_query,
+            strategy=analysis,  
+            analysis=analysis,
+            schemas=schemas
+        )
+            # Check if the result is an error response
+            if isinstance(executed_query_result, str):
+                try:
+                    result_json = json.loads(executed_query_result)
+                    if "error" in result_json:
+                        return {
+                            'sql_query': sql_query,
+                            'result': executed_query_result,
+                            'question': question,
+                            'metadata': {
+                                'tables_used': required_tables.tables,
+                                'analysis': analysis,
+                                'error': True
+                            }
+                        }
+                except json.JSONDecodeError:
+                    pass
+            
             return {
                 'sql_query': sql_query,
                 'result': executed_query_result,
@@ -442,7 +566,22 @@ class TextToSQLEngine:
             
         except Exception as e:
             self.logger.error(f"Error processing query: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e))
+            error_response = {
+            "error": "Query processing failed",
+            "details": {
+                "message": "There was an error processing your question. Please try rephrasing or simplifying your request.",
+                "error_details": str(e)
+                }
+            }
+            return {
+                'sql_query': None,
+                'result': json.dumps(error_response, indent=2),
+                'question': question,
+                'metadata': {
+                    'error': True,
+                    'error_message': str(e)
+                }
+            }
 
 def test_module():
     """Test function for the TextToSQL engine."""
@@ -454,7 +593,8 @@ def test_module():
             break
         try:
             result = engine.process_query(query)
-            print("Result:", result['result'])
+            result_data = json.loads(result['result'])
+            print(json.dumps(result_data, indent=2))
         except Exception as e:
             print("Error:", e)
 

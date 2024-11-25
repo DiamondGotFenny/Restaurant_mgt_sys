@@ -4,8 +4,8 @@ from typing import Dict, List, Any
 from datetime import datetime
 import difflib
 from dotenv import load_dotenv, find_dotenv
-from text_to_sql_engine import TextToSQLEngine
-from logger_config import setup_logger
+from server.text_to_sql.text_to_sql_engine import TextToSQLEngine
+from server.logger_config import setup_logger
 import os
 import sys
 import ast
@@ -18,11 +18,12 @@ class QueryEvaluator:
     def __init__(self, golden_standard_file: str,azure_openai_api_key: str, azure_openai_endpoint: str, azure_openai_embedding_deployment: str,azure_openai_deployment_mini,azure_api_version):
         """Initialize the QueryEvaluator with golden standard data."""
         # Setup logger
-        self.LOG_FILE = os.path.join('logs', 'test_text_to_sql_engine.log')
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.LOG_FILE = os.path.join(current_dir, '..','logs', 'test_text_to_sql_engine.log')
         self.logger = setup_logger(self.LOG_FILE)
         
         self.logger.info("Initializing QueryEvaluator")
-        self.engine = TextToSQLEngine()
+        self.engine = TextToSQLEngine(self.LOG_FILE)
         
         try:
             with open(golden_standard_file, 'r',encoding='utf-8') as f:
@@ -424,7 +425,8 @@ class QueryEvaluator:
 def main():
     """Main function to run the evaluation."""
     # Setup logger
-    LOG_FILE = os.path.join('logs', 'test_text_to_sql_engine.log')
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    LOG_FILE = os.path.join(current_dir, '..','logs', 'test_text_to_sql_engine.log')
     logger = setup_logger(LOG_FILE)
       # Load environment variables
     load_dotenv(find_dotenv())
@@ -448,7 +450,8 @@ def main():
             "azure_api_version": AZURE_API_VERSION,
             "azure_openai_deployment_mini": AZURE_OPENAI_DEPLOYMENT_MINI
         }
-        evaluator = QueryEvaluator('query_results_test_set.json', **model_config)
+        query_results_test_set_path = os.path.join(current_dir, 'query_results_test_set.json')
+        evaluator = QueryEvaluator(query_results_test_set_path, **model_config)
         results = evaluator.evaluate_all()
         
         

@@ -5,13 +5,10 @@ import logging
 from typing import List, Dict
 from dotenv import load_dotenv, find_dotenv
 from sklearn.metrics.pairwise import cosine_similarity
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from bm25_retriever_agent import BM25RetrieverAgent
-from logger_config import setup_logger
-
+from server.vectorDB_Agent.bm25_retriever_agent import BM25RetrieverAgent
+from server.logger_config import setup_logger
 from langchain_openai import AzureOpenAIEmbeddings
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class EmbeddingSimilarityEvaluator:
     def __init__(self, azure_openai_api_key: str, azure_openai_endpoint: str, azure_openai_embedding_deployment: str):
@@ -272,11 +269,11 @@ def main(logger: logging.Logger, test_log_filepath: str):
         sys.exit(1)
 
     # Configuration
-    PDF_DIRECTORY = "../.././data/Restaurants_data"
-    LOG_FILE = "bm25_retriever_agent.log"  # Log file path
-    WHOOSH_INDEX_DIR = "../whoosh_index"       # Whoosh index directory
-    QA_KEYWORDS_FILEPATH = "qa_keywords.json"
-    GOLDEN_STANDARD_FILEPATH = "golden_standard_Raw_Chunks.json"
+    PDF_DIRECTORY=os.path.join(current_dir,"..","data","Restaurants_data") 
+    LOG_FILE=os.path.join(current_dir,"..","logs","bm25_retriever_agent.log")
+    WHOOSH_INDEX_DIR=os.path.join(current_dir,"..","data","whoosh_index")
+    QA_KEYWORDS_FILEPATH=os.path.join(current_dir,"qa_keywords.json")
+    GOLDEN_STANDARD_FILEPATH=os.path.join(current_dir,"golden_standard_Raw_Chunks.json")
 
     # Validate directories and files
     if not os.path.isdir(PDF_DIRECTORY):
@@ -324,6 +321,6 @@ def main(logger: logging.Logger, test_log_filepath: str):
     test_module(agent, evaluator, qa_pairs, gs_dict, logger)
 
 if __name__ == "__main__":
-    test_log_filepath = "bm25_retriever_agent_test.log"
+    test_log_filepath = os.path.join(current_dir,"..", "logs", "bm25_retriever_agent_test.log")
     logger = setup_logger(test_log_filepath)
     main(logger, test_log_filepath)

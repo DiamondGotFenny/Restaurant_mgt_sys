@@ -5,12 +5,11 @@ import logging
 from typing import List, Dict
 from dotenv import load_dotenv, find_dotenv
 from sklearn.metrics.pairwise import cosine_similarity
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from vectorDB_Engine import VectorDBEngine
+from server.vectorDB_Agent.vectorDB_Engine import VectorDBEngine
 from langchain_openai import AzureOpenAIEmbeddings
-from logger_config import setup_logger
+from server.logger_config import setup_logger
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def load_qa_pairs(filepath: str, logger: logging.Logger) -> List[Dict]:
     """
@@ -100,7 +99,7 @@ def test_vectorDB_engine(logger: logging.Logger):
     )
 
     # Load QA pairs
-    qa_filepath = "qa_keywords.json"  # Path to your 'qa_keywords.json'
+    qa_filepath = os.path.join(current_dir, "qa_keywords.json")
     qa_pairs = load_qa_pairs(qa_filepath, logger)
     logger.info(f"Loaded {len(qa_pairs)} QA pairs for testing.")
 
@@ -161,9 +160,9 @@ def test_vectorDB_engine(logger: logging.Logger):
             failed_questions.append(qa_id)
         
         logger.info(f"--- Testing Question ID: {qa_id} End---")
-
+    unique_documents_output_filepath = os.path.join(current_dir,  "unique_documents_output.json");
     # Output unique_documents as a JSON file
-    with open('unique_documents_output.json', 'w', encoding='utf-8') as f:
+    with open(unique_documents_output_filepath, 'w', encoding='utf-8') as f:
         json.dump(all_unique_documents, f, ensure_ascii=False, indent=4)
     logger.info("Unique documents have been saved to 'unique_documents_output.json'.")
 
@@ -194,7 +193,7 @@ def test_vectorDB_engine(logger: logging.Logger):
     logger.info("=== End of vectorDB_Engine Test Module ===")
 
 if __name__ == "__main__":
-    test_log_filepath = "vectorDB_Engine_test.log"
+    test_log_filepath =os.path.join(current_dir, '..','logs', "vectorDB_Engine_test.log")  
     # Initialize logger
     logger = setup_logger(test_log_filepath)
     test_vectorDB_engine(logger)

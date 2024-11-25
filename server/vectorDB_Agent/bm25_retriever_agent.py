@@ -12,10 +12,10 @@ queries to retrieve relevant documents based on specified entities.
 import os
 import sys
 from typing import List, Optional, Dict, Any
-from logger_config import setup_logger
+from server.logger_config import setup_logger
 from langchain_community.retrievers import BM25Retriever
 from langchain.schema import Document
-from document_processor import DocumentProcessor
+from server.vectorDB_Agent.document_processor import DocumentProcessor
 from whoosh import index
 from whoosh.fields import Schema, TEXT, ID
 from whoosh.qparser import QueryParser, OrGroup

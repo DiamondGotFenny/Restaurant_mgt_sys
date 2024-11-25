@@ -6,11 +6,9 @@ import logging
 from typing import List, Dict
 from sklearn.metrics.pairwise import cosine_similarity
 from langchain_openai import AzureOpenAIEmbeddings
-
-# Add parent directory to path to import VectorStoreAgent
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from vector_store_agent import VectorStoreAgent
-from logger_config import setup_logger
+from server.vectorDB_Agent.vector_store_agent import VectorStoreAgent
+from server.logger_config import setup_logger
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class VectorSearchEvaluator:
     def __init__(self, azure_openai_api_key: str, azure_openai_endpoint: str, azure_openai_embedding_deployment: str):
@@ -226,11 +224,11 @@ def main(logger:logging.Logger,test_log_filepath:str):
 
 
     # Configuration - Replace these with your actual paths and Azure OpenAI credentials
-    PDF_DIRECTORY = "../.././data/Restaurants_data"  # e.g., "./pdfs"
-    PERSIST_DIRECTORY = "../.././data/vectorDB/chroma"
-    GS_FILEPATH = "golden_standard_Raw_Chunks.json"  # Path to your GS JSON file
+    PDF_DIRECTORY =os.path.join(current_dir, '..','data', 'Restaurants_data')
+    PERSIST_DIRECTORY =os.path.join(current_dir, '..','data', 'vectorDB', 'chroma') 
+    GS_FILEPATH = os.path.join(current_dir, 'golden_standard_Raw_Chunks.json')  
 
-    AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+    AZURE_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
     AZURE_OPENAI_DEPLOYMENT = os.getenv("OPENAI_EMBEDDING_MODEL")
 
@@ -274,6 +272,6 @@ def main(logger:logging.Logger,test_log_filepath:str):
     test_module(agent, gs_dict, evaluator,logger)
 
 if __name__ == "__main__":
-    test_log_filepath = "vector_store_agent_test.log"
+    test_log_filepath = os.path.join(current_dir,"..", "logs", "vector_store_agent_test.log")
     logger=setup_logger(test_log_filepath)
     main(logger,test_log_filepath)

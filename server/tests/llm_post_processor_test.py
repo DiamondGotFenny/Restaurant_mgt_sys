@@ -8,12 +8,10 @@ from typing import List, Dict
 from dotenv import load_dotenv, find_dotenv
 from sklearn.metrics.pairwise import cosine_similarity
 from collections import namedtuple  
-
-# Add parent directory to path to import LLMProcessor
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from llm_post_processor import LLMProcessor
-from logger_config import setup_logger
+from server.vectorDB_Agent.llm_post_processor import LLMProcessor
+from server.logger_config import setup_logger
 from langchain_openai import AzureOpenAIEmbeddings
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class SimilarityEvaluator:
     def __init__(self, azure_openai_api_key: str, azure_openai_endpoint: str, azure_openai_embedding_deployment: str):
@@ -219,8 +217,9 @@ def main(logger: logging.Logger, test_log_filepath: str):
         sys.exit(1)
 
     # Configuration
-    UNIQUE_DOCS_FILEPATH = "unique_documents_output.json"
-    GOLDEN_STANDARD_FILEPATH = "golden_standard_extracted_chunks.json"
+    UNIQUE_DOCS_FILEPATH = os.path.join(current_dir,"unique_documents_output.json") 
+    
+    GOLDEN_STANDARD_FILEPATH = os.path.join(current_dir, "golden_standard_extracted_chunks.json")
 
     # Validate files
     if not os.path.isfile(UNIQUE_DOCS_FILEPATH):
@@ -243,7 +242,7 @@ def main(logger: logging.Logger, test_log_filepath: str):
         azure_openai_endpoint=AZURE_OPENAI_ENDPOINT,
         azure_openai_deployment=AZURE_OPENAI_4OMINI,
         azure_api_version=AZURE_API_VERSION,
-        log_file="llm_post_processor_test.log"
+        log_file=os.path.join(current_dir,"..", "logs", "llm_post_processor_test.log")
     )
 
     # Initialize the SimilarityEvaluator
@@ -257,6 +256,6 @@ def main(logger: logging.Logger, test_log_filepath: str):
     test_llm_processor(llm_processor, evaluator, unique_docs, golden_data, logger)
 
 if __name__ == "__main__":
-    test_log_filepath = "llm_post_processor_test.log"
+    test_log_filepath = os.path.join(current_dir,"..", "logs", "llm_post_processor_test.log")
     logger = setup_logger(test_log_filepath)
     main(logger, test_log_filepath)

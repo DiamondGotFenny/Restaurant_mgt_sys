@@ -1,8 +1,8 @@
 # combined_keyword_retriever.py
 
-from typing import List, Dict,Optional
-from query_pre_processor import LLMQueryPreProcessor
-from bm25_retriever_agent import BM25RetrieverAgent
+from typing import List,Optional
+from server.vectorDB_Agent.query_pre_processor import LLMQueryPreProcessor
+from server.vectorDB_Agent.bm25_retriever_agent import BM25RetrieverAgent
 from langchain.schema import Document
 
 class CombinedKeywordRetriever:

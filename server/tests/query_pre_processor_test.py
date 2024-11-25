@@ -4,12 +4,9 @@ import json
 import logging
 from typing import List, Dict, Tuple
 from dotenv import load_dotenv, find_dotenv
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from query_pre_processor import LLMQueryPreProcessor 
-from logger_config import setup_logger
-
+from server.vectorDB_Agent.query_pre_processor import LLMQueryPreProcessor 
+from server.logger_config import setup_logger
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def load_qa_keywords(filepath: str,logger:logging.Logger) -> List[Dict]:
     """
@@ -78,7 +75,7 @@ def test_module(logger:logging.Logger,test_log_filepath:str):
     )
 
     # Load QA Keywords dataset
-    qa_filepath = "qa_keywords.json"  # Path to your 'qa_keywords.json'
+    qa_filepath = os.path.join(current_dir,'qa_keywords.json') 
     qa_pairs = load_qa_keywords(qa_filepath,logger)
     logger.info(f"Loaded {len(qa_pairs)} QA pairs for testing.")
 
@@ -153,6 +150,6 @@ def test_module(logger:logging.Logger,test_log_filepath:str):
     logger.info("=== End of Test Module ===")
 
 if __name__ == "__main__":
-    test_log_filepath = "query_pre_processor_test.log"
+    test_log_filepath = os.path.join(current_dir,"..", "logs", "query_pre_processor_test.log")
     logger=setup_logger(test_log_filepath)
     test_module(logger,test_log_filepath)

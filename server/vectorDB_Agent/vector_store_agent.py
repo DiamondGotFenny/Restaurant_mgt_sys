@@ -3,10 +3,10 @@ import os
 import glob
 import sys
 from typing import List
-from document_processor import DocumentProcessor
+from server.vectorDB_Agent.document_processor import DocumentProcessor
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
-from logger_config import setup_logger
+from server.logger_config import setup_logger
 class VectorStoreAgent:
     def __init__(
         self,

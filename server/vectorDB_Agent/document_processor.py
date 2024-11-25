@@ -6,7 +6,7 @@ from typing import List
 from langchain.schema import Document
 from langchain.text_splitter import NLTKTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
-from logger_config import setup_logger
+from server.logger_config import setup_logger
 import nltk
 
 # Ensure the necessary NLTK data is downloaded

@@ -8,8 +8,8 @@ from fastapi import HTTPException
 from langchain_openai import AzureChatOpenAI
 from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
-from logger_config import setup_logger
-from dynamic_examples_store import DynamicExamplesStore
+from server.logger_config import setup_logger
+from server.text_to_sql.dynamic_examples_store import DynamicExamplesStore
 import json
 from sqlalchemy import create_engine, text
 
@@ -24,17 +24,16 @@ class TableSchema(BaseModel):
     foreign_keys: Optional[dict] = Field(description="Foreign key relationships")
 
 class TextToSQLEngine:
-    def __init__(self):
+    def __init__(self,log_file: str = "text_to_sql_engine.log"):
         """Initialize the TextToSQLEngine with necessary configurations and components."""
         # Load environment variables
         load_dotenv(find_dotenv())
 
         # Define the base directory and paths
         self.BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__)))
-        self.LOG_FILE = os.path.join(self.BASE_DIR, 'logs', 'text_to_sql_engine.log')
         
         # Setup logger
-        self.logger = setup_logger(self.LOG_FILE)
+        self.logger = setup_logger(log_file)
         
         # Load environment variables
         self._load_env_variables()
@@ -82,11 +81,19 @@ class TextToSQLEngine:
             temperature=0.2,
             max_tokens=3000
         )
+         # Get the absolute path of the current script directory
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        print(f"Current directory: {current_dir}")
+        # Construct the absolute path to dynamic_examples.json
+        examples_file_path = os.path.join(current_dir, 'dynamic_examples.json')
+
+        # Construct the absolute path to the dynamic_examples_vectorDB directory
+        persist_dir_path = os.path.abspath(os.path.join(current_dir, '..', 'data', 'dynamic_examples_vectorDB'))
         
         # Initialize DynamicExamplesStore
         self.examples_store = DynamicExamplesStore(
-            examples_file='dynamic_examples.json',
-            persist_directory='./data/dynamic_examples_vectorDB',
+            examples_file=examples_file_path,
+            persist_directory=persist_dir_path,
             azure_openai_api_key=self.azure_openai_api_key,
             azure_openai_endpoint=self.azure_openai_endpoint,
             azure_openai_embedding_deployment=self.azure_openai_embedding_deployment
@@ -123,8 +130,9 @@ class TextToSQLEngine:
         """Setup all prompts for the multi-step process"""
         
         #load table descriptions 
+        table_descriptions_path = os.path.join(self.BASE_DIR, 'database_table_descriptions.csv')
         try:
-            df = pd.read_csv('database_table_descriptions.csv')
+            df = pd.read_csv(table_descriptions_path)
             # Convert to a formatted string with table name and description
             self.table_descriptions = "\n\n".join([
                 f"Table: {row['Table']}\n"
@@ -188,8 +196,9 @@ class TextToSQLEngine:
         """)
 
         # Step 3: Query Generation Prompt
+        table_info_path = os.path.join(self.BASE_DIR, 'tables_info.json')
         try:
-            with open('tables_info.json', 'r') as f:
+            with open(table_info_path, 'r') as f:
                 table_info = json.load(f)
                 self.all_table_schemas = {table['name']: table for table in table_info['tables']}
                 
@@ -585,7 +594,11 @@ class TextToSQLEngine:
 
 def test_module():
     """Test function for the TextToSQL engine."""
-    engine = TextToSQLEngine()
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # Construct the absolute path to log file
+    log_file = os.path.join(current_dir, '..', 'logs','text_to_sql_engine.log')
+    
+    engine = TextToSQLEngine(log_file)
     print("Enter your queries. Type 'q' to quit.")
     while True:
         query = input("Query: ")

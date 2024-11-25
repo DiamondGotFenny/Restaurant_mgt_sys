@@ -2,11 +2,8 @@ import json
 import os
 import sys
 from dotenv import load_dotenv, find_dotenv
-
-# Adjust the system path to include necessary modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from bm25_retriever_agent import BM25RetrieverAgent
+from server.vectorDB_Agent.bm25_retriever_agent import BM25RetrieverAgent
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def main():
     """
@@ -16,9 +13,9 @@ def main():
     load_dotenv(find_dotenv())
 
     # Configuration
-    PDF_DIRECTORY = "../.././data/Restaurants_data"  # Path to your PDF documents
-    LOG_FILE = "bm25_retriever_agent.log"           # Log file path
-    WHOOSH_INDEX_DIR = "whoosh_index"                # Whoosh index directory
+    PDF_DIRECTORY = os.path.join(current_dir,"..","data","Restaurants_data") 
+    LOG_FILE = os.path.join(current_dir,"..","logs","bm25_retriever_agent.log")
+    WHOOSH_INDEX_DIR = os.path.join(current_dir,"..","data","whoosh_index")
 
     # Validate directories
     if not os.path.isdir(PDF_DIRECTORY):
@@ -40,7 +37,7 @@ def main():
         sys.exit(1)
 
     # Load the 'qa_keywords.json' file
-    QA_KEYWORDS_FILE = "qa_keywords.json"
+    QA_KEYWORDS_FILE = os.path.join(current_dir, "qa_keywords.json")
     if not os.path.isfile(QA_KEYWORDS_FILE):
         print(f"The file '{QA_KEYWORDS_FILE}' does not exist in the current directory.")
         sys.exit(1)

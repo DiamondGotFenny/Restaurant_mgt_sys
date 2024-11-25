@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 from langchain_text_splitters import RecursiveJsonSplitter
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
-from logger_config import setup_logger
+from server.logger_config import setup_logger
 from langchain_core.documents import Document
 
 class DynamicExamplesStore:
@@ -16,7 +16,7 @@ class DynamicExamplesStore:
         azure_openai_api_key: str,
         azure_openai_endpoint: str,
         azure_openai_embedding_deployment: str,
-        log_file: str = "dynamic_examples_store.log",
+        log_file: str = "server/logs/dynamic_examples_store.log",
         max_chunk_size: int = 500
     ):
         """
@@ -188,14 +188,23 @@ def test_dynamic_examples_store():
     
     # Initialize the store
     try:
+        # Get the absolute path of the current script directory
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        print(f"Current directory: {current_dir}")
+        # Construct the absolute path to dynamic_examples.json
+        examples_file_path = os.path.join(current_dir, 'dynamic_examples.json')
+
+        # Construct the absolute path to the dynamic_examples_vectorDB directory
+        persist_dir_path = os.path.abspath(os.path.join(current_dir, '..', 'data', 'dynamic_examples_vectorDB'))
+        
         store = DynamicExamplesStore(
-            examples_file='dynamic_examples.json',
-            persist_directory='./data/dynamic_examples_vectorDB', 
+            examples_file=examples_file_path,
+            persist_directory=persist_dir_path, 
             azure_openai_api_key=azure_openai_api_key,
             azure_openai_endpoint=azure_openai_endpoint,
             azure_openai_embedding_deployment=azure_openai_embedding_deployment
         )
-        
+
         print("\nDynamic Examples Store initialized successfully!")
         print("Enter your questions (type 'exit' to quit).\n")
         

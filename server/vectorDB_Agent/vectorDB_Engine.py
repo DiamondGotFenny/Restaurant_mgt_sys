@@ -6,9 +6,8 @@ from  vectorDB_Agent.vector_store_agent import VectorStoreAgent
 from  vectorDB_Agent.llm_post_processor import LLMProcessor
 from  logger_config import setup_logger
 from  vectorDB_Agent.combined_keyword_retriever import CombinedKeywordRetriever
-
 class VectorDBEngine:
-    def __init__(self):
+    def __init__(self,log_file: str = "hybrid_search_agent.log"):
         """
         Initializes the VectorDBEngine by setting up environment variables,
         directories, logger, and agents.
@@ -20,7 +19,7 @@ class VectorDBEngine:
         self.BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
         # Define paths using absolute paths
-        self.LOG_FILE = os.path.join(self.BASE_DIR, 'logs', 'hybrid_search_agent.log')
+        self.LOG_FILE = log_file
         self.PDF_DIRECTORY = os.path.join(self.BASE_DIR, 'data', 'Restaurants_data')
         self.PERSIST_DIRECTORY = os.path.join(self.BASE_DIR, 'data', 'vectorDB', 'chroma')
         self.WHOOSH_INDEX_DIR = os.path.join(self.BASE_DIR, 'data', 'whoosh_index') 
@@ -172,7 +171,10 @@ def test_module():
         print("=== Vector Store Agent Test Module ===")
         print("Enter 'exit' to quit.")
         os.environ.pop('OPENAI_API_BASE', None) 
-        engine = VectorDBEngine()
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # Construct the absolute path to log file
+        log_file = os.path.join(current_dir, '..', 'logs','hybrid_search_agent.log')
+        engine = VectorDBEngine(log_file)
         while True:
             try:
                 query = input("Enter your query: ")

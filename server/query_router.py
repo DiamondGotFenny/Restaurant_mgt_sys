@@ -1,11 +1,14 @@
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from vectorDB_Agent.vectorDB_Engine import VectorDBEngine
 from text_to_sql.text_to_sql_engine import TextToSQLEngine
 from openai import AzureOpenAI
 import os
 import json
 import csv
+from logger_config import logger
+current_dir = os.path.dirname(os.path.realpath(__file__))
+log_file_path = os.path.join(current_dir,"logs" "query_router.log")
 
 class QueryType(Enum):
     DOCUMENT_BASED = "document_based"
@@ -13,7 +16,7 @@ class QueryType(Enum):
     OFF_TOPIC = "off_topic"
 
 class QueryRouter:
-    def __init__(self, docs_metadata_path: str, table_desc_path: str):
+    def __init__(self, docs_metadata_path: str, table_desc_path: str, log_file_path: str=log_file_path):
         """
         Initialize QueryRouter with paths to metadata files
         
@@ -22,24 +25,26 @@ class QueryRouter:
             table_desc_path (str): Path to the CSV file containing table descriptions
         """
         self.vector_engine = VectorDBEngine()
-        self.sql_engine = TextToSQLEngine("query_router.log")
+        self.sql_engine = TextToSQLEngine(log_file_path)
         self.client = AzureOpenAI(
             api_key=os.getenv("OPENAI_API_KEY"),
             api_version=os.getenv("AZURE_API_VERSION"),
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
         )
-        
+        self.logger = logger(log_file_path)
         # Load metadata from files
         self.docs_metadata = self._load_docs_metadata(docs_metadata_path)
         self.table_descriptions = self._load_table_descriptions(table_desc_path)
-
+        self.logger.info("QueryRouter initialized successfully.")
+        
     def _load_docs_metadata(self, file_path: str) -> Dict:
         """Load document metadata from JSON file"""
         try:
             with open(file_path, 'r') as f:
-                return json.load(f)
+                data = json.load(f)
+                return data
         except Exception as e:
-            print(f"Error loading document metadata: {e}")
+            self.logger.error(f"Error loading document metadata: {e}")
             return {}
 
     def _load_table_descriptions(self, file_path: str) -> Dict:
@@ -52,11 +57,12 @@ class QueryRouter:
                     table_desc[row['Table']] = row['Description']
             return table_desc
         except Exception as e:
-            print(f"Error loading table descriptions: {e}")
+            self.logger.error(f"Error loading table descriptions: {e}")
             return {}
 
     def _determine_search_engine(self, query: str) -> Dict[str, Any]:
         """Determine which search engine to use for the query"""
+        self.logger.info("Determining search engine for the query.")
         prompt = f"""As Sophie, the NYC restaurant expert, determine which data source would be best to answer this query.
 
 Available Data Sources:
@@ -87,13 +93,15 @@ Return a JSON with these fields:
                 messages=messages,
                 response_format={ "type": "json_object" }
             )
+            self.logger.info(f"---------Search engine determined successfully---------------")
             return json.loads(response.choices[0].message.content)
         except Exception as e:
-            print(f"Error in search engine determination: {e}")
+            self.logger.error(f"Error in search engine determination: {e}")
             return {"query_type": None, "reasoning": "Error in analysis", "relevant_sources": []}
 
     def _check_relevance(self, query: str) -> Dict[str, Any]:
         """Check if the query is relevant to NYC dining."""
+        self.logger.info("Checking relevance of the query.")
         prompt = """Determine if this query is relevant to NYC dining.
 
         RELEVANT TOPICS INCLUDE:
@@ -121,6 +129,7 @@ Return a JSON with these fields:
                 messages=messages,
                 response_format={ "type": "json_object" }
             )
+            self.logger.info("Relevance check completed.")
             return json.loads(response.choices[0].message.content)
         except Exception as e:
             self.logger.error(f"Error in relevance check: {e}")
@@ -138,8 +147,10 @@ Return a JSON with these fields:
                 "reasoning": string  # Explanation of routing decision
             }
         """
+        self.logger.info("Routing the query.")
         # First check relevance
         relevance_result = self._check_relevance(query)
+        self.logger.info(f"\n-------------Relevance result: {relevance_result}-----------------\n")
         
         if not relevance_result.get("is_relevant"):
             return {
@@ -151,6 +162,7 @@ Return a JSON with these fields:
         # If relevant, determine which search engine to use and get response
         try:
             engine_analysis = self._determine_search_engine(query)
+            self.logger.info(f"\n-------------Engine analysis result: {engine_analysis}-----------------\n")
             query_type = engine_analysis.get("query_type")
             
             if query_type == "document_based":

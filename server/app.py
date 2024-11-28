@@ -11,6 +11,7 @@ import struct
 from datetime import datetime
 import uuid
 from query_router import QueryRouter
+from logger_config import logger
 _ = load_dotenv(find_dotenv())
 current_dir = os.path.dirname(os.path.realpath(__file__))
 api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
@@ -18,6 +19,8 @@ api_key = os.getenv("OPENAI_API_KEY")
 api_version=os.getenv("AZURE_API_VERSION")
 model3_name=os.getenv("OPENAI_MODEL_3")
 model4_name=os.getenv("OPENAI_MODEL_4o")
+log_file_path = os.path.join(current_dir, "logs","main_app.log")
+logger = logger(log_file_path)
 
 client=AzureOpenAI(
     api_key=api_key,
@@ -30,7 +33,8 @@ docs_metadata_path = os.path.join(current_dir, "vectorDB_Agent","nyc_restaurant_
 table_desc_path = os.path.join(current_dir, "text_to_sql","database_table_descriptions.csv")
 router = QueryRouter(
     docs_metadata_path=docs_metadata_path,
-    table_desc_path=table_desc_path
+    table_desc_path=table_desc_path,
+    log_file_path=log_file_path
 )
 #creadentials for azure speech
 speech_key=os.getenv("AZURE_SPEECH_KEY")
@@ -63,6 +67,8 @@ middleware = [
 ]
 
 app=FastAPI(middleware=middleware)
+
+logger.info("Server started")
 
 class Message(BaseModel):
     id: str
@@ -157,7 +163,7 @@ def is_audio_file(file: UploadFile) -> bool:
 async def speech_to_text(audio_file: UploadFile):
     # Check if the file is a wav file
     if not is_audio_file(audio_file):
-        print("The file is not valid wav file.")
+        logger.info("The file is not valid wav file.")
         return 'invalid wav file'
 
     try:
@@ -172,23 +178,23 @@ async def speech_to_text(audio_file: UploadFile):
         # Initialize SpeechRecognizer
         speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         return None
 
     speech_recognition_result = speech_recognizer.recognize_once()
 
     # Handling different speech recognition outcomes
     if speech_recognition_result.reason == speechsdk.ResultReason.RecognizedSpeech:
-        print("Recognized: {}".format(speech_recognition_result.text))
+        logger.info("Recognized: {}".format(speech_recognition_result.text))
         return speech_recognition_result.text
     elif speech_recognition_result.reason == speechsdk.ResultReason.NoMatch:
-        print("No speech could be recognized: {}".format(speech_recognition_result.no_match_details))
+        logger.info("No speech could be recognized: {}".format(speech_recognition_result.no_match_details))
         return None
     elif speech_recognition_result.reason == speechsdk.ResultReason.Canceled:
         cancellation_details = speech_recognition_result.cancellation_details
-        print("Speech Recognition canceled: {}".format(cancellation_details.reason))
+        logger.info("Speech Recognition canceled: {}".format(cancellation_details.reason))
         if cancellation_details.reason == speechsdk.CancellationReason.Error:
-            print("Cancellation Error details: {}".format(cancellation_details.error_details))
+            logger.info("Cancellation Error details: {}".format(cancellation_details.error_details))
             return None
         return None
     
@@ -201,7 +207,7 @@ def create_wav_header(channels, sample_rate, bits_per_sample):
     header = struct.pack('<4sI4s4sIHHIIHH4sI',
         b'RIFF', 0, b'WAVE', b'fmt ', 16, 1, channels, sample_rate,
         byte_rate, block_align, bits_per_sample, b'data', 0)
-    print('header setted')
+    logger.info('Header set')
     return header
 
 # Define the text-to-speech stream function
@@ -223,24 +229,25 @@ async def text_to_speech_stream(text):
             while True:
                 filled_size = audio_data_stream.read_data(audio_buffer)
                 if filled_size > 0:
-                    print(f"{filled_size} bytes received.")
+                    logger.info(f"{filled_size} bytes received.")
                     yield audio_buffer[:filled_size]
                 else:
                     break
 
         elif result.reason == speechsdk.ResultReason.Canceled:
             cancellation_details = result.cancellation_details
-            print("Speech synthesis canceled: {}".format(cancellation_details.reason))
+            logger.info("Speech synthesis canceled: {}".format(cancellation_details.reason))
             if cancellation_details.reason == speechsdk.CancellationReason.Error:
-                print("Error details: {}".format(cancellation_details.error_details))
+                logger.info("Error details: {}".format(cancellation_details.error_details))
     except Exception as ex:
-        print(f"Error synthesizing audio: {ex}")
+        logger.error(f"Error synthesizing audio: {ex}")
         yield b''
        
     
 # get the response from LLM function
 def response_from_LLM(input_text: str):
     if not input_text:
+        logger.error(f"The input is not a valid string. {input_text}")
         return {"error": "The input is not a valid string."}
     try:
         # Add user message to chat history
@@ -253,7 +260,9 @@ def response_from_LLM(input_text: str):
 
         # Get routing result
         routing_result = router.route_query(input_text)
-        
+        logger.info(f"\n-----------Routing result start --------------")
+        logger.info(f"Routing result: {routing_result}")
+        logger.info(f"-----------Routing result end --------------\n")
         # Get Sophie's system prompt from init_chat
         system_prompt = init_chat[0].text
         
@@ -278,26 +287,29 @@ def response_from_LLM(input_text: str):
             })
 
         # Generate Sophie's response using the complete context
-        response = client.chat.completions.create(
-            model=model4_name,
-            messages=messages,
-            temperature=0.7
-        )
-        
-        response_text = response.choices[0].message.content
-
-        # Create and add assistant's response to chat history
-        assistant_response = Message(
-            id=str(uuid.uuid4()),
-            text=response_text,
-            sender="assistant",
-            timestamp=datetime.now()
-        )
-        chat_history.append(assistant_response)
-        
-        return {"response": assistant_response.dict()}
+        try:
+            response = client.chat.completions.create(
+                model=model4_name,
+                messages=messages,
+                temperature=0.7
+            )
+            
+            response_text = response.choices[0].message.content
+            # Create and add assistant's response to chat history
+            assistant_response = Message(
+                id=str(uuid.uuid4()),
+                text=response_text,
+                sender="assistant",
+                timestamp=datetime.now()
+            )
+            chat_history.append(assistant_response)
+            return {"response": assistant_response.dict()}
+        except Exception as e:
+            logger.error(f"An error occurred in generating Sophie's response: {e}")
+            return {"error": str(e)}
         
     except Exception as e:
+        logger.error(f"An error occurred in response_from_LLM: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -369,15 +381,15 @@ def test_module():
                 
             if user_input.lower() == 'clear':
                 chat_history = init_chat.copy()
-                print("Chat history has been cleared.")
-                print("\n--- Current Chat History ---")
+                logger.info("Chat history has been cleared.")
+                logger.info("\n--- Current Chat History ---")
                 for msg in chat_history:
                     if msg.sender != "system":
-                        print(f"{msg.sender}: {msg.text}\n")
+                        logger.info(f"{msg.sender}: {msg.text}\n")
                 continue
                 
             if not user_input:
-                print("Empty input. Please enter a valid message.")
+                logger.info("Empty input. Please enter a valid message.")
                 continue
 
             # Use the improved response_from_LLM function
@@ -385,24 +397,24 @@ def test_module():
                 response = response_from_LLM(user_input)
                 
                 if "error" in response:
-                    print(f"\nError: {response['error']}")
+                    logger.error(f"\nError: {response['error']}")
                 else:
                     # Display the response
-                    print("\n--- Sophie's Response ---")
-                    print(response["response"]["text"])
-                    print("--- End of Response ---")
+                    logger.info("\n--- Sophie's Response ---")
+                    logger.info(response["response"]["text"])
+                    logger.info("--- End of Response ---")
                     
                     # Display updated chat history
-                    print("\n--- Current Chat History ---")
+                    logger.info("\n--- Current Chat History ---")
                     for msg in chat_history:
                         if msg.sender != "system":
-                            print(f"{msg.sender}: {msg.text}\n")
+                            logger.info(f"{msg.sender}: {msg.text}\n")
                 
             except Exception as e:
-                print(f"An error occurred: {e}")
+                logger.error(f"An error occurred: {e}")
                 
         except (KeyboardInterrupt, EOFError):
-            print("\nExiting test module.")
+            logger.error("Exiting test module.")
             break
 
 if __name__ == "__main__":

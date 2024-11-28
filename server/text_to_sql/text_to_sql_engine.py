@@ -43,10 +43,10 @@ class TextToSQLEngine:
         
         # Setup prompts
         self._setup_prompts()
+        self.logger.info("TextToSQLEngine initialized successfully")
 
     def _load_env_variables(self):
         """Load environment variables."""
-        self.logger.info("Loading environment variables")
         self.db_uri = os.getenv("NEON_RESTARANT_DB_STR")
         self.azure_openai_api_key = os.getenv("OPENAI_API_KEY")
         self.azure_openai_endpoint = os.getenv("OPENAI_API_BASE")
@@ -83,7 +83,6 @@ class TextToSQLEngine:
         )
          # Get the absolute path of the current script directory
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        print(f"Current directory: {current_dir}")
         # Construct the absolute path to dynamic_examples.json
         examples_file_path = os.path.join(current_dir, 'dynamic_examples.json')
 
@@ -99,7 +98,6 @@ class TextToSQLEngine:
             azure_openai_embedding_deployment=self.azure_openai_embedding_deployment
         )
         
-        self.logger.info("All components initialized successfully")
         
     def execute_query(self, query: str) -> str:
         """Execute SQL query and return results in JSON format."""

@@ -2,10 +2,10 @@
 import os
 import sys
 from dotenv import load_dotenv, find_dotenv
-from server.vectorDB_Agent.vector_store_agent import VectorStoreAgent
-from server.vectorDB_Agent.llm_post_processor import LLMProcessor
-from server.logger_config import setup_logger
-from server.vectorDB_Agent.combined_keyword_retriever import CombinedKeywordRetriever
+from  vectorDB_Agent.vector_store_agent import VectorStoreAgent
+from  vectorDB_Agent.llm_post_processor import LLMProcessor
+from  logger_config import setup_logger
+from  vectorDB_Agent.combined_keyword_retriever import CombinedKeywordRetriever
 
 class VectorDBEngine:
     def __init__(self):

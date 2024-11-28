@@ -6,7 +6,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_openai.chat_models import AzureChatOpenAI
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv, find_dotenv
-from server.logger_config import setup_logger
+from  logger_config import setup_logger
 
 _ = load_dotenv(find_dotenv())
 

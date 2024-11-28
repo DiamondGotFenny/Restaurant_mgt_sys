@@ -5,9 +5,9 @@ import logging
 from typing import List, Dict
 from dotenv import load_dotenv, find_dotenv
 from sklearn.metrics.pairwise import cosine_similarity
-from server.vectorDB_Agent.vectorDB_Engine import VectorDBEngine
+from  vectorDB_Agent.vectorDB_Engine import VectorDBEngine
 from langchain_openai import AzureOpenAIEmbeddings
-from server.logger_config import setup_logger
+from  logger_config import setup_logger
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 

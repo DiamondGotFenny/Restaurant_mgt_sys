@@ -8,8 +8,8 @@ from typing import List, Dict
 from dotenv import load_dotenv, find_dotenv
 from sklearn.metrics.pairwise import cosine_similarity
 from collections import namedtuple  
-from server.vectorDB_Agent.llm_post_processor import LLMProcessor
-from server.logger_config import setup_logger
+from  vectorDB_Agent.llm_post_processor import LLMProcessor
+from  logger_config import setup_logger
 from langchain_openai import AzureOpenAIEmbeddings
 current_dir = os.path.dirname(os.path.abspath(__file__))
 

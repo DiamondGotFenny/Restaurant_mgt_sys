@@ -6,8 +6,8 @@ import logging
 from typing import List, Dict
 from sklearn.metrics.pairwise import cosine_similarity
 from langchain_openai import AzureOpenAIEmbeddings
-from server.vectorDB_Agent.vector_store_agent import VectorStoreAgent
-from server.logger_config import setup_logger
+from  vectorDB_Agent.vector_store_agent import VectorStoreAgent
+from  logger_config import setup_logger
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class VectorSearchEvaluator:

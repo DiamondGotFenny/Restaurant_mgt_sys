@@ -10,23 +10,28 @@ import azure.cognitiveservices.speech as speechsdk
 import struct
 from datetime import datetime
 import uuid
-
+from query_router import QueryRouter
 _ = load_dotenv(find_dotenv())
-
-#creadentials for openai
+current_dir = os.path.dirname(os.path.realpath(__file__))
 api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
 api_key = os.getenv("OPENAI_API_KEY")
-api_version=os.getenv("OPENAI_API_VERSION")
+api_version=os.getenv("AZURE_API_VERSION")
 model3_name=os.getenv("OPENAI_MODEL_3")
 model4_name=os.getenv("OPENAI_MODEL_4o")
-os.environ["AZURE_OPENAI_API_VERSION"] = os.getenv("AZURE_API_VERSION")
 
 client=AzureOpenAI(
     api_key=api_key,
-    api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+    api_version=api_version,
     azure_endpoint=api_base
 )
 
+# Initialize the router with file paths
+docs_metadata_path = os.path.join(current_dir, "vectorDB_Agent","nyc_restaurant_docs_metadata.json")
+table_desc_path = os.path.join(current_dir, "text_to_sql","database_table_descriptions.csv")
+router = QueryRouter(
+    docs_metadata_path=docs_metadata_path,
+    table_desc_path=table_desc_path
+)
 #creadentials for azure speech
 speech_key=os.getenv("AZURE_SPEECH_KEY")
 service_region =os.getenv("AZURE_SPEECH_REGION")
@@ -65,59 +70,57 @@ class Message(BaseModel):
     sender: str
     timestamp: datetime
 
-client_address = os.getenv("CLIENT_ADDRESS")
+
 # Initialize chat history
 init_chat = [
     Message(
         id=str(uuid.uuid4()),
-        text="""I need an assistant that can answer user input query about restaurants in new york city, the answer should be only based on the provided context, DO NOT USE INFORMATION FROM MODEL PRETRAIN DATA! if the assistant don't know the answer or don't have the data, just tell the user that you don't have the relative information to answer the question. the assistant DON'T MAKE UP ANSWER, DON'T HAVE ANY hallucination! DO REMEMBER TO LIST THE SOURCE AND METADATA AT THE END OF THE ANSWER! the assistant should be helpful and provide best advices for user, to help they have best dining experience in new york
+        text="""As Sophie, a vibrant 25-year-old food blogger and NYC restaurant enthusiast, your task is to assist users with their New York City dining queries. You'll first determine if a query is relevant to NYC dining, then provide information based ONLY on the available data sources.
 
-You are Sophie, a vibrant 25-year-old food blogger and NYC restaurant enthusiast. Your personality combines professional expertise with youthful energy and genuine warmth. Having explored over 500 restaurants across all five boroughs, you've built a reputation as a trusted local food guide on social media.
+RELEVANT TOPICS INCLUDE:
+- NYC restaurants and dining establishments
+- Restaurant reviews, ratings, or recommendations in NYC
+- Menu items, prices, or cuisine types in NYC restaurants
+- Restaurant locations, neighborhoods, or accessibility in NYC
+- Restaurant safety, inspections, or ratings in NYC
+- Specific NYC restaurants or dining experiences
 
-Character Traits:
-- Friendly and approachable, with a bubbly personality
+FOR RELEVANT QUERIES:
+- Answer ONLY using information from the provided context
+- DO NOT use information from model pre-training
+- If information isn't available in the data, clearly state that
+- Maintain a friendly, enthusiastic tone
+- Include sources and metadata at the end of responses
+
+FOR OFF-TOPIC QUERIES:
+Respond with warm enthusiasm while redirecting to NYC dining topics, like:
+"Oh hey there! 👋 While I'd absolutely love to chat about [mentioned topic], I'm actually your go-to girl for all things NYC dining! 
+
+I'd be thrilled to help you:
+- Discover amazing restaurants in any NYC neighborhood
+- Find the perfect spot for your dining preferences
+- Learn about menu highlights and prices
+- Check restaurant ratings and reviews
+- Get the scoop on hidden gems and local favorites
+
+What kind of NYC dining experience can I help you discover? 🗽✨"
+
+CHARACTER TRAITS:
+- Friendly and approachable with a bubbly personality
 - Naturally incorporates light food puns and playful humor
-- Speaks with authentic enthusiasm but maintains professionalism
-- Has a knack for making people feel comfortable asking questions
-- Responds with a mix of expertise and relatable personal touches
+- Speaks with authentic enthusiasm while maintaining professionalism
+- Makes people feel comfortable asking questions
 - Uses occasional emojis and cheerful expressions without overdoing it
 
-Voice Style:
+VOICE STYLE:
 - Warm and conversational, like chatting with a knowledgeable friend
+- your answers style should be oral and not written, do not use bullet points or lists
 - Balances fun and informative tones
 - Uses phrases like "Oh, you're gonna love this!" or "Here's a local secret..."
 - Includes occasional playful expressions like "Yummy!" or "This spot is absolutely divine!"
 - Naturally weaves in personal touches like "I just visited this place last week!"
 
-Remember to maintain this personality while strictly following the information guidelines in the prompt below.
-
-Answer user queries about restaurants in New York City based exclusively on the provided context, without using information from model pre-trained data. 
-- If the information is not available within the provided context, clearly indicate that the information is not available. 
-- Avoid creating or hallucinating any answers.
-- Provide sources and metadata for the information given at the end of your response. 
-- Offer helpful and relevant advice to enhance the user's dining experience.
-
-# Steps
-1. Read and understand the user query about restaurants in New York City.
-2. Search the provided context for relevant information related to the query.
-3. Formulate a response based solely on the data available in the provided context.
-4. If data is unavailable, inform the user of the lack of necessary information.
-5. Conclude the response with any available sources and metadata.
-
-# Output Format
-- A complete response should include:
-  - A direct answer based on the provided context.
-  - A statement acknowledging when data is not available, if applicable.
-  - Sources and metadata listed at the end of the response.
-
-# Notes
-- Prioritize accuracy and adherence to the given context.
-- Always include sources and metadata when providing information.
-- Encourage a positive dining experience by offering practical and relevant insights.
-
-#Answer Context:
-{context}
-""",
+Available context: {context}""",
         sender="system",
         timestamp=datetime.now()
     ),
@@ -240,26 +243,60 @@ def response_from_LLM(input_text: str):
     if not input_text:
         return {"error": "The input is not a valid string."}
     try:
+        # Add user message to chat history
         chat_history.append(Message(
             id=str(uuid.uuid4()),
             text=input_text,
             sender="user",
             timestamp=datetime.now()
         ))
-        messages = [{"role": msg.sender, "content": msg.text} for msg in chat_history]
+
+        # Get routing result
+        routing_result = router.route_query(input_text)
+        
+        # Get Sophie's system prompt from init_chat
+        system_prompt = init_chat[0].text
+        
+        # Create messages array with system prompt and conversation history
+        messages = [
+            {"role": "system", "content": system_prompt},
+            # Add relevant chat history (excluding system messages)
+            *[{"role": msg.sender, "content": msg.text} 
+              for msg in chat_history if msg.sender != "system"],
+        ]
+
+        # Add the routing result information
+        if not routing_result["is_relevant"]:
+            messages.append({
+                "role": "system", 
+                "content": "The user's query is NOT relevant to NYC dining. Please respond according to the OFF-TOPIC QUERIES guidelines in your instructions. Your answers style should be oral and not written, do not use bullet points or lists."
+            })
+        else:
+            messages.append({
+                "role": "system", 
+                "content": f"The user's query is relevant to NYC dining. Here is the context information to use in your response: {routing_result['response']}.\ Your answers style should be oral and not written, do not use bullet points or lists."
+            })
+
+        # Generate Sophie's response using the complete context
         response = client.chat.completions.create(
-            model=model3_name,
+            model=model4_name,
             messages=messages,
+            temperature=0.7
         )
-        assistant_response=Message(
+        
+        response_text = response.choices[0].message.content
+
+        # Create and add assistant's response to chat history
+        assistant_response = Message(
             id=str(uuid.uuid4()),
-            text=response.choices[0].message.content,
+            text=response_text,
             sender="assistant",
             timestamp=datetime.now()
         )
         chat_history.append(assistant_response)
-        print(chat_history)
+        
         return {"response": assistant_response.dict()}
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -311,9 +348,75 @@ async def get_chat_history():
     return {"chat_history": [msg.dict() for msg in chat_history if msg.sender != "system"]}
 
 
+def test_module():
+    """
+    Interactive test module for testing the chat functionality without starting the FastAPI server.
+    """
+    print("=== Chat Assistant Test Module ===")
+    print("Enter 'exit' or 'q' to quit")
+    print("Enter 'clear' to reset chat history")
+    
+    # Use global chat_history
+    global chat_history
+    
+    while True:
+        try:
+            user_input = input("\nEnter your message: ").strip()
+            
+            if user_input.lower() in ['exit', 'q']:
+                print("Exiting test module.")
+                break
+                
+            if user_input.lower() == 'clear':
+                chat_history = init_chat.copy()
+                print("Chat history has been cleared.")
+                print("\n--- Current Chat History ---")
+                for msg in chat_history:
+                    if msg.sender != "system":
+                        print(f"{msg.sender}: {msg.text}\n")
+                continue
+                
+            if not user_input:
+                print("Empty input. Please enter a valid message.")
+                continue
+
+            # Use the improved response_from_LLM function
+            try:
+                response = response_from_LLM(user_input)
+                
+                if "error" in response:
+                    print(f"\nError: {response['error']}")
+                else:
+                    # Display the response
+                    print("\n--- Sophie's Response ---")
+                    print(response["response"]["text"])
+                    print("--- End of Response ---")
+                    
+                    # Display updated chat history
+                    print("\n--- Current Chat History ---")
+                    for msg in chat_history:
+                        if msg.sender != "system":
+                            print(f"{msg.sender}: {msg.text}\n")
+                
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                
+        except (KeyboardInterrupt, EOFError):
+            print("\nExiting test module.")
+            break
+
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Run the chat assistant server or test module")
+    parser.add_argument("--test", action="store_true", help="Run in test mode instead of starting the server")
+    args = parser.parse_args()
+    
+    if args.test:
+        test_module()
+    else:
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port=8000)
     
     #create a route that can clean the chat history
 @app.post("/clear_chat_history/")

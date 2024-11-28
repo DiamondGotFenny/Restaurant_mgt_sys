@@ -4,8 +4,8 @@ from typing import Dict, List, Any
 from datetime import datetime
 import difflib
 from dotenv import load_dotenv, find_dotenv
-from server.text_to_sql.text_to_sql_engine import TextToSQLEngine
-from server.logger_config import setup_logger
+from  text_to_sql.text_to_sql_engine import TextToSQLEngine
+from  logger_config import setup_logger
 import os
 import sys
 import ast

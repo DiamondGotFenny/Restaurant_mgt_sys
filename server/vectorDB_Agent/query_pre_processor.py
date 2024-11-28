@@ -14,7 +14,7 @@ from typing import List, Dict
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai.chat_models import AzureChatOpenAI
 from langchain.prompts import PromptTemplate
-from server.logger_config import setup_logger
+from  logger_config import setup_logger
 from dotenv import load_dotenv, find_dotenv
 import re
 import json

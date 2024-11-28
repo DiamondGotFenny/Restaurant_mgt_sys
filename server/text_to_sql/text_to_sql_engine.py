@@ -8,8 +8,8 @@ from fastapi import HTTPException
 from langchain_openai import AzureChatOpenAI
 from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
-from server.logger_config import setup_logger
-from server.text_to_sql.dynamic_examples_store import DynamicExamplesStore
+from  logger_config import setup_logger
+from  text_to_sql.dynamic_examples_store import DynamicExamplesStore
 import json
 from sqlalchemy import create_engine, text
 

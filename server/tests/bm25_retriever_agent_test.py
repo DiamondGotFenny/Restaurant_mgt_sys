@@ -5,8 +5,8 @@ import logging
 from typing import List, Dict
 from dotenv import load_dotenv, find_dotenv
 from sklearn.metrics.pairwise import cosine_similarity
-from server.vectorDB_Agent.bm25_retriever_agent import BM25RetrieverAgent
-from server.logger_config import setup_logger
+from  vectorDB_Agent.bm25_retriever_agent import BM25RetrieverAgent
+from  logger_config import setup_logger
 from langchain_openai import AzureOpenAIEmbeddings
 current_dir = os.path.dirname(os.path.abspath(__file__))
 

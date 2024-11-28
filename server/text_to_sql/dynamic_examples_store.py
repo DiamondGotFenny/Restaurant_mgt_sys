@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 from langchain_text_splitters import RecursiveJsonSplitter
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
-from server.logger_config import setup_logger
+from  logger_config import setup_logger
 from langchain_core.documents import Document
 
 class DynamicExamplesStore:
@@ -16,7 +16,7 @@ class DynamicExamplesStore:
         azure_openai_api_key: str,
         azure_openai_endpoint: str,
         azure_openai_embedding_deployment: str,
-        log_file: str = "server/logs/dynamic_examples_store.log",
+        log_file: str = "logs/dynamic_examples_store.log",
         max_chunk_size: int = 500
     ):
         """

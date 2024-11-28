@@ -4,8 +4,8 @@ import json
 import logging
 from typing import List, Dict, Tuple
 from dotenv import load_dotenv, find_dotenv
-from server.vectorDB_Agent.query_pre_processor import LLMQueryPreProcessor 
-from server.logger_config import setup_logger
+from  vectorDB_Agent.query_pre_processor import LLMQueryPreProcessor 
+from  logger_config import setup_logger
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def load_qa_keywords(filepath: str,logger:logging.Logger) -> List[Dict]:

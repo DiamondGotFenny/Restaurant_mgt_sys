@@ -5,13 +5,15 @@ from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import AzureOpenAI
 import os
+import json
 from dotenv import load_dotenv, find_dotenv
 import azure.cognitiveservices.speech as speechsdk
 import struct
 from datetime import datetime
 import uuid
 from query_router import QueryRouter
-from logger_config import logger
+from logger_config import setup_logger
+from query_rewriter import QueryRewriter
 _ = load_dotenv(find_dotenv())
 current_dir = os.path.dirname(os.path.realpath(__file__))
 api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
@@ -20,7 +22,7 @@ api_version=os.getenv("AZURE_API_VERSION")
 model3_name=os.getenv("OPENAI_MODEL_3")
 model4_name=os.getenv("OPENAI_MODEL_4o")
 log_file_path = os.path.join(current_dir, "logs","main_app.log")
-logger = logger(log_file_path)
+logger = setup_logger(log_file_path)
 
 client=AzureOpenAI(
     api_key=api_key,
@@ -36,6 +38,8 @@ router = QueryRouter(
     table_desc_path=table_desc_path,
     log_file_path=log_file_path
 )
+# Initialize query rewriter
+query_rewriter = QueryRewriter(client)
 #creadentials for azure speech
 speech_key=os.getenv("AZURE_SPEECH_KEY")
 service_region =os.getenv("AZURE_SPEECH_REGION")
@@ -83,50 +87,41 @@ init_chat = [
         id=str(uuid.uuid4()),
         text="""As Sophie, a vibrant 25-year-old food blogger and NYC restaurant enthusiast, your task is to assist users with their New York City dining queries. You'll first determine if a query is relevant to NYC dining, then provide information based ONLY on the available data sources.
 
-RELEVANT TOPICS INCLUDE:
+**RELEVANT TOPICS INCLUDE:**
 - NYC restaurants and dining establishments
 - Restaurant reviews, ratings, or recommendations in NYC
 - Menu items, prices, or cuisine types in NYC restaurants
 - Restaurant locations, neighborhoods, or accessibility in NYC
 - Restaurant safety, inspections, or ratings in NYC
 - Specific NYC restaurants or dining experiences
+- food recommendations or restaurant suggestions if the query expresses a desire for them
+- If the query doesn't tell any city or location, you can assume it's in NYC
 
-FOR RELEVANT QUERIES:
+**FOR RELEVANT QUERIES:**
 - Answer ONLY using information from the provided context
 - DO NOT use information from model pre-training
 - If information isn't available in the data, clearly state that
 - Maintain a friendly, enthusiastic tone
 - Include sources and metadata at the end of responses
 
-FOR OFF-TOPIC QUERIES:
-Respond with warm enthusiasm while redirecting to NYC dining topics, like:
-"Oh hey there! 👋 While I'd absolutely love to chat about [mentioned topic], I'm actually your go-to girl for all things NYC dining! 
+**FOR OFF-TOPIC QUERIES:**
+Respond with warm enthusiasm while redirecting to NYC dining topics. Use playful humor and light food puns to keep the conversation engaging. Your answers style should be oral and not written, do not use bullet points or lists.
 
-I'd be thrilled to help you:
-- Discover amazing restaurants in any NYC neighborhood
-- Find the perfect spot for your dining preferences
-- Learn about menu highlights and prices
-- Check restaurant ratings and reviews
-- Get the scoop on hidden gems and local favorites
-
-What kind of NYC dining experience can I help you discover? 🗽✨"
-
-CHARACTER TRAITS:
+**CHARACTER TRAITS:**
 - Friendly and approachable with a bubbly personality
 - Naturally incorporates light food puns and playful humor
 - Speaks with authentic enthusiasm while maintaining professionalism
 - Makes people feel comfortable asking questions
 - Uses occasional emojis and cheerful expressions without overdoing it
 
-VOICE STYLE:
+**VOICE STYLE:**
 - Warm and conversational, like chatting with a knowledgeable friend
 - your answers style should be oral and not written, do not use bullet points or lists
 - Balances fun and informative tones
 - Uses phrases like "Oh, you're gonna love this!" or "Here's a local secret..."
 - Includes occasional playful expressions like "Yummy!" or "This spot is absolutely divine!"
 - Naturally weaves in personal touches like "I just visited this place last week!"
-
-Available context: {context}""",
+""",
         sender="system",
         timestamp=datetime.now()
     ),
@@ -250,7 +245,32 @@ def response_from_LLM(input_text: str):
         logger.error(f"The input is not a valid string. {input_text}")
         return {"error": "The input is not a valid string."}
     try:
-        # Add user message to chat history
+        # Rewrite query based on chat history
+        rewrite_result = query_rewriter.rewrite_query(input_text, [msg.model_dump() for msg in chat_history])
+        logger.info(f"Original query: {input_text}")
+        logger.info(f"Rewrite result: {json.dumps(rewrite_result, indent=2)}")
+        
+        # Handle different status cases
+        if rewrite_result["status"] == "needs_clarification":
+            assistant_response = Message(
+                id=str(uuid.uuid4()),
+                text=rewrite_result["suggested_clarification"],
+                sender="assistant",
+                timestamp=datetime.now()
+            )
+            chat_history.append(assistant_response)
+            return {
+                "response": {
+                    "id": str(uuid.uuid4()),
+                    "text": rewrite_result["suggested_clarification"],
+                    "sender": "assistant",
+                    "timestamp": datetime.now()
+                }
+            }
+        # Use the query from the result (either rewritten or unchanged)
+        query_to_use = rewrite_result["query"]
+
+        # Add user message to chat history (original query)
         chat_history.append(Message(
             id=str(uuid.uuid4()),
             text=input_text,
@@ -258,10 +278,10 @@ def response_from_LLM(input_text: str):
             timestamp=datetime.now()
         ))
 
-        # Get routing result
-        routing_result = router.route_query(input_text)
+        # Get routing result with rewritten query
+        routing_result = router.route_query(query_to_use)
         logger.info(f"\n-----------Routing result start --------------")
-        logger.info(f"Routing result: {routing_result}")
+        logger.info(f" Query:  {input_text}--------Routing result: {routing_result}")
         logger.info(f"-----------Routing result end --------------\n")
         # Get Sophie's system prompt from init_chat
         system_prompt = init_chat[0].text
@@ -283,7 +303,7 @@ def response_from_LLM(input_text: str):
         else:
             messages.append({
                 "role": "system", 
-                "content": f"The user's query is relevant to NYC dining. Here is the context information to use in your response: {routing_result['response']}.\ Your answers style should be oral and not written, do not use bullet points or lists."
+                "content": f"The user's query is relevant to NYC dining. Here is the context information to use in your response: {routing_result['response']}. Your answers style should be oral and not written, do not use bullet points or lists."
             })
 
         # Generate Sophie's response using the complete context
@@ -303,7 +323,7 @@ def response_from_LLM(input_text: str):
                 timestamp=datetime.now()
             )
             chat_history.append(assistant_response)
-            return {"response": assistant_response.dict()}
+            return {"response": assistant_response.model_dump()}
         except Exception as e:
             logger.error(f"An error occurred in generating Sophie's response: {e}")
             return {"error": str(e)}
@@ -357,7 +377,7 @@ async def chat_audio_stream(data: UploadFile = File(...)):
 # Define a route to get the chat history
 @app.get("/chat_history/")
 async def get_chat_history():
-    return {"chat_history": [msg.dict() for msg in chat_history if msg.sender != "system"]}
+    return {"chat_history": [msg.model_dump() for msg in chat_history if msg.sender != "system"]}
 
 
 def test_module():

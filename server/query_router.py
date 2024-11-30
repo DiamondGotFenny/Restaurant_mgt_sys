@@ -6,7 +6,7 @@ from openai import AzureOpenAI
 import os
 import json
 import csv
-from logger_config import logger
+from logger_config import setup_logger
 current_dir = os.path.dirname(os.path.realpath(__file__))
 log_file_path = os.path.join(current_dir,"logs" "query_router.log")
 
@@ -24,14 +24,14 @@ class QueryRouter:
             docs_metadata_path (str): Path to the JSON file containing document metadata
             table_desc_path (str): Path to the CSV file containing table descriptions
         """
-        self.vector_engine = VectorDBEngine()
+        self.vector_engine = VectorDBEngine(log_file_path)
         self.sql_engine = TextToSQLEngine(log_file_path)
         self.client = AzureOpenAI(
             api_key=os.getenv("OPENAI_API_KEY"),
             api_version=os.getenv("AZURE_API_VERSION"),
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
         )
-        self.logger = logger(log_file_path)
+        self.logger = setup_logger(log_file_path)
         # Load metadata from files
         self.docs_metadata = self._load_docs_metadata(docs_metadata_path)
         self.table_descriptions = self._load_table_descriptions(table_desc_path)
@@ -91,7 +91,8 @@ Return a JSON with these fields:
             response = self.client.chat.completions.create(
                 model=os.getenv("OPENAI_MODEL_4o"),
                 messages=messages,
-                response_format={ "type": "json_object" }
+                response_format={ "type": "json_object" },
+                temperature=0.1
             )
             self.logger.info(f"---------Search engine determined successfully---------------")
             return json.loads(response.choices[0].message.content)
@@ -107,9 +108,11 @@ Return a JSON with these fields:
         RELEVANT TOPICS INCLUDE:
         - NYC restaurants and dining establishments
         - Restaurant reviews, ratings, or recommendations in NYC
+        - Food type or cuisine options or specific dishes that users show interest in
         - Menu items, prices, or cuisine types in NYC restaurants
         - Restaurant locations, neighborhoods, or accessibility in NYC
         - Restaurant safety, inspections, or ratings in NYC
+        - Restaurant business hours, reservations, or delivery options in NYC
         - Specific NYC restaurants or dining experiences
 
         Return ONLY a JSON with these fields:
@@ -127,7 +130,8 @@ Return a JSON with these fields:
             response = self.client.chat.completions.create(
                 model=os.getenv("OPENAI_MODEL_4o"),
                 messages=messages,
-                response_format={ "type": "json_object" }
+                response_format={ "type": "json_object" },
+                temperature=0.1
             )
             self.logger.info("Relevance check completed.")
             return json.loads(response.choices[0].message.content)
@@ -150,7 +154,7 @@ Return a JSON with these fields:
         self.logger.info("Routing the query.")
         # First check relevance
         relevance_result = self._check_relevance(query)
-        self.logger.info(f"\n-------------Relevance result: {relevance_result}-----------------\n")
+        self.logger.info(f"\nQuery:  {query}-------------Relevance result: {relevance_result}-----------------\n")
         
         if not relevance_result.get("is_relevant"):
             return {
@@ -162,7 +166,7 @@ Return a JSON with these fields:
         # If relevant, determine which search engine to use and get response
         try:
             engine_analysis = self._determine_search_engine(query)
-            self.logger.info(f"\n-------------Engine analysis result: {engine_analysis}-----------------\n")
+            self.logger.info(f"\nQuery:  {query}-------------Engine analysis result: {engine_analysis}-----------------\n")
             query_type = engine_analysis.get("query_type")
             
             if query_type == "document_based":

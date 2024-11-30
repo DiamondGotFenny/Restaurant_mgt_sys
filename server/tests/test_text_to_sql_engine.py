@@ -4,6 +4,7 @@ from typing import Dict, List, Any
 from datetime import datetime
 import difflib
 from dotenv import load_dotenv, find_dotenv
+current_dir = os.path.dirname(os.path.abspath(__file__))
 from  text_to_sql.text_to_sql_engine import TextToSQLEngine
 from  logger_config import setup_logger
 import os

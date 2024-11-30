@@ -241,6 +241,10 @@ async def text_to_speech_stream(text):
     
 # get the response from LLM function
 def response_from_LLM(input_text: str):
+    """
+    Process user input and generate response using LLM.
+    Handles query rewriting, routing, and response generation.
+    """
     if not input_text:
         logger.error(f"The input is not a valid string. {input_text}")
         return {"error": "The input is not a valid string."}
@@ -250,7 +254,7 @@ def response_from_LLM(input_text: str):
         logger.info(f"Original query: {input_text}")
         logger.info(f"Rewrite result: {json.dumps(rewrite_result, indent=2)}")
         
-        # Handle different status cases
+        # Handle clarification requests
         if rewrite_result["status"] == "needs_clarification":
             assistant_response = Message(
                 id=str(uuid.uuid4()),
@@ -260,17 +264,13 @@ def response_from_LLM(input_text: str):
             )
             chat_history.append(assistant_response)
             return {
-                "response": {
-                    "id": str(uuid.uuid4()),
-                    "text": rewrite_result["suggested_clarification"],
-                    "sender": "assistant",
-                    "timestamp": datetime.now()
-                }
+                "response": assistant_response.model_dump()
             }
-        # Use the query from the result (either rewritten or unchanged)
+
+        # Use the processed query
         query_to_use = rewrite_result["query"]
 
-        # Add user message to chat history (original query)
+        # Add original user message to chat history
         chat_history.append(Message(
             id=str(uuid.uuid4()),
             text=input_text,
@@ -278,36 +278,45 @@ def response_from_LLM(input_text: str):
             timestamp=datetime.now()
         ))
 
-        # Get routing result with rewritten query
+        # Get routing result
         routing_result = router.route_query(query_to_use)
         logger.info(f"\n-----------Routing result start --------------")
-        logger.info(f" Query:  {input_text}--------Routing result: {routing_result}")
+        logger.info(f"Query: {query_to_use}")
+        logger.info(f"Routing result: {routing_result}")
         logger.info(f"-----------Routing result end --------------\n")
-        # Get Sophie's system prompt from init_chat
-        system_prompt = init_chat[0].text
-        
-        # Create messages array with system prompt and conversation history
+
+        # Prepare the final user message based on routing result
+        if routing_result["is_relevant"]:
+            final_user_message = (
+                f"Context:\n"
+                f"This information is from verified NYC dining data sources:\n"
+                f"{routing_result['response']}\n"
+                f"Remember to use ONLY this provided information for your answer. "
+                f"Keep your response style conversational and avoid using bullet points or lists.\n\n"
+                f"Question: {query_to_use}"
+            )
+        else:
+            final_user_message = (
+                f"Context:\n"
+                f"This query is not directly related to NYC dining. "
+                f"Please provide a friendly response that redirects the conversation back to NYC dining topics. "
+                f"Keep your response style conversational and avoid using bullet points or lists.\n\n"
+                f"Question: {query_to_use}"
+            )
+
+        # Create messages array
         messages = [
-            {"role": "system", "content": system_prompt},
-            # Add relevant chat history (excluding system messages)
+            # Initial system prompt
+            {"role": "system", "content": init_chat[0].text},
+            # Previous conversation history (excluding system messages)
             *[{"role": msg.sender, "content": msg.text} 
               for msg in chat_history if msg.sender != "system"],
+            # Final message with context and question
+            {"role": "user", "content": final_user_message}
         ]
 
-        # Add the routing result information
-        if not routing_result["is_relevant"]:
-            messages.append({
-                "role": "system", 
-                "content": "The user's query is NOT relevant to NYC dining. Please respond according to the OFF-TOPIC QUERIES guidelines in your instructions. Your answers style should be oral and not written, do not use bullet points or lists."
-            })
-        else:
-            messages.append({
-                "role": "system", 
-                "content": f"The user's query is relevant to NYC dining. Here is the context information to use in your response: {routing_result['response']}. Your answers style should be oral and not written, do not use bullet points or lists."
-            })
-
-        # Generate Sophie's response using the complete context
         try:
+            # Generate response
             response = client.chat.completions.create(
                 model=model4_name,
                 messages=messages,
@@ -315,6 +324,7 @@ def response_from_LLM(input_text: str):
             )
             
             response_text = response.choices[0].message.content
+            
             # Create and add assistant's response to chat history
             assistant_response = Message(
                 id=str(uuid.uuid4()),
@@ -323,7 +333,9 @@ def response_from_LLM(input_text: str):
                 timestamp=datetime.now()
             )
             chat_history.append(assistant_response)
+            
             return {"response": assistant_response.model_dump()}
+            
         except Exception as e:
             logger.error(f"An error occurred in generating Sophie's response: {e}")
             return {"error": str(e)}

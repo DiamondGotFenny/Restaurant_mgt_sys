@@ -55,6 +55,8 @@ Guidelines for each status:
 2. "rewritten" (confidence >= 0.7):
    - When pronouns/references are clear from context
    - When implicit context can be made explicit
+   - When query can be improved or extended for better understanding
+   - When query is too short but the context of the conversation is clear, you extend the query to make it more specific
    Example: {
      "status": "rewritten",
      "query": "What is Adda Indian Canteen's address?",

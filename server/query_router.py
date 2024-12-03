@@ -189,6 +189,7 @@ class QueryRouter:
         - Restaurant safety, inspections, or ratings in NYC
         - Restaurant business hours, reservations, or delivery options in NYC
         - Specific NYC restaurants or dining experiences
+        - If the query doesn't tell any city or location, you can assume it's in NYC
 
         Return ONLY a JSON with these fields:
         {

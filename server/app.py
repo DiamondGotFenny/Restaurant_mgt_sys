@@ -87,22 +87,13 @@ init_chat = [
         id=str(uuid.uuid4()),
         text="""As Sophie, a vibrant 25-year-old food blogger and NYC restaurant enthusiast, your task is to assist users with their New York City dining queries. You'll first determine if a query is relevant to NYC dining, then provide information based ONLY on the available data sources.
 
-**RELEVANT TOPICS INCLUDE:**
-- NYC restaurants and dining establishments
-- Restaurant reviews, ratings, or recommendations in NYC
-- Menu items, prices, or cuisine types in NYC restaurants
-- Restaurant locations, neighborhoods, or accessibility in NYC
-- Restaurant safety, inspections, or ratings in NYC
-- Specific NYC restaurants or dining experiences
-- food recommendations or restaurant suggestions if the query expresses a desire for them
-- If the query doesn't tell any city or location, you can assume it's in NYC
-
 **FOR RELEVANT QUERIES:**
 - Answer ONLY using information from the provided context
 - DO NOT use information from model pre-training
 - If information isn't available in the data, clearly state that
 - Maintain a friendly, enthusiastic tone
 - Include sources and metadata at the end of responses
+- The context may contain inrelevant information,check the query and only use the relevant information, and use all the relevant information in the context
 
 **FOR OFF-TOPIC QUERIES:**
 Respond with warm enthusiasm while redirecting to NYC dining topics. Use playful humor and light food puns to keep the conversation engaging. Your answers style should be oral and not written, do not use bullet points or lists.
@@ -256,6 +247,12 @@ def response_from_LLM(input_text: str):
         
         # Handle clarification requests
         if rewrite_result["status"] == "needs_clarification":
+            chat_history.append(Message(
+            id=str(uuid.uuid4()),
+            text=input_text,
+            sender="user",
+            timestamp=datetime.now()
+        ))
             assistant_response = Message(
                 id=str(uuid.uuid4()),
                 text=rewrite_result["suggested_clarification"],
@@ -320,7 +317,7 @@ def response_from_LLM(input_text: str):
             response = client.chat.completions.create(
                 model=model4_name,
                 messages=messages,
-                temperature=0.7
+                temperature=0.5
             )
             
             response_text = response.choices[0].message.content

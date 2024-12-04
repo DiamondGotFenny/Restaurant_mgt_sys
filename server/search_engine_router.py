@@ -7,23 +7,9 @@ import os
 import json
 import csv
 from logger_config import setup_logger
-current_dir = os.path.dirname(os.path.realpath(__file__))
-log_file_path = os.path.join(current_dir,"logs" "query_router.log")
 
-class QueryType(Enum):
-    DOCUMENT_BASED = "document_based"
-    DATABASE_BASED = "database_based"
-    OFF_TOPIC = "off_topic"
-
-class QueryRouter:
-    def __init__(self, docs_metadata_path: str, table_desc_path: str, log_file_path: str=log_file_path):
-        """
-        Initialize QueryRouter with paths to metadata files
-        
-        Args:
-            docs_metadata_path (str): Path to the JSON file containing document metadata
-            table_desc_path (str): Path to the CSV file containing table descriptions
-        """
+class SearchEngineRouter:
+    def __init__(self, docs_metadata_path: str, table_desc_path: str, log_file_path: str):
         self.vector_engine = VectorDBEngine(log_file_path)
         self.sql_engine = TextToSQLEngine(log_file_path)
         self.client = AzureOpenAI(
@@ -32,23 +18,18 @@ class QueryRouter:
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
         )
         self.logger = setup_logger(log_file_path)
-        # Load metadata from files
         self.docs_metadata = self._load_docs_metadata(docs_metadata_path)
         self.table_descriptions = self._load_table_descriptions(table_desc_path)
-        self.logger.info("QueryRouter initialized successfully.")
         
     def _load_docs_metadata(self, file_path: str) -> Dict:
-        """Load document metadata from JSON file"""
         try:
             with open(file_path, 'r') as f:
-                data = json.load(f)
-                return data
+                return json.load(f)
         except Exception as e:
             self.logger.error(f"Error loading document metadata: {e}")
             return {}
 
     def _load_table_descriptions(self, file_path: str) -> Dict:
-        """Load table descriptions from CSV file"""
         table_desc = {}
         try:
             with open(file_path, 'r') as f:
@@ -139,7 +120,6 @@ class QueryRouter:
                 }
             }
 
-
     def _combine_search_results(self, doc_response: str, db_response: str) -> str:
         """Combine results from different search engines intelligently"""
         prompt = f"""As Sophie, combine these search results into a coherent response.
@@ -174,46 +154,6 @@ class QueryRouter:
             self.logger.error(f"Error in combining results: {e}")
             return f"{doc_response}\n\nAdditional information:\n{db_response}"
 
-
-    def _check_relevance(self, query: str) -> Dict[str, Any]:
-        """Check if the query is relevant to NYC dining."""
-        self.logger.info("Checking relevance of the query.")
-        prompt = """Determine if this query is relevant to NYC dining.
-
-        RELEVANT TOPICS INCLUDE:
-        - NYC restaurants and dining establishments
-        - Restaurant reviews, ratings, or recommendations in NYC
-        - Food type or cuisine or specific dishes that users show interest in
-        - Menu items, prices, or cuisine types in NYC restaurants
-        - Restaurant locations, neighborhoods, or accessibility in NYC
-        - Restaurant safety, inspections, or ratings in NYC
-        - Restaurant business hours, reservations, or delivery options in NYC
-        - Specific NYC restaurants or dining experiences
-        - If the query doesn't tell any city or location, you can assume it's in NYC
-
-        Return ONLY a JSON with these fields:
-        {
-            "is_relevant": boolean,
-            "reasoning": string
-        }"""
-
-        messages = [
-            {"role": "system", "content": prompt},
-            {"role": "user", "content": query}
-        ]
-        
-        try:
-            response = self.client.chat.completions.create(
-                model=os.getenv("OPENAI_MODEL_4o"),
-                messages=messages,
-                response_format={ "type": "json_object" },
-                temperature=0.1
-            )
-            self.logger.info("Relevance check completed.")
-            return json.loads(response.choices[0].message.content)
-        except Exception as e:
-            self.logger.error(f"Error in relevance check: {e}")
-            return {"is_relevant": False, "reasoning": "Error in analysis"}
     def _combine_component_responses(self, component_responses: List[str], original_query: str) -> str:
         """Combine responses from different components of a compound query"""
         prompt = f"""As Sophie, combine these separate response components into a coherent answer.
@@ -248,32 +188,15 @@ class QueryRouter:
             self.logger.error(f"Error in combining component responses: {e}")
             return "\n\n".join(component_responses)
         
-    def route_query(self, query: str) -> Dict[str, Any]:
-        """
-        Route the query and return both relevance status and response data.
-        Supports hybrid searches across multiple data sources and compound queries.
-        """
-        self.logger.info("Routing the query.")
-        # First check relevance
-        relevance_result = self._check_relevance(query)
-        self.logger.info(f"\nQuery: {query}\nRelevance result: {relevance_result}")
-        
-        if not relevance_result.get("is_relevant"):
-            return {
-                "is_relevant": False,
-                "response": None,
-                "reasoning": relevance_result.get("reasoning", "Query is not related to NYC dining")
-            }
-        
+    def process_query(self, query: str) -> Dict[str, Any]:
+        """Process the query and return response data."""
         try:
-            # Determine search strategy
             engine_analysis = self._determine_search_engine(query)
             self.logger.info(f"\n-------------Query: {query}\nEngine analysis: {engine_analysis}-----------------\n")
             
             search_strategy = engine_analysis["search_strategy"]
             query_components = engine_analysis["query_components"]
             
-            # Handle compound queries
             if query_components.get("is_compound"):
                 component_responses = []
                 
@@ -304,7 +227,6 @@ class QueryRouter:
                 
                 # Combine all component responses
                 final_response = self._combine_component_responses(component_responses, query)
-                
             else:
                 # Handle single query (existing logic)
                 doc_response = None
@@ -328,16 +250,14 @@ class QueryRouter:
                     final_response = doc_response if search_strategy["primary_source"] == "documents" else db_response
             
             return {
-                "is_relevant": True,
                 "response": final_response,
                 "reasoning": engine_analysis.get("reasoning", ""),
                 "search_strategy": search_strategy
             }
                 
         except Exception as e:
-            self.logger.error(f"Error in query routing: {e}")
+            self.logger.error(f"Error in query processing: {e}")
             return {
-                "is_relevant": True,
                 "response": "I apologize, but I'm having trouble accessing the information you need.",
                 "reasoning": f"Error occurred during data retrieval: {str(e)}"
             }

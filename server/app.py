@@ -11,7 +11,7 @@ import azure.cognitiveservices.speech as speechsdk
 import struct
 from datetime import datetime
 import uuid
-from query_router import QueryRouter
+from query_orchestrator import QueryOrchestrator
 from logger_config import setup_logger
 from query_rewriter import QueryRewriter
 _ = load_dotenv(find_dotenv())
@@ -33,7 +33,7 @@ client=AzureOpenAI(
 # Initialize the router with file paths
 docs_metadata_path = os.path.join(current_dir, "vectorDB_Agent","nyc_restaurant_docs_metadata.json")
 table_desc_path = os.path.join(current_dir, "text_to_sql","database_table_descriptions.csv")
-router = QueryRouter(
+router = QueryOrchestrator(
     docs_metadata_path=docs_metadata_path,
     table_desc_path=table_desc_path,
     log_file_path=log_file_path

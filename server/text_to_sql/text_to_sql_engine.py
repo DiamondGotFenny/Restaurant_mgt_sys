@@ -168,7 +168,7 @@ class TextToSQLEngine:
             - Consider data aggregations, groupings, and orderings needed.
             - Think about potential NULL values or data quality issues.
             - Consider performance implications.
-            - Do not handle 'New York' or 'New York City' or 'NYC' that metioned in the question, as the default location is New York City.
+            - Do not handle 'New York' or 'New York City' or 'NYC' that metioned in the question, as the default city is New York City.Ignoring city or new york in the query.
             
             Here are some relevant examples:
             {examples}"""),
@@ -223,6 +223,7 @@ class TextToSQLEngine:
                     - Converting all letters to lowercase (LOWER)
                 12. Check available columns and their examples in the table schemas before using them, don't use non-existing columns
                 13. the query strategy may contain incorrect columns name or values, you should check the table schemas and correct them if any.
+                14. DO NOT handle 'New York' or 'New York City' or 'NYC' that metioned in the question, as the default city is New York City. Ignoring city or new york in the query.
                 
                 The output should be only the PostgreSQL query that follows SQL best practices and meets all requirements."""),
                 ("human", """Strategy: {strategy}

@@ -1,7 +1,7 @@
 from typing import Dict, Any
 import os
 from relevance_checker import RelevanceChecker
-from search_engine_router import SearchEngineRouter
+from search_engine_router import SearchEngineRouterV2
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 log_file_path = os.path.join(current_dir, "logs", "query_router.log")
@@ -9,7 +9,7 @@ log_file_path = os.path.join(current_dir, "logs", "query_router.log")
 class QueryOrchestrator:
     def __init__(self, docs_metadata_path: str, table_desc_path: str, log_file_path: str=log_file_path):
         self.relevance_checker = RelevanceChecker(log_file_path)
-        self.search_engine_router = SearchEngineRouter(docs_metadata_path, table_desc_path, log_file_path)
+        self.search_engine_router = SearchEngineRouterV2(docs_metadata_path, table_desc_path, log_file_path)
 
     def route_query(self, query: str) -> Dict[str, Any]:
         """Route the query and return both relevance status and response data."""

@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Dict, Any, List
 from vectorDB_Agent.vectorDB_Engine import VectorDBEngine
 from text_to_sql.text_to_sql_engine import TextToSQLEngine
@@ -8,7 +7,8 @@ import json
 import csv
 from logger_config import setup_logger
 
-class SearchEngineRouter:
+class SearchEngineRouterV1:
+    """Traditional implementation using multiple LLM calls and separate processing steps"""
     def __init__(self, docs_metadata_path: str, table_desc_path: str, log_file_path: str):
         self.vector_engine = VectorDBEngine(log_file_path)
         self.sql_engine = TextToSQLEngine(log_file_path)
@@ -261,3 +261,162 @@ class SearchEngineRouter:
                 "response": "I apologize, but I'm having trouble accessing the information you need.",
                 "reasoning": f"Error occurred during data retrieval: {str(e)}"
             }
+class SearchEngineRouterV2:
+    """Enhanced implementation using function calling for streamlined processing"""
+    def __init__(self, docs_metadata_path: str, table_desc_path: str, log_file_path: str):
+        self.vector_engine = VectorDBEngine(log_file_path)
+        self.sql_engine = TextToSQLEngine(log_file_path)
+        self.client = AzureOpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            api_version=os.getenv("AZURE_API_VERSION"),
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+        )
+        self.logger = setup_logger(log_file_path)
+        self.docs_metadata = self._load_docs_metadata(docs_metadata_path)
+        self.table_descriptions = self._load_table_descriptions(table_desc_path)
+        self.logger.info("Function calling Search Engine Router initialized successfully.")
+    def _load_docs_metadata(self, file_path: str) -> Dict:
+        try:
+            with open(file_path, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            self.logger.error(f"Error loading document metadata: {e}")
+            return {}
+
+    def _load_table_descriptions(self, file_path: str) -> Dict:
+        table_desc = {}
+        try:
+            with open(file_path, 'r') as f:
+                csv_reader = csv.DictReader(f)
+                for row in csv_reader:
+                    table_desc[row['Table']] = row['Description']
+            return table_desc
+        except Exception as e:
+            self.logger.error(f"Error loading table descriptions: {e}")
+            return {}
+
+    def process_query(self, query: str) -> Dict[str, Any]:
+        """Process the query using function calling"""
+        try:
+            functions = [
+                {
+                    "name": "process_and_respond",
+                    "description": "Process the query and generate response using available search engines",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "search_plan": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "engine_type": {"type": "string", "enum": ["vector_search", "sql_search"]},
+                                        "search_question": {
+                                            "type": "string",
+                                            "description": "The search question in natural language, not SQL.'"
+                                        },
+                                        "reasoning": {"type": "string"}
+                                    },
+                                    "required": ["engine_type", "search_question", "reasoning"]
+                                }
+                            },
+                            "strategy_summary": {
+                                "type": "object",
+                                "properties": {
+                                    "use_documents": {"type": "boolean"},
+                                    "use_database": {"type": "boolean"},
+                                    "primary_source": {"type": "string", "enum": ["hybrid", "documents", "database"]},
+                                    "reasoning": {"type": "string"}
+                                },
+                                "required": ["use_documents", "use_database", "primary_source", "reasoning"]
+                            }
+                        },
+                        "required": ["search_plan", "strategy_summary"]
+                    }
+                }
+            ]
+
+            messages = [
+                {
+                    "role": "system",
+                    "content": f"""You are QueryPlanner, an intelligent search strategist specialized in organizing and planning information retrieval from multiple data sources.  You have access to two search engines:
+
+                    1. Vector Search Engine (for documents):
+                    - Purpose: Searches through unstructured text documents
+                    - Available Documents: {json.dumps(self.docs_metadata, indent=2)}
+                    - Best for: Reviews, subjective information, detailed descriptions
+                    - Function: vector_search(question) -> returns relevant text passages
+
+                    2. SQL Search Engine (for database):
+                    - Purpose: Searches structured database tables
+                    - Available Tables: {json.dumps(self.table_descriptions, indent=2)}
+                    - Best for: Factual data, ratings, inspections, objective information
+                    - Function: sql_search(question) -> returns structured data
+
+                    Your task:
+                    1. Analyze the user query
+                    2. Create a search plan specifying which engines to use and what to search for
+                    3. The search results will be automatically fetched and combined based on your plan
+
+                    Important:
+                    - Always use natural language questions in your search plan, NOT SQL queries
+                    - The actual conversion to SQL will be handled by the search engines
+
+                    Remember:
+                    - You can use both engines if needed
+                    - Break down complex queries into specific searchable components
+                    - Keep all queries in natural language form
+                    - The search engines will handle the appropriate conversions internally"""
+                },
+                {"role": "user", "content": query}
+            ]
+
+            # Get the search plan from GPT-4
+            response = self.client.chat.completions.create(
+                model=os.getenv("OPENAI_MODEL_4o"),
+                temperature=0.3,
+                messages=messages,
+                functions=functions,
+                function_call={"name": "process_and_respond"}
+            )
+
+            plan = json.loads(response.choices[0].message.function_call.arguments)
+            search_results = []
+
+            # Execute the search plan
+            for step in plan["search_plan"]:
+                if step["engine_type"] == "vector_search":
+                    result = self.vector_engine.qa_chain(step["search_question"])
+                else:  # sql_search
+                    result = self.sql_engine.process_query(step["search_question"])["result"]
+                search_results.append({
+                    "engine_type": step["engine_type"],
+                    "search_question": step["search_question"],
+                    "result": result,
+                    "reasoning": step["reasoning"]
+                })
+
+            # Have GPT-4 combine the results
+            string_result = json.dumps(search_results, indent=2)
+            self.logger.info(f"\ncombine_messages string_result: {string_result} \n")
+            
+
+            return {
+                "response": string_result,
+                "reasoning": plan["strategy_summary"]["reasoning"],
+                "search_strategy": {
+                    "use_documents": plan["strategy_summary"]["use_documents"],
+                    "use_database": plan["strategy_summary"]["use_database"],
+                    "primary_source": plan["strategy_summary"]["primary_source"]
+                }
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error in query processing: {e}")
+            return {
+                "response": "I apologize, but I'm having trouble accessing the information you need.",
+                "reasoning": f"Error occurred during data retrieval: {str(e)}"
+            }
+
+
+

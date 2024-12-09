@@ -1,0 +1,164 @@
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+import { Volume2Icon, VolumeOffIcon } from 'lucide-react';
+import { Message } from '../types';
+import { useAudioRecorder } from '../useAudioRecorder';
+import { cn } from '../lib/utils';
+
+interface SpeechControlProps {
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+  getHistory: (
+    setMessages: (value: React.SetStateAction<Message[]>) => void
+  ) => Promise<void>;
+}
+
+const SpeechControl: React.FC<SpeechControlProps> = ({
+  setMessages,
+  getHistory,
+}) => {
+  const [isMuted, setIsMuted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+
+  const {
+    startRecording,
+    stopRecording,
+    audioBlob,
+    isRecording,
+    clearAudioBlob,
+  } = useAudioRecorder();
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+      setIsWaiting(true);
+    } else {
+      startRecording();
+    }
+  };
+
+  const sendDataToServer = async (audioBlob: Blob | null) => {
+    if (audioBlob) {
+      const formData = new FormData();
+      formData.append('data', audioBlob, 'recording.wav');
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/chat-speech`,
+          formData,
+          {
+            responseType: 'arraybuffer',
+            headers: {
+              'content-type': 'multipart/form-data',
+            },
+          }
+        );
+
+        playAudioResponse(response.data);
+        await getHistory(setMessages);
+        clearAudioBlob();
+      } catch (error) {
+        console.error('Error sending audio data:', error);
+      } finally {
+        setIsWaiting(false);
+      }
+    } else {
+      console.log('no audio chunks or audio is not recorded correctly!');
+      setIsWaiting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (audioBlob) {
+      const newBlob = new Blob([audioBlob], { type: 'audio/wav' });
+      sendDataToServer(newBlob);
+    }
+  }, [audioBlob]);
+
+  const playAudioResponse = async (arrayBuffer: ArrayBuffer) => {
+    audioContextRef.current = new window.AudioContext();
+    const audioBuffer = await audioContextRef.current.decodeAudioData(
+      arrayBuffer
+    );
+
+    sourceNodeRef.current = audioContextRef.current.createBufferSource();
+    sourceNodeRef.current.buffer = audioBuffer;
+
+    gainNodeRef.current = audioContextRef.current.createGain();
+    sourceNodeRef.current.connect(gainNodeRef.current);
+    gainNodeRef.current.connect(audioContextRef.current.destination);
+
+    if (isMuted) {
+      gainNodeRef.current.gain.setValueAtTime(
+        0,
+        audioContextRef.current.currentTime
+      );
+    }
+
+    sourceNodeRef.current.start();
+    setIsPlaying(true);
+
+    sourceNodeRef.current.onended = () => {
+      setIsPlaying(false);
+    };
+  };
+
+  const toggleMute = () => {
+    if (gainNodeRef.current && audioContextRef.current) {
+      if (isMuted) {
+        gainNodeRef.current.gain.setValueAtTime(
+          1,
+          audioContextRef.current.currentTime
+        );
+      } else {
+        gainNodeRef.current.gain.setValueAtTime(
+          0,
+          audioContextRef.current.currentTime
+        );
+      }
+      setIsMuted(!isMuted);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
+
+  return (
+    <div className={cn('flex items-center gap-2')}>
+      <button
+        onClick={toggleMute}
+        disabled={!isPlaying}
+        className={cn(
+          'w-10 h-10 rounded-full flex items-center justify-center',
+          'transition-all duration-300 ease-in-out',
+          isMuted ? 'bg-red-500' : 'bg-green-500 text-white',
+          isPlaying ? 'animate-pulse' : ''
+        )}>
+        {isMuted ? <VolumeOffIcon size={20} /> : <Volume2Icon size={20} />}
+      </button>
+      <button
+        onClick={toggleRecording}
+        disabled={isWaiting}
+        className={cn(
+          'w-60 px-4 py-2 rounded-full border',
+          'transition-all duration-300 ease-in-out',
+          isWaiting ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80',
+          isRecording ? 'animate-pulse' : '',
+          isRecording
+            ? 'bg-red-50 border-red-500 text-red-700'
+            : 'border-gray-300 hover:bg-gray-50'
+        )}>
+        {isRecording ? 'Recording...' : 'Click to record'}
+      </button>
+    </div>
+  );
+};
+
+export default SpeechControl;

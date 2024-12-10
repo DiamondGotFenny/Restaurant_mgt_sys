@@ -5,9 +5,8 @@ import { ArtifactsPanel } from './components/ArtifactsPanel';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { Layers, Trash2 } from 'lucide-react';
 import { cn } from './lib/utils';
-import { Message } from './types';
-import axios from 'axios';
-import { getTextResponse, getChatHistory } from './apiService';
+
+import { useChatStore } from './store/useChatStore';
 
 interface Artifact {
   id: string;
@@ -17,62 +16,28 @@ interface Artifact {
 }
 
 function App() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { messages, isLoading, getHistory, clearHistory } = useChatStore();
+
   const [showArtifacts, setShowArtifacts] = useState(true);
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const onSendMessage = async (input: string) => {
-    const tempId = `temp-${Date.now()}`;
-    const newUserMessage: Message = {
-      id: tempId,
-      text: input,
-      sender: 'user',
-      timestamp: new Date().toISOString(),
-    };
-
-    // Immediately update the messages state with the user's input
-    setMessages((prevMessages) => [...prevMessages, newUserMessage]);
-    setIsLoading(true);
-
-    try {
-      await getTextResponse(
-        input,
-        `${process.env.REACT_APP_API_BASE_URL}/chat-text/`
-      );
-      await getHistory(setMessages);
-      setIsLoading(false);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getHistory = async (
-    setMessages: (value: React.SetStateAction<Message[]>) => void
-  ) => {
-    const response = await getChatHistory(
-      `${process.env.REACT_APP_API_BASE_URL}/chat_history/`
-    );
-    setMessages([...response]);
-  };
-
-  const handleClearHistory = async () => {
-    await axios.post(
-      `${process.env.REACT_APP_API_BASE_URL}/clear_chat_history/`
-    );
-    await getHistory(setMessages);
-    setArtifacts([]);
-    console.log('chat history cleared');
-  };
-
   useEffect(() => {
-    getHistory(setMessages);
+    getHistory();
   }, []);
   console.log(messages, ' message component');
 
+  // Debug messages changes
+  useEffect(() => {
+    console.log('Messages updated:', messages);
+  }, [messages]);
+
+  const handleClearHistory = async () => {
+    await clearHistory();
+    setArtifacts([]);
+    setShowClearConfirm(false);
+    getHistory();
+  };
   return (
     <div className='min-h-screen bg-gray-100'>
       <div className='max-w-[90rem] mx-auto min-h-screen flex'>
@@ -113,11 +78,7 @@ function App() {
           </div>
 
           {/* Chat Interface */}
-          <ChatInterface
-            onSendMessage={onSendMessage}
-            setMessages={setMessages}
-            getHistory={getHistory}
-          />
+          <ChatInterface />
         </div>
 
         {/* Artifacts Panel */}

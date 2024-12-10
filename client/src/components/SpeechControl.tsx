@@ -1,24 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { Volume2Icon, VolumeOffIcon } from 'lucide-react';
-import { Message } from '../types';
+import { useChatStore } from '../store/useChatStore';
 import { useAudioRecorder } from '../useAudioRecorder';
 import { cn } from '../lib/utils';
 
-interface SpeechControlProps {
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
-  getHistory: (
-    setMessages: (value: React.SetStateAction<Message[]>) => void
-  ) => Promise<void>;
-}
-
-const SpeechControl: React.FC<SpeechControlProps> = ({
-  setMessages,
-  getHistory,
-}) => {
+const SpeechControl: React.FC = () => {
+  const { setLoading, isLoading, getHistory } = useChatStore();
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isWaiting, setIsWaiting] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
@@ -34,7 +24,7 @@ const SpeechControl: React.FC<SpeechControlProps> = ({
   const toggleRecording = () => {
     if (isRecording) {
       stopRecording();
-      setIsWaiting(true);
+      setLoading(true);
     } else {
       startRecording();
     }
@@ -57,16 +47,16 @@ const SpeechControl: React.FC<SpeechControlProps> = ({
         );
 
         playAudioResponse(response.data);
-        await getHistory(setMessages);
+        await getHistory();
         clearAudioBlob();
       } catch (error) {
         console.error('Error sending audio data:', error);
       } finally {
-        setIsWaiting(false);
+        setLoading(false);
       }
     } else {
       console.log('no audio chunks or audio is not recorded correctly!');
-      setIsWaiting(false);
+      setLoading(false);
     }
   };
 
@@ -145,11 +135,11 @@ const SpeechControl: React.FC<SpeechControlProps> = ({
       </button>
       <button
         onClick={toggleRecording}
-        disabled={isWaiting}
+        disabled={isLoading}
         className={cn(
           'w-60 px-4 py-2 rounded-full border',
           'transition-all duration-300 ease-in-out',
-          isWaiting ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80',
+          isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80',
           isRecording ? 'animate-pulse' : '',
           isRecording
             ? 'bg-red-50 border-red-500 text-red-700'

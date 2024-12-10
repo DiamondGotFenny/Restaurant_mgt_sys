@@ -2,27 +2,16 @@ import { useState } from 'react';
 import { Mic, MicOff, Send } from 'lucide-react';
 import { cn } from '../lib/utils';
 import SpeechControl from './SpeechControl';
-import { Message } from '../types';
+import { useChatStore } from '../store/useChatStore';
 
-interface ChatInterfaceProps {
-  onSendMessage: (content: string) => void;
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
-  getHistory: (
-    setMessages: (value: React.SetStateAction<Message[]>) => void
-  ) => Promise<void>;
-}
-
-export function ChatInterface({
-  onSendMessage,
-  setMessages,
-  getHistory,
-}: ChatInterfaceProps) {
+export function ChatInterface() {
+  const { sendMessage } = useChatStore();
   const [inputMode, setInputMode] = useState<'text' | 'audio'>('text');
   const [inputValue, setInputValue] = useState('');
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
-    onSendMessage(inputValue.trim());
+    sendMessage(inputValue.trim());
     setInputValue('');
   };
 
@@ -40,7 +29,7 @@ export function ChatInterface({
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             />
           ) : (
-            <SpeechControl setMessages={setMessages} getHistory={getHistory} />
+            <SpeechControl />
           )}
         </div>
 

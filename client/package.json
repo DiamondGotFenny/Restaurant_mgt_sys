@@ -18,7 +18,8 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.19.0",
     "tailwind-merge": "^2.5.5",
-    "webm-to-wav-converter": "^1.1.0"
+    "webm-to-wav-converter": "^1.1.0",
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@types/node": "^20.10.1",

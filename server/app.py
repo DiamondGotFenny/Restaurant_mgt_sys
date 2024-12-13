@@ -14,6 +14,8 @@ import uuid
 from query_orchestrator import QueryOrchestrator
 from logger_config import setup_logger
 from query_rewriter import QueryRewriter
+import asyncio
+
 _ = load_dotenv(find_dotenv())
 current_dir = os.path.dirname(os.path.realpath(__file__))
 api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
@@ -346,6 +348,39 @@ def response_from_LLM(input_text: str):
 @app.post("/chat-text/")
 async def chat_text(chat: Chat_Request):
    return response_from_LLM(chat.message)
+   """  
+    #use for UI test
+    await asyncio.sleep(20)
+   return {"response":{
+       "id":str(uuid.uuid4()),
+                "text":"Restaurant: Supper East Village;\
+        Neighborhood: East Village;\
+        Grade: B+, date: July 2016, Comments: Italian.\
+      Ample portions of\
+       upscale red -sauce Italian at reasonable pri ces.\
+      Service was fast and\
+       friendly.\
+      Restaurant: Swagat Upper West;\
+        Neighborhood: Upper West;\
+        Grade: C -, date: August 2006, Comments: Indian.\
+      Tandoori appetizer\
+       was good, but nothing else had much taste.\
+      Restaurant: Sweet Buttons Lower East Side;\
+        Neighbor hood: Lower East Side;\
+        Grade: A, date: April 2015, Comments: Dessert.\
+      I had an excellent\
+       chocolate brownie cookie.\
+      I'd like to try some of their other offerings\
+       sometime when I'm on the LES.\
+      Restaurant: Sweet Chick Lower East Side;\
+        Neighborhood: Lower East Side;\
+        Grade: B+, date: October 2015, Comments: Comfort food.\
+      Waffles and\
+       chicken are the thing here.\
+      The chicken has really crispy crust, and the",
+                "sender":"assistant",
+                "timestamp":datetime.now()
+       }} """
 
 #define chat speech route
 @app.post("/chat-speech")

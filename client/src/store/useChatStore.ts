@@ -17,7 +17,6 @@ export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   isLoading: false,
   error: null,
-
   getHistory: async () => {
     try {
       set({ isLoading: true, error: null });
@@ -49,10 +48,21 @@ export const useChatStore = create<ChatState>((set) => ({
         text: input,
         sender: 'user',
         timestamp: new Date().toISOString(),
+        type: 'regular',
       };
 
+      // Add loading message object
+      const loadingMessage: Message = {
+        id: `loading-${Date.now()}`,
+        text: '', // This can be empty as we'll render LoadingMessage component
+        sender: 'assistant',
+        timestamp: new Date().toISOString(),
+        type: 'loading',
+      };
+
+      // Update messages with both user message and loading message
       set((state) => ({
-        messages: [...state.messages, userMessage],
+        messages: [...state.messages, userMessage, loadingMessage],
       }));
 
       // Get bot response
@@ -61,19 +71,28 @@ export const useChatStore = create<ChatState>((set) => ({
         `${process.env.REACT_APP_API_BASE_URL}/chat-text/`
       );
 
-      // Add bot message
+      // Add bot message and remove loading message
       const botMessage: Message = {
         id: response.id || `assistant-${Date.now()}`,
-        text: response.text || response.text,
+        text: response.text || 'Something went wrong, please try again...',
         sender: 'assistant',
         timestamp: new Date().toISOString(),
+        type: 'regular',
       };
 
       set((state) => ({
-        messages: [...state.messages, botMessage],
+        messages: state.messages
+          .filter((message) => message.type !== 'loading')
+          .concat(botMessage),
       }));
     } catch (error) {
-      set({ error: 'Failed to send message' });
+      set((state) => ({
+        error: 'Failed to send message',
+        // Remove loading message on error
+        messages: state.messages.filter(
+          (message) => message.type !== 'loading'
+        ),
+      }));
       console.error('Error sending message:', error);
     } finally {
       set({ isLoading: false });

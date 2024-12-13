@@ -4,6 +4,7 @@ export interface Message {
   text: string;
   sender: 'user' | 'assistant' | 'system';
   timestamp: string;
+  type?: 'regular' | 'loading';
 }
 
 export interface ChatState {

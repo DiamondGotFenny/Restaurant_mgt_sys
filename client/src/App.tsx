@@ -16,7 +16,7 @@ interface Artifact {
 }
 
 function App() {
-  const { messages, isLoading, getHistory, clearHistory } = useChatStore();
+  const { messages, getHistory, clearHistory } = useChatStore();
 
   const [showArtifacts, setShowArtifacts] = useState(true);
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
@@ -74,7 +74,7 @@ function App() {
 
           {/* Messages Area */}
           <div>
-            <ChatMessageWrapper messages={messages} isLoading={isLoading} />
+            <ChatMessageWrapper messages={messages} />
           </div>
 
           {/* Chat Interface */}

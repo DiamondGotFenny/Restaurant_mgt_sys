@@ -4,13 +4,9 @@ import { ChatMessage } from './ChatMessage';
 
 interface ChatMessageWrapperProps {
   messages: Message[];
-  isLoading: boolean;
 }
 
-export function ChatMessageWrapper({
-  messages,
-  isLoading,
-}: ChatMessageWrapperProps) {
+export function ChatMessageWrapper({ messages }: ChatMessageWrapperProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -18,6 +14,7 @@ export function ChatMessageWrapper({
   };
 
   useEffect(scrollToBottom, [messages]);
+
   return (
     <div className='flex-1 overflow-y-auto'>
       {messages.map((message) => (
@@ -26,19 +23,10 @@ export function ChatMessageWrapper({
           content={message.text}
           sender={message.sender}
           timestamp={message.timestamp}
+          type={message.type}
         />
       ))}
-      {isLoading && (
-        <div className='flex justify-center items-center space-x-2'>
-          <div className='w-2 h-2 bg-gray-500 rounded-full animate-bounce'></div>
-          <div
-            className='w-2 h-2 bg-gray-500 rounded-full animate-bounce'
-            style={{ animationDelay: '0.2s' }}></div>
-          <div
-            className='w-2 h-2 bg-gray-500 rounded-full animate-bounce'
-            style={{ animationDelay: '0.4s' }}></div>
-        </div>
-      )}
+
       <div ref={messagesEndRef} />
     </div>
   );

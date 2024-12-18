@@ -12,3 +12,14 @@ export interface ChatState {
   isLoading: boolean;
   error: string | null;
 }
+
+export interface Promotion {
+  id: string;
+  type: string;
+  content: string;
+  title: string;
+  category?: string;
+  restaurant_name?: string;
+  cuisine_type?: string;
+  neighborhood?: string;
+}

@@ -12,6 +12,7 @@ import struct
 from datetime import datetime
 import uuid
 from query_orchestrator import QueryOrchestrator
+from promotions_provider import PromotionsProvider
 from logger_config import setup_logger
 from query_rewriter import QueryRewriter
 import asyncio
@@ -59,6 +60,7 @@ speech_config.speech_synthesis_voice_name = "en-US-JennyNeural"
 
 speech_synthesizer=speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=None)
 
+
  # tts sentence end mark
 tts_sentence_end = [ ".", "!", "?", ";", "。", "！", "？", "；", "\n" ]
 
@@ -75,6 +77,12 @@ middleware = [
 app=FastAPI(middleware=middleware)
 
 logger.info("Server started")
+
+# Initialize promotions provider
+promotions_provider = PromotionsProvider(
+    promotions_file_path=os.path.join(current_dir, "data", "promotions.json"),
+    log_file_path=os.path.join(current_dir, "logs", "promotions.log")
+)
 
 class Message(BaseModel):
     id: str
@@ -343,15 +351,21 @@ def response_from_LLM(input_text: str):
         logger.error(f"An error occurred in response_from_LLM: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
+@app.get("/get_promotions/")
+async def get_promotions():
+    """Return relevant promotions based on the user's query"""
+    promotion_data=promotions_provider.get_promotions()
+    return {
+        "promotions": promotion_data
+    }
   
 @app.post("/chat-text/")
 async def chat_text(chat: Chat_Request):
-   return response_from_LLM(chat.message)
-   """  
+   #return response_from_LLM(chat.message)
+    
     #use for UI test
     await asyncio.sleep(20)
-   return {"response":{
+    return {"response":{
        "id":str(uuid.uuid4()),
                 "text":"Restaurant: Supper East Village;\
         Neighborhood: East Village;\
@@ -380,7 +394,7 @@ async def chat_text(chat: Chat_Request):
       The chicken has really crispy crust, and the",
                 "sender":"assistant",
                 "timestamp":datetime.now()
-       }} """
+       }} 
 
 #define chat speech route
 @app.post("/chat-speech")

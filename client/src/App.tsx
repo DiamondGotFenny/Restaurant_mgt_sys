@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { ChatInterface } from './components/ChatInterface';
 import { ChatMessageWrapper } from './components/ChatMessageWrapper';
 import { ArtifactsPanel } from './components/ArtifactsPanel';
+import { PromotionsPanel } from './components/PromotionsPanel';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { Layers, Trash2 } from 'lucide-react';
 import { cn } from './lib/utils';
 
 import { useChatStore } from './store/useChatStore';
+import { usePromotionsStore } from './store/usePromotionsStore';
 
 interface Artifact {
   id: string;
@@ -16,7 +18,9 @@ interface Artifact {
 }
 
 function App() {
-  const { messages, getHistory, clearHistory } = useChatStore();
+  const { messages, getHistory, isLoading, clearHistory } = useChatStore();
+  const { promotions, fetchPromotions, prepareNextPromotions } =
+    usePromotionsStore();
 
   const [showArtifacts, setShowArtifacts] = useState(true);
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
@@ -24,13 +28,19 @@ function App() {
 
   useEffect(() => {
     getHistory();
+    fetchPromotions();
   }, []);
   console.log(messages, ' message component');
 
-  // Debug messages changes
+  // Monitor loading state changes
   useEffect(() => {
-    console.log('Messages updated:', messages);
-  }, [messages]);
+    if (isLoading) {
+      // When loading starts, move cached promotions to display
+      prepareNextPromotions();
+      // Fetch new promotions for next loading state
+      fetchPromotions();
+    }
+  }, [isLoading]);
 
   const handleClearHistory = async () => {
     await clearHistory();
@@ -73,7 +83,7 @@ function App() {
           </div>
 
           {/* Messages Area */}
-          <div>
+          <div className='flex-1 overflow-hidden'>
             <ChatMessageWrapper messages={messages} />
           </div>
 
@@ -81,15 +91,22 @@ function App() {
           <ChatInterface />
         </div>
 
-        {/* Artifacts Panel */}
-        {showArtifacts && (
-          <div className='w-[70%] bg-white border-l border-gray-200'>
-            <ArtifactsPanel
-              artifacts={artifacts}
+        {/* Right Panel - Show either Artifacts or Promotions based on loading state */}
+        <div className='w-[70%] bg-white border-l border-gray-200'>
+          {isLoading ? (
+            <PromotionsPanel
+              promotions={promotions}
               onClose={() => setShowArtifacts(false)}
             />
-          </div>
-        )}
+          ) : (
+            showArtifacts && (
+              <ArtifactsPanel
+                artifacts={artifacts}
+                onClose={() => setShowArtifacts(false)}
+              />
+            )
+          )}
+        </div>
       </div>
 
       <ConfirmDialog

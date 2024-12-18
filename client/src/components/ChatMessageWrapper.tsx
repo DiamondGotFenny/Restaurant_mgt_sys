@@ -17,17 +17,19 @@ export function ChatMessageWrapper({ messages }: ChatMessageWrapperProps) {
 
   return (
     <div className='flex-1 overflow-y-auto'>
-      {messages.map((message) => (
-        <ChatMessage
-          key={message.id}
-          content={message.text}
-          sender={message.sender}
-          timestamp={message.timestamp}
-          type={message.type}
-        />
-      ))}
+      <div className='flex flex-col'>
+        {messages.map((message) => (
+          <ChatMessage
+            key={message.id}
+            content={message.text}
+            sender={message.sender}
+            timestamp={message.timestamp}
+            type={message.type}
+          />
+        ))}
 
-      <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} />
+      </div>
     </div>
   );
 }

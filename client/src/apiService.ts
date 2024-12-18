@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Message } from './types';
+import { Message, Promotion } from './types';
 
 function generateErrorId() {
   // Generate a random number between 1000 and 9999
@@ -93,9 +93,24 @@ const getChatHistory = async (endpoint: string): Promise<Message[]> => {
   return response.data.chat_history;
 };
 
+/**
+ * Fetches promotional content to display while processing queries
+ * @returns Promise containing an array of promotions
+ */
+const getPromotions = async (endpoint: string): Promise<Promotion[]> => {
+  try {
+    const response = await axios.get<{ promotions: Promotion[] }>(endpoint);
+    return response.data.promotions;
+  } catch (error) {
+    console.error('Error fetching promotions:', error);
+    return [];
+  }
+};
+
 export {
   getTextResponse,
   sendTextToSpeechRequest,
   getChatHistory,
   sendSpeechToTextRequest,
+  getPromotions,
 };

@@ -16,7 +16,7 @@ export function ChatMessageWrapper({ messages }: ChatMessageWrapperProps) {
   useEffect(scrollToBottom, [messages]);
 
   return (
-    <div className='flex-1 overflow-y-auto'>
+    <div className='flex-1 overflow-y-auto min-h-0'>
       <div className='flex flex-col'>
         {messages.map((message) => (
           <ChatMessage

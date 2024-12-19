@@ -50,12 +50,12 @@ function App() {
   };
   return (
     <div className='min-h-screen bg-gray-100'>
-      <div className='max-w-[90rem] mx-auto min-h-screen flex'>
+      <div className='max-w-[90rem] mx-auto h-screen flex'>
         {/* Main Chat Area */}
         <div
           className={cn(
             'bg-white shadow-xl flex flex-col transition-all duration-300',
-            showArtifacts ? 'w-[30%]' : 'flex-1'
+            showArtifacts ? 'w-[40%]' : 'flex-1'
           )}>
           {/* Header */}
           <div className='border-b border-gray-200 p-4 flex items-center justify-between'>
@@ -83,7 +83,7 @@ function App() {
           </div>
 
           {/* Messages Area */}
-          <div className='flex-1 overflow-hidden'>
+          <div className='flex-1 overflow-hidden flex flex-col'>
             <ChatMessageWrapper messages={messages} />
           </div>
 
@@ -92,7 +92,7 @@ function App() {
         </div>
 
         {/* Right Panel - Show either Artifacts or Promotions based on loading state */}
-        <div className='w-[70%] bg-white border-l border-gray-200'>
+        <div className='w-[60%] bg-white border-l border-gray-200 h-full flex'>
           {isLoading ? (
             <PromotionsPanel
               promotions={promotions}

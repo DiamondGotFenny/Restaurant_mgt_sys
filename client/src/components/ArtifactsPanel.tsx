@@ -14,10 +14,12 @@ interface ArtifactsPanelProps {
 
 export function ArtifactsPanel({ artifacts, onClose }: ArtifactsPanelProps) {
   return (
-    <div className='h-screen flex flex-col'>
+    <div className='w-full flex flex-col'>
       {/* Header */}
       <div className='sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between'>
-        <h2 className='text-lg font-semibold text-gray-800'>Artifacts</h2>
+        <h2 className='text-lg font-semibold text-gray-800 shrink-0'>
+          Artifacts
+        </h2>
         <button
           onClick={onClose}
           className='p-1 hover:bg-gray-100 rounded-full'>

@@ -8,9 +8,9 @@ interface PromotionsPanelProps {
 
 export function PromotionsPanel({ promotions, onClose }: PromotionsPanelProps) {
   return (
-    <div className='h-screen flex flex-col'>
+    <div className='w-full flex flex-col'>
       {/* Header */}
-      <div className='sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between'>
+      <div className='sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between shrink-0'>
         <h2 className='text-lg font-semibold text-gray-800'>
           Special Recommendations
         </h2>

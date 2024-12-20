@@ -36,38 +36,6 @@ const getTextResponse = async (
   }
 };
 
-// Create a function that send user input text to the server and get the text and audio response
-const sendTextToSpeechRequest = async (
-  userInput: string,
-  endpoint: string
-): Promise<{ audio: string }> => {
-  try {
-    const response = await axios.post(
-      endpoint,
-      {
-        message: userInput,
-      },
-      {
-        responseType: 'arraybuffer', // Set the response type to handle binary data
-      }
-    );
-
-    console.log(response, ' response from getAudioResponse');
-
-    // Extracting text and audio data from the response
-    const audioData = response.data;
-    //check the type of audio
-    console.log(typeof audioData, ' type of audio');
-
-    return { audio: audioData };
-  } catch (error) {
-    console.error(error, ' error from getAudioResponse');
-    return {
-      audio: '',
-    };
-  }
-};
-
 //create a function that send speech data to the server and get the text response
 const sendSpeechToTextRequest = async (
   speechData: FormData,
@@ -109,7 +77,6 @@ const getPromotions = async (endpoint: string): Promise<Promotion[]> => {
 
 export {
   getTextResponse,
-  sendTextToSpeechRequest,
   getChatHistory,
   sendSpeechToTextRequest,
   getPromotions,

@@ -2,8 +2,6 @@ import { AiAvatar } from './AiAvatar';
 import { ContentDisplay } from './ContentDisplay';
 import { LoadingMessage } from './LoadingMessage';
 import { cn } from '../lib/utils';
-import { useChatStore } from '../store/useChatStore';
-
 interface ChatMessageProps {
   content: string;
   sender: 'user' | 'assistant' | 'system';
@@ -19,8 +17,6 @@ export function ChatMessage({
   type = 'regular',
   contentType = 'text',
 }: ChatMessageProps) {
-  const { isLoading } = useChatStore();
-  console.log(`is loading:${isLoading}`);
   return (
     <div
       className={cn(

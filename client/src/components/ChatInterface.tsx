@@ -5,12 +5,12 @@ import SpeechControl from './SpeechControl';
 import { useChatStore } from '../store/useChatStore';
 
 export function ChatInterface() {
-  const { sendMessage } = useChatStore();
+  const { sendMessage, isLoading } = useChatStore();
   const [inputMode, setInputMode] = useState<'text' | 'audio'>('text');
   const [inputValue, setInputValue] = useState('');
 
   const handleSend = () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isLoading) return;
     sendMessage(inputValue.trim());
     setInputValue('');
   };
@@ -24,9 +24,15 @@ export function ChatInterface() {
               type='text'
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder='Type your message...'
-              className='w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500'
+              placeholder={
+                isLoading ? 'Waiting for response...' : 'Type your message...'
+              }
+              className={cn(
+                'w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500',
+                isLoading && 'bg-gray-100 cursor-not-allowed'
+              )}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              disabled={isLoading}
             />
           ) : (
             <SpeechControl />
@@ -35,7 +41,11 @@ export function ChatInterface() {
 
         <button
           onClick={() => setInputMode(inputMode === 'text' ? 'audio' : 'text')}
-          className='p-2 rounded-full hover:bg-gray-100'>
+          className={cn(
+            'p-2 rounded-full',
+            isLoading ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'
+          )}
+          disabled={isLoading}>
           {inputMode === 'text' ? (
             <Mic className='w-5 h-5 text-gray-600' />
           ) : (
@@ -45,10 +55,10 @@ export function ChatInterface() {
 
         <button
           onClick={handleSend}
-          disabled={!inputValue.trim() || inputMode === 'audio'}
+          disabled={!inputValue.trim() || inputMode === 'audio' || isLoading} // Add
           className={cn(
             'p-2 rounded-full text-white',
-            inputValue.trim()
+            inputValue.trim() && !isLoading
               ? 'bg-blue-500 hover:bg-blue-600'
               : 'bg-blue-300 cursor-not-allowed'
           )}>

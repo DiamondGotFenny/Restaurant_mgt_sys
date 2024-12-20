@@ -361,10 +361,11 @@ async def get_promotions():
   
 @app.post("/chat-text/")
 async def chat_text(chat: Chat_Request):
-   #return response_from_LLM(chat.message)
+   return response_from_LLM(chat.message)
     
     #use for UI test
-    await asyncio.sleep(20)
+   """  await asyncio.sleep(20)
+    print(f"input: {chat.message}")
     return {"response":{
        "id":str(uuid.uuid4()),
                 "text":"Restaurant: Supper East Village;\
@@ -394,7 +395,7 @@ async def chat_text(chat: Chat_Request):
       The chicken has really crispy crust, and the",
                 "sender":"assistant",
                 "timestamp":datetime.now()
-       }} 
+       }}  """
 
 #define chat speech route
 @app.post("/chat-speech")
@@ -435,6 +436,8 @@ async def chat_audio_stream(data: UploadFile = File(...)):
 # Define a route to get the chat history
 @app.get("/chat_history/")
 async def get_chat_history():
+    chathistory=[msg.model_dump() for msg in chat_history if msg.sender != "system"]
+    print(chathistory)
     return {"chat_history": [msg.model_dump() for msg in chat_history if msg.sender != "system"]}
 
 

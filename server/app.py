@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse,FileResponse
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -15,7 +15,6 @@ from query_orchestrator import QueryOrchestrator
 from promotions_provider import PromotionsProvider
 from logger_config import setup_logger
 from query_rewriter import QueryRewriter
-import asyncio
 
 _ = load_dotenv(find_dotenv())
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -363,39 +362,6 @@ async def get_promotions():
 async def chat_text(chat: Chat_Request):
    return response_from_LLM(chat.message)
     
-    #use for UI test
-   """  await asyncio.sleep(20)
-    print(f"input: {chat.message}")
-    return {"response":{
-       "id":str(uuid.uuid4()),
-                "text":"Restaurant: Supper East Village;\
-        Neighborhood: East Village;\
-        Grade: B+, date: July 2016, Comments: Italian.\
-      Ample portions of\
-       upscale red -sauce Italian at reasonable pri ces.\
-      Service was fast and\
-       friendly.\
-      Restaurant: Swagat Upper West;\
-        Neighborhood: Upper West;\
-        Grade: C -, date: August 2006, Comments: Indian.\
-      Tandoori appetizer\
-       was good, but nothing else had much taste.\
-      Restaurant: Sweet Buttons Lower East Side;\
-        Neighbor hood: Lower East Side;\
-        Grade: A, date: April 2015, Comments: Dessert.\
-      I had an excellent\
-       chocolate brownie cookie.\
-      I'd like to try some of their other offerings\
-       sometime when I'm on the LES.\
-      Restaurant: Sweet Chick Lower East Side;\
-        Neighborhood: Lower East Side;\
-        Grade: B+, date: October 2015, Comments: Comfort food.\
-      Waffles and\
-       chicken are the thing here.\
-      The chicken has really crispy crust, and the",
-                "sender":"assistant",
-                "timestamp":datetime.now()
-       }}  """
 
 #define chat speech route
 @app.post("/chat-speech")
@@ -431,7 +397,21 @@ async def chat_audio_stream(data: UploadFile = File(...)):
     else:
         return {"error": "Unable to recognize the audio"}
     
-    
+@app.get("/static-loading-audio/")
+async def get_loading_audio():
+    audio_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), 
+        "static", 
+        "audio", 
+        "loading_message.wav"
+    )
+    if os.path.exists(audio_path):
+        return FileResponse(
+            audio_path,
+            media_type="audio/wav",
+            filename="loading_message.wav"
+        )
+    raise HTTPException(status_code=404, detail="Loading audio not found")
 
 # Define a route to get the chat history
 @app.get("/chat_history/")

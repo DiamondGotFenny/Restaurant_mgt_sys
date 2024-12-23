@@ -55,7 +55,7 @@ export function ChatInterface() {
 
         <button
           onClick={handleSend}
-          disabled={!inputValue.trim() || inputMode === 'audio' || isLoading} // Add
+          disabled={!inputValue.trim() || inputMode === 'audio' || isLoading}
           className={cn(
             'p-2 rounded-full text-white',
             inputValue.trim() && !isLoading

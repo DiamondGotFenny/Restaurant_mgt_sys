@@ -4,6 +4,7 @@ import { Volume2Icon, VolumeOffIcon } from 'lucide-react';
 import { useChatStore } from '../store/useChatStore';
 import { useAudioRecorder } from '../useAudioRecorder';
 import { cn } from '../lib/utils';
+import { AudioLoadingPlayer } from '../lib/AudioLoadingPlayer';
 
 const SpeechControl: React.FC = () => {
   const { setLoading, isLoading, getHistory } = useChatStore();
@@ -12,6 +13,7 @@ const SpeechControl: React.FC = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
+  const loadingPlayerRef = useRef<AudioLoadingPlayer | null>(null);
 
   const {
     startRecording,
@@ -20,6 +22,29 @@ const SpeechControl: React.FC = () => {
     isRecording,
     clearAudioBlob,
   } = useAudioRecorder();
+
+  useEffect(() => {
+    loadingPlayerRef.current = new AudioLoadingPlayer();
+    return () => {
+      loadingPlayerRef.current?.stop();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) {
+      loadingPlayerRef.current?.start();
+    } else {
+      loadingPlayerRef.current?.stop();
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (isMuted) {
+      loadingPlayerRef.current?.setVolume(0);
+    } else {
+      loadingPlayerRef.current?.setVolume(1);
+    }
+  }, [isMuted]);
 
   const toggleRecording = () => {
     if (isRecording) {
@@ -124,22 +149,24 @@ const SpeechControl: React.FC = () => {
     <div className={cn('flex items-center gap-2')}>
       <button
         onClick={toggleMute}
-        disabled={!isPlaying}
+        disabled={!isPlaying && !isLoading}
         className={cn(
           'w-10 h-10 rounded-full flex items-center justify-center',
           'transition-all duration-300 ease-in-out',
           isMuted ? 'bg-red-500' : 'bg-green-500 text-white',
-          isPlaying ? 'animate-pulse' : ''
+          isPlaying || isLoading ? 'animate-pulse' : ''
         )}>
         {isMuted ? <VolumeOffIcon size={20} /> : <Volume2Icon size={20} />}
       </button>
       <button
         onClick={toggleRecording}
-        disabled={isLoading}
+        disabled={isLoading || isPlaying}
         className={cn(
           'w-60 px-4 py-2 rounded-full border',
           'transition-all duration-300 ease-in-out',
-          isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80',
+          isLoading || isPlaying
+            ? 'opacity-50 cursor-not-allowed'
+            : 'hover:opacity-80',
           isRecording ? 'animate-pulse' : '',
           isRecording
             ? 'bg-red-50 border-red-500 text-red-700'

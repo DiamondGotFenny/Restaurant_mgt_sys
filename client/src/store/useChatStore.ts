@@ -1,3 +1,4 @@
+//useChatStore.ts
 import { create } from 'zustand';
 import { Message } from '../types';
 import { getTextResponse, getChatHistory } from '../apiService';

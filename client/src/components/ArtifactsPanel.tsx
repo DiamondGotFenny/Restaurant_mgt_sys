@@ -1,3 +1,4 @@
+//ArtifactsPanel.tsx
 import { Code2, FileText, Image, X } from 'lucide-react';
 
 interface Artifact {

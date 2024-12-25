@@ -396,13 +396,11 @@ class SearchEngineRouterV2:
                     "reasoning": step["reasoning"]
                 })
 
-            # Have GPT-4 combine the results
-            string_result = json.dumps(search_results, indent=2)
-            self.logger.info(f"\ncombine_messages string_result: {string_result} \n")
+            self.logger.info(f"\ncombine_messages string_result: {json.dumps(search_results, indent=2)} \n")
             
 
             return {
-                "response": string_result,
+                "response": search_results,
                 "reasoning": plan["strategy_summary"]["reasoning"],
                 "search_strategy": {
                     "use_documents": plan["strategy_summary"]["use_documents"],

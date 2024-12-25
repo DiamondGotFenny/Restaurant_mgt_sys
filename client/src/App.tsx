@@ -1,3 +1,4 @@
+//App.tsx
 import { useState, useEffect } from 'react';
 import { ChatInterface } from './components/ChatInterface';
 import { ChatMessageWrapper } from './components/ChatMessageWrapper';

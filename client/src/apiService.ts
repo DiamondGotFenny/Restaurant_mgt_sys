@@ -1,3 +1,4 @@
+//apiService.ts
 import axios from 'axios';
 import { Message, Promotion } from './types';
 

@@ -1,4 +1,4 @@
-//App.tsx
+// src/App.tsx
 import { useState, useEffect } from 'react';
 import { ChatInterface } from './components/ChatInterface';
 import { ChatMessageWrapper } from './components/ChatMessageWrapper';
@@ -8,30 +8,23 @@ import { ConfirmDialog } from './components/ConfirmDialog';
 import { Layers, Trash2 } from 'lucide-react';
 import { cn } from './lib/utils';
 
+// Import from ChatStore instead of local state
 import { useChatStore } from './store/useChatStore';
 import { usePromotionsStore } from './store/usePromotionsStore';
 
-interface Artifact {
-  id: string;
-  type: 'code' | 'text' | 'image';
-  content: string;
-  title: string;
-}
-
 function App() {
-  const { messages, getHistory, isLoading, clearHistory } = useChatStore();
+  const { messages, getHistory, isLoading, clearHistory, artifacts } =
+    useChatStore();
   const { promotions, fetchPromotions, prepareNextPromotions } =
     usePromotionsStore();
 
   const [showArtifacts, setShowArtifacts] = useState(true);
-  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   useEffect(() => {
     getHistory();
     fetchPromotions();
   }, []);
-  console.log(messages, ' message component');
 
   // Monitor loading state changes
   useEffect(() => {
@@ -41,14 +34,14 @@ function App() {
       // Fetch new promotions for next loading state
       fetchPromotions();
     }
-  }, [isLoading]);
+  }, [isLoading, prepareNextPromotions, fetchPromotions]);
 
   const handleClearHistory = async () => {
     await clearHistory();
-    setArtifacts([]);
     setShowClearConfirm(false);
     getHistory();
   };
+
   return (
     <div className='min-h-screen bg-gray-100'>
       <div className='max-w-[90rem] mx-auto h-screen flex'>
@@ -62,7 +55,7 @@ function App() {
           <div className='border-b border-gray-200 p-4 flex items-center justify-between'>
             <div className='flex items-center gap-4'>
               <h1 className='text-xl font-semibold text-gray-800'>
-                Sophia-Your New York Restaurant Consultant
+                Sophia - Your New York Restaurant Consultant
               </h1>
               <button
                 onClick={() => setShowClearConfirm(true)}

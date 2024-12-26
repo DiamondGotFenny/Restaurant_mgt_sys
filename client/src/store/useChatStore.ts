@@ -1,23 +1,27 @@
 //useChatStore.ts
 import { create } from 'zustand';
-import { Message } from '../types';
+import { Message, RawRoutingResult, Artifact } from '../types';
 import { getTextResponse, getChatHistory } from '../apiService';
 import axios from 'axios';
 
 interface ChatState {
   messages: Message[];
+  artifacts: Artifact[];
   isLoading: boolean;
   setLoading: (loading: boolean) => void;
   error: string | null;
   getHistory: () => Promise<void>;
   sendMessage: (input: string) => Promise<void>;
   clearHistory: () => Promise<void>;
+  setArtifacts: (newArtifacts: Artifact[]) => void;
+  addArtifacts: (newArtifacts: Artifact[]) => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   isLoading: false,
   error: null,
+  artifacts: [],
   getHistory: async () => {
     try {
       set({ isLoading: true, error: null });
@@ -39,6 +43,9 @@ export const useChatStore = create<ChatState>((set) => ({
   setLoading: (loading: boolean) => {
     set({ isLoading: loading });
   },
+  setArtifacts: (newArtifacts: Artifact[]) => set({ artifacts: newArtifacts }),
+  addArtifacts: (newArtifacts: Artifact[]) =>
+    set((state) => ({ artifacts: [...state.artifacts, ...newArtifacts] })),
   sendMessage: async (input: string) => {
     try {
       set({ isLoading: true, error: null });
@@ -72,10 +79,35 @@ export const useChatStore = create<ChatState>((set) => ({
         `${process.env.REACT_APP_API_BASE_URL}/chat-text/`
       );
 
+      // Handle raw_routing_result
+      const rawRoutingResult: RawRoutingResult = response.raw_routing_result;
+      if (rawRoutingResult.is_relevant) {
+        const newArtifacts: Artifact[] = [];
+        if (rawRoutingResult.vector_search_result) {
+          newArtifacts.push({
+            id: `artifact-vector-${Date.now()}`,
+            type: 'text', // We'll render this using ReactMarkdown
+            content: rawRoutingResult.vector_search_result,
+            title: 'Vector Search Results',
+          });
+        }
+        if (rawRoutingResult.sql_result) {
+          newArtifacts.push({
+            id: `artifact-sql-${Date.now()}`,
+            type: 'table', // New artifact type for tables
+            content: rawRoutingResult.sql_result,
+            title: 'SQL Query Results',
+          });
+        }
+        set({ artifacts: [...newArtifacts] }); // Replace artifacts with new ones
+      }
+      // If not relevant, keep existing artifacts unchanged
+
       // Add bot message and remove loading message
       const botMessage: Message = {
-        id: response.id || `assistant-${Date.now()}`,
-        text: response.text || 'Something went wrong, please try again...',
+        id: response.response.id || `assistant-${Date.now()}`,
+        text:
+          response.response.text || 'Something went wrong, please try again...',
         sender: 'assistant',
         timestamp: new Date().toISOString(),
         type: 'regular',
@@ -106,7 +138,7 @@ export const useChatStore = create<ChatState>((set) => ({
       await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/clear_chat_history/`
       );
-      set({ messages: [] });
+      set({ messages: [], artifacts: [] });
     } catch (error) {
       set({ error: 'Failed to clear history' });
       console.error('Error clearing history:', error);

@@ -16,6 +16,7 @@
     "microsoft-cognitiveservices-speech-sdk": "^1.33.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-markdown": "^9.0.1",
     "react-router-dom": "^6.19.0",
     "tailwind-merge": "^2.5.5",
     "webm-to-wav-converter": "^1.1.0",

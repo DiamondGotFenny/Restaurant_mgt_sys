@@ -7,6 +7,12 @@ export interface Message {
   type?: 'regular' | 'loading';
 }
 
+export interface RawRoutingResult {
+  is_relevant: boolean;
+  vector_search_result: string | null;
+  sql_result: string | null;
+}
+
 export interface ChatState {
   messages: Message[];
   isLoading: boolean;
@@ -22,4 +28,11 @@ export interface Promotion {
   restaurant_name?: string;
   cuisine_type?: string;
   neighborhood?: string;
+}
+
+export interface Artifact {
+  id: string;
+  type: 'code' | 'text' | 'image' | 'table';
+  content: string;
+  title: string;
 }

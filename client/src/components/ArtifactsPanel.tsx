@@ -1,12 +1,7 @@
 //ArtifactsPanel.tsx
-import { Code2, FileText, Image, X } from 'lucide-react';
-
-interface Artifact {
-  id: string;
-  type: 'code' | 'text' | 'image';
-  content: string;
-  title: string;
-}
+import { Code2, FileText, Image, X, Table } from 'lucide-react';
+import { Artifact } from '../types';
+import ReactMarkdown from 'react-markdown';
 
 interface ArtifactsPanelProps {
   artifacts: Artifact[];
@@ -14,6 +9,73 @@ interface ArtifactsPanelProps {
 }
 
 export function ArtifactsPanel({ artifacts, onClose }: ArtifactsPanelProps) {
+  // Helper function to render content based on artifact type
+  const renderContent = (artifact: Artifact) => {
+    switch (artifact.type) {
+      case 'code':
+        return (
+          <pre className='bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto'>
+            <code>{artifact.content}</code>
+          </pre>
+        );
+      case 'image':
+        return (
+          <img
+            src={artifact.content}
+            alt={artifact.title}
+            className='w-full h-auto rounded'
+          />
+        );
+      case 'text':
+        return <ReactMarkdown className='prose' children={artifact.content} />;
+      case 'table':
+        try {
+          const data = JSON.parse(artifact.content);
+          if (!Array.isArray(data) || data.length === 0) {
+            return <p>No data available.</p>;
+          }
+
+          const headers = Object.keys(data[0]);
+
+          return (
+            <table className='min-w-full table-auto border-collapse border border-gray-200'>
+              <thead>
+                <tr>
+                  {headers.map((header) => (
+                    <th
+                      key={header}
+                      className='px-4 py-2 border border-gray-200 bg-gray-100 text-left'>
+                      {header.replace(/_/g, ' ').toUpperCase()}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((row: any, index: number) => (
+                  <tr
+                    key={index}
+                    className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    {headers.map((header) => (
+                      <td
+                        key={header}
+                        className='px-4 py-2 border border-gray-200'>
+                        {row[header]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          );
+        } catch (error) {
+          console.error('Error parsing table content:', error);
+          return <p>Error rendering table.</p>;
+        }
+      default:
+        return <p>Unsupported artifact type.</p>;
+    }
+  };
+
   return (
     <div className='w-full flex flex-col'>
       {/* Header */}
@@ -49,25 +111,11 @@ export function ArtifactsPanel({ artifacts, onClose }: ArtifactsPanelProps) {
                 {artifact.type === 'image' && (
                   <Image className='w-4 h-4 text-purple-500' />
                 )}
-                <span className='font-medium text-sm'>{artifact.title}</span>
-              </div>
-              <div className='p-6'>
-                {artifact.type === 'code' ? (
-                  <pre className='bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto'>
-                    <code>{artifact.content}</code>
-                  </pre>
-                ) : artifact.type === 'image' ? (
-                  <img
-                    src={artifact.content}
-                    alt={artifact.title}
-                    className='w-full h-auto rounded'
-                  />
-                ) : (
-                  <p className='text-gray-700 leading-relaxed'>
-                    {artifact.content}
-                  </p>
+                {artifact.type === 'table' && (
+                  <Table className='w-4 h-4 text-yellow-500' />
                 )}
               </div>
+              <div className='p-6'>{renderContent(artifact)}</div>
             </div>
           ))
         )}

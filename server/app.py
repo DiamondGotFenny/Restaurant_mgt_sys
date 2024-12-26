@@ -291,9 +291,18 @@ def response_from_LLM(input_text: str):
         logger.info(f"Query: {query_to_use}")
         logger.info(f"Routing result: {routing_result}")
         logger.info(f"-----------Routing result end --------------\n")
-
+        raw_routing_result = {
+            "is_relevant": routing_result["is_relevant"]
+        }
         # Prepare the final user message based on routing result
         if routing_result["is_relevant"]:
+            # Extract search results, checking for existence before access
+            vector_search_result = next((item['result'] for item in routing_result.get('response', []) if item.get('engine_type') == 'vector_search'), None)
+            sql_search_result = next((item['result'] for item in routing_result.get('response', []) if item.get('engine_type') == 'sql_search'), None)
+
+            raw_routing_result["vector_search_result"] = vector_search_result
+            raw_routing_result["sql_result"] = sql_search_result
+
             final_user_message = (
                 f"Context:\n"
                 f"This information is from verified NYC dining data sources:\n"
@@ -303,6 +312,9 @@ def response_from_LLM(input_text: str):
                 f"Question: {query_to_use}"
             )
         else:
+            raw_routing_result["vector_search_result"] = None
+            raw_routing_result["sql_result"] = None
+            
             final_user_message = (
                 f"Context:\n"
                 f"This query is not directly related to NYC dining. "
@@ -341,7 +353,8 @@ def response_from_LLM(input_text: str):
             )
             chat_history.append(assistant_response)
             
-            return {"response": assistant_response.model_dump()}
+            return {"response": assistant_response.model_dump(), 
+                    "raw_routing_result": raw_routing_result}
             
         except Exception as e:
             logger.error(f"An error occurred in generating Sophie's response: {e}")

@@ -1,6 +1,11 @@
 //apiService.ts
 import axios from 'axios';
-import { Message, Promotion } from './types';
+import { Message, Promotion, RawRoutingResult } from './types';
+
+interface ChatResponse {
+  response: Message;
+  raw_routing_result: RawRoutingResult;
+}
 
 function generateErrorId() {
   // Generate a random number between 1000 and 9999
@@ -19,20 +24,27 @@ function generateErrorTimestamp() {
 const getTextResponse = async (
   userInput: string,
   endpoint: string
-): Promise<Message> => {
+): Promise<ChatResponse> => {
   try {
     const response = await axios.post(endpoint, {
       message: userInput,
     });
     console.log(response);
-    return response.data.response;
+    return response.data;
   } catch (error) {
     console.error(error);
     return {
-      id: generateErrorId(),
-      text: 'Sorry, there is an error, please try again.',
-      sender: 'assistant',
-      timestamp: generateErrorTimestamp(),
+      response: {
+        id: generateErrorId(),
+        text: 'Sorry, there is an error, please try again.',
+        sender: 'assistant',
+        timestamp: generateErrorTimestamp(),
+      },
+      raw_routing_result: {
+        is_relevant: false,
+        vector_search_result: null,
+        sql_result: null,
+      },
     };
   }
 };

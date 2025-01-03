@@ -7,8 +7,9 @@ from langchain.prompts import PromptTemplate
 from langchain_community.tools.sql_database.tool import QuerySQLDataBaseTool
 from pydantic import BaseModel , Field
 from pprint import pprint
-# to do list: the query will fail if the query is complex, need to fix this issue to handle the error message and re-write the query
+# to do list:
 #maybe we can use the table_info instead of the get_table_info() result, as the the table_info hase more information about the table
+#and need to add few shot dynamic example to the model to make it more accurate, this step will improve the engine accuracy
 class State(TypedDict):
     question: str
     query: str
@@ -55,7 +56,7 @@ class TextToSQLEngine:
             temperature=0,
             max_tokens=3000
         )
-
+      self.table_info = self.db.get_table_info()
       template_string = """You are an agent designed to interact with a PostgreSQL database.
       Given an input question, create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
       Unless the user specifies a specific number of examples they wish to obtain, always limit your query to at most {top_k} results.
@@ -78,6 +79,27 @@ class TextToSQLEngine:
           template=template_string,
           input_variables=["dialect", "top_k", "table_info", "input"]
       )
+      
+      self.rewrite_query_prompt_template = PromptTemplate(
+          template="""You are a helpful agent interacting with a PostgreSQL database.
+
+The previous attempt to answer the user's question resulted in the following PostgreSQL error: {error}
+
+The user's original question was: {question}
+
+To proceed, please generate a revised PostgreSQL query that addresses the encountered error and accurately answers the user's question.
+
+When constructing the revised query, please refer to the information available in these tables:
+{table_info}
+
+DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
+check the tables info and the error message carefully to generate the correct query.
+
+Ensure the generated query is valid PostgreSQL and avoids the previous error.
+""",
+          input_variables=["error", "question", "table_info"]
+      )
+      
       print("TextToSQLEngine initialized successfully.")
 
     def write_query(self, state: State):
@@ -86,26 +108,63 @@ class TextToSQLEngine:
             {
                 "dialect": self.db.dialect,
                 "top_k": 20,
-                "table_info": self.db.get_table_info(),
+                "table_info": self.table_info,
                 "input": state["question"],
             }
         )
         print(f"waiting for writing sql from model")
-        structured_llm = self.model_4o_mini.with_structured_output(QueryOutput)
-        result = structured_llm.invoke(prompt)
-        pprint('write query success')
-        return {"query": result.query}
+        try:
+            structured_llm = self.model_4o_mini.with_structured_output(QueryOutput)
+            result = structured_llm.invoke(prompt)
+            pprint('write query success')
+            return {"query": result.query}
+        except Exception as e:
+            print(f"Error during write_query: {e}")
+            return {"query": "",
+                    "answer": "Sorry, I could not generate an answer due to an error, please try again later."
+                    }
+    
+    def rewrite_query(self, state: State, error: str):
+        """Rewrite the SQL query based on the error."""
+        prompt = self.rewrite_query_prompt_template.invoke(
+            {
+                "error": error,
+                "question": state["question"],
+                "table_info": self.table_info,
+            }
+        )
+        print(f"waiting for rewriting sql from model due to error: {error}")
+        try:
+            structured_llm = self.model_4o_mini.with_structured_output(QueryOutput)
+            result = structured_llm.invoke(prompt)
+            pprint('rewrite query success')
+            return {"query": result.query}
+        except Exception as e:
+            print(f"Error during rewrite_query: {e}")
+            return {"query": ""}
 
 
-    def execute_query(self, state: State):
-        """Execute SQL query."""
+    def execute_query(self, state: State, retry_count=0, max_retries=5):
+        """Execute SQL query with retry logic."""
         execute_query_tool = QuerySQLDataBaseTool(db=self.db)
         pprint(state["query"],)
-        
-        print(f"waiting for executing sql from model")
-        exc_query_result=execute_query_tool.invoke(state["query"])
-        pprint('execute query success')
-        return {"result": exc_query_result}
+
+        print(f"waiting for executing sql from model (Attempt {retry_count + 1})")
+        exc_query_result = execute_query_tool.invoke(state["query"])
+
+        if "Error:" in exc_query_result or "psycopg2.errors" in exc_query_result:
+            print(f"Error executing query: {exc_query_result}")
+            if retry_count < max_retries:
+                print("Attempting to rewrite the query...")
+                rewritten_query_state = self.rewrite_query(state, exc_query_result)
+                state.update(rewritten_query_state)
+                return self.execute_query(state, retry_count=retry_count + 1, max_retries=max_retries)
+            else:
+                print(f"Failed to execute query after {max_retries} retries.")
+                return {"result": "Sorry, I could not process this question. Please try another one."}
+        else:
+            pprint('execute query success')
+            return {"result": exc_query_result}
     
     def generate_answer(self, state: State):
         """Answer question using retrieved information as context."""
@@ -117,15 +176,29 @@ class TextToSQLEngine:
             f'SQL Result: {state["result"]}'
         )
         print(f"waiting for response from model")
-        response = self.model_4o_mini.invoke(prompt)
-        pprint('generate answer success')
-        return {"answer": response.content}
+        try:
+            response = self.model_4o_mini.invoke(prompt)
+            pprint('generate answer success')
+            return {"answer": response.content}
+        except Exception as e:
+            print(f"Error during generate_answer: {e}")
+            return {"answer": "Sorry, I could not generate an answer due to an error."}
+    
     def process_query(self, question):
         """Process the user query to SQL"""
         state = {"question": question}
         state.update(self.write_query(state))
-        state.update(self.execute_query(state))
-        state.update(self.generate_answer(state))
+        if not state["query"]: # If write_query failed, return
+            return state
+        
+        execution_result = self.execute_query(state)
+        state.update(execution_result)
+        if "Sorry" in state.get("result", ""):  # If execution failed after retries, return
+            return state
+
+        # Generate Answer with error handling
+        answer_result = self.generate_answer(state)
+        state.update(answer_result)
         return state
     
 if __name__ == "__main__":

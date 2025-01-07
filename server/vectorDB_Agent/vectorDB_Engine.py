@@ -42,10 +42,27 @@ def main():
     AZURE_OPENAI_EMBEDDING = os.getenv("OPENAI_EMBEDDING_MODEL")
     AZURE_OPENAI_4OMINI = os.getenv("OPENAI_MODEL_4OMINI")
     AZURE_API_VERSION = os.getenv("AZURE_API_VERSION")
+    #check if the environment variables are set, and show which ones are missing
+    if not AZURE_OPENAI_API_KEY:
+        logger.error("Azure OpenAI API key is not set.")
+        return
+    if not AZURE_OPENAI_ENDPOINT:
+        logger.error("Azure OpenAI endpoint is not set.")
+        return
+    if not AZURE_OPENAI_EMBEDDING:
+        logger.error("Azure OpenAI embedding model is not set.")
+        return
+    if not AZURE_OPENAI_4OMINI:
+        logger.error("Azure OpenAI model 4OMINI is not set.")
+        return
+    if not AZURE_API_VERSION:
+        logger.error("Azure API version is not set.")
+        return
+    
     embeddings = AzureOpenAIEmbeddings(
         model=AZURE_OPENAI_EMBEDDING,
                 api_key=AZURE_OPENAI_API_KEY,
-                azure_endpoint=AZURE_API_VERSION,
+                azure_endpoint=AZURE_OPENAI_ENDPOINT,
                 deployment=AZURE_OPENAI_EMBEDDING,
     )
     llm = AzureChatOpenAI(
@@ -73,7 +90,6 @@ def main():
                 embeddings,
                 persist_directory=persist_directory
             )
-            vector_store.persist()
             logger.info("Chroma vector store initialized.")
         except Exception as e:
             logger.error(f"Failed to initialize Chroma vector store: {e}")
@@ -87,11 +103,11 @@ def main():
     except Exception as e:
         logger.error(f"Failed to initialize BM25 retriever: {e}")
         bm25_retriever = None
-    
+    vector_store_retriever = vector_store.as_retriever()
     # Combine retrievers for hybrid search
     try:
         ensemble_retriever = EnsembleRetriever(
-            retrievers=[vector_store, bm25_retriever],
+            retrievers=[vector_store_retriever, bm25_retriever],
             weights=[0.5, 0.5]  # Adjust weights as needed
         )
         logger.info("Ensemble retriever initialized.")

@@ -7,10 +7,8 @@ from typing import List, Dict
 from sklearn.metrics.pairwise import cosine_similarity
 from langchain_openai import AzureOpenAIEmbeddings
 
-# Add parent directory to path to import VectorStoreAgent
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from vector_store_agent import VectorStoreAgent
-from logger_config import setup_logger
+from ..vector_store_agent import VectorStoreAgent
+from ...logger_config import setup_logger
 
 class VectorSearchEvaluator:
     def __init__(self, azure_openai_api_key: str, azure_openai_endpoint: str, azure_openai_embedding_deployment: str):
@@ -23,11 +21,12 @@ class VectorSearchEvaluator:
             azure_openai_embedding_deployment (str): Azure OpenAI embedding deployment name.
         """
         self.embeddings = AzureOpenAIEmbeddings(
-                model=azure_openai_embedding_deployment,
-                api_key=azure_openai_api_key,
-                azure_endpoint=azure_openai_endpoint,
-                deployment=azure_openai_embedding_deployment,
-            )
+            api_key=azure_openai_api_key,
+            azure_endpoint=azure_openai_endpoint,
+            api_version=os.getenv("AZURE_API_VERSION"),
+            azure_deployment=azure_openai_embedding_deployment,
+            model=azure_openai_embedding_deployment,
+        )
 
     def compute_similarity(self, prediction: str, reference: str,logger:logging.Logger) -> float:
         """

@@ -7,7 +7,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
-from logger_config import setup_logger
+from ..logger_config import setup_logger
 
 class VectorStoreAgent:
     def __init__(
@@ -39,10 +39,11 @@ class VectorStoreAgent:
     )
         self.persist_directory = persist_directory
         self.embeddings = AzureOpenAIEmbeddings(
-            model="text-embedding-3-small",
             api_key=azure_openai_api_key,
             azure_endpoint=azure_openai_endpoint,
-            deployment=azure_openai_deployment,
+            api_version=os.getenv("AZURE_API_VERSION"),
+            azure_deployment=azure_openai_deployment,
+            model="text-embedding-3-small",
         )
         self.vector_store = self._load_or_create_vector_store()
 

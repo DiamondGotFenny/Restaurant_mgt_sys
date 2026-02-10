@@ -9,10 +9,8 @@ from dotenv import load_dotenv, find_dotenv
 from sklearn.metrics.pairwise import cosine_similarity
 from collections import namedtuple  
 
-# Add parent directory to path to import LLMProcessor
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from llm_post_processor import LLMProcessor
-from logger_config import setup_logger
+from ..llm_post_processor import LLMProcessor
+from ...logger_config import setup_logger
 from langchain_openai import AzureOpenAIEmbeddings
 
 class SimilarityEvaluator:
@@ -26,11 +24,12 @@ class SimilarityEvaluator:
             azure_openai_embedding_deployment (str): Azure OpenAI embedding deployment name.
         """
         self.embeddings = AzureOpenAIEmbeddings(
-                model=azure_openai_embedding_deployment,
-                api_key=azure_openai_api_key,
-                azure_endpoint=azure_openai_endpoint,
-                deployment=azure_openai_embedding_deployment,
-            )
+            api_key=azure_openai_api_key,
+            azure_endpoint=azure_openai_endpoint,
+            api_version=os.getenv("AZURE_API_VERSION"),
+            azure_deployment=azure_openai_embedding_deployment,
+            model=azure_openai_embedding_deployment,
+        )
 
 
     def compute_similarity(self, text1: str, text2: str, logger: logging.Logger) -> float:

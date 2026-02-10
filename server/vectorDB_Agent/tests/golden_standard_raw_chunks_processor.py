@@ -3,10 +3,7 @@ import os
 import sys
 from dotenv import load_dotenv, find_dotenv
 
-# Adjust the system path to include necessary modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from bm25_retriever_agent import BM25RetrieverAgent
+from ..bm25_retriever_agent import BM25RetrieverAgent
 
 def main():
     """

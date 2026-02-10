@@ -46,7 +46,34 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => {
                   ? 'bg-blue-500 text-white rounded-br-none'
                   : 'bg-white text-gray-800 rounded-bl-none'
               }`}>
-              {message.text}
+              <div className='whitespace-pre-wrap break-words'>{message.text}</div>
+              {message.sender === 'assistant' &&
+                message.citations &&
+                message.citations.length > 0 && (
+                  <details className='mt-2 text-xs text-gray-600'>
+                    <summary className='cursor-pointer select-none'>
+                      Sources
+                    </summary>
+                    <ul className='mt-2 list-disc pl-5 space-y-1'>
+                      {message.citations.map((c, idx) => (
+                        <li key={`${message.id}-c-${idx}`}>
+                          <div className='break-words'>
+                            <span className='font-medium'>{c.source}</span>
+                            {c.page !== undefined &&
+                              c.page !== null &&
+                              c.page !== '' && <> {`p${c.page}`}</>}
+                            {c.chunk_id && <> {`#${c.chunk_id}`}</>}
+                          </div>
+                          {c.note && (
+                            <pre className='mt-1 whitespace-pre-wrap break-words rounded bg-gray-50 p-2 text-[11px] text-gray-700'>
+                              {c.note}
+                            </pre>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
             </div>
           </div>
         </div>

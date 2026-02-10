@@ -14,7 +14,7 @@ from typing import List, Dict
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai.chat_models import AzureChatOpenAI
 from langchain.prompts import PromptTemplate
-from logger_config import setup_logger
+from ..logger_config import setup_logger
 from dotenv import load_dotenv, find_dotenv
 import re
 import json
@@ -47,8 +47,8 @@ class LLMQueryPreProcessor:
         self.llm = AzureChatOpenAI(
             api_key=azure_openai_api_key,
             azure_endpoint=azure_openai_endpoint,
-            deployment_name=azure_openai_deployment,
             api_version=azure_api_version,
+            azure_deployment=azure_openai_deployment,
             temperature=0.1,  # Low temperature for deterministic outputs
             max_tokens=500     # Adjust based on expected response length
         )

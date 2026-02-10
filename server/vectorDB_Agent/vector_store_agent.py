@@ -1,12 +1,12 @@
 #vector_store_agent.py
 import os
 import glob
-import sys
 from typing import List
-from document_processor import DocumentProcessor
+from .document_processor import DocumentProcessor
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
-from logger_config import setup_logger
+
+from ..logger_config import setup_logger
 class VectorStoreAgent:
     def __init__(
         self,
@@ -31,15 +31,15 @@ class VectorStoreAgent:
         self.documents = self.document_processor.load_and_split_documents()
 
         if not self.documents:
-            self.logger.error("No documents to process. Exiting.")
-            sys.exit(1)
+            raise ValueError("No documents to process.")
 
         # Initialize Embeddings
         self.embeddings = AzureOpenAIEmbeddings(
-            model=azure_openai_embedding_deployment,
             api_key=azure_openai_api_key,
             azure_endpoint=azure_openai_endpoint,
-            deployment=azure_openai_embedding_deployment,
+            api_version=os.getenv("AZURE_API_VERSION"),
+            azure_deployment=azure_openai_embedding_deployment,
+            model=azure_openai_embedding_deployment,
         )
 
         # Initialize or load existing vector store

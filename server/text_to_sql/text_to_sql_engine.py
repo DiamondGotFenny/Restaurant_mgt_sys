@@ -7,13 +7,11 @@ from langchain.prompts import PromptTemplate
 from langchain_community.tools.sql_database.tool import QuerySQLDataBaseTool
 from pydantic import BaseModel , Field
 from pprint import pprint
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain_core.example_selectors import SemanticSimilarityExampleSelector
 import json
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from logger_config import setup_logger
+
+from ..logger_config import setup_logger
 
 
 class State(TypedDict):
@@ -59,8 +57,8 @@ class TextToSQLEngine():
       self.model_4o_mini = AzureChatOpenAI(
             api_key=self.azure_openai_api_key,
             azure_endpoint=self.azure_openai_endpoint,
-            deployment_name=self.azure_openai_deployment_mini,
             api_version=self.azure_api_version,
+            azure_deployment=self.azure_openai_deployment_mini,
             temperature=0,
             max_tokens=3000
         )
@@ -88,10 +86,11 @@ class TextToSQLEngine():
 
       # Initialize Embeddings
       self.embeddings = AzureOpenAIEmbeddings(
-            azure_deployment=self.azure_openai_embedding_deployment,
-            openai_api_key=self.azure_openai_api_key,
+            api_key=self.azure_openai_api_key,
             azure_endpoint=self.azure_openai_endpoint,
             api_version=self.azure_api_version,
+            azure_deployment=self.azure_openai_embedding_deployment,
+            model=self.azure_openai_embedding_deployment,
         )
 
 

@@ -1,0 +1,164 @@
+{
+  "dataset_info": {
+    "name": "NYC Restaurant Document Collection",
+    "total_documents": 10,
+    "primary_focus": "New York City dining",
+    "last_updated": "2024",
+    "content_type": "restaurant reviews and guides"
+  },
+  "documents": [
+    {
+      "filename": "Top 10 Must-Reserve Restaurants in New York City.pdf",
+      "keywords": [
+        "fine dining",
+        "reservations required",
+        "upscale restaurants",
+        "NYC dining",
+        "Italian cuisine",
+        "steakhouse",
+        "ethnic cuisine",
+        "unique experiences",
+        "top restaurants",
+        "restaurant guide"
+      ],
+      "description": "A curated list of ten highly-rated New York City restaurants, categorized by cuisine type (fine dining, unique experiences, ethnic cuisine, casual, Italian, steakhouse), and notes that reservations are required. It's useful for users seeking recommendations for upscale or specific types of dining in NYC."
+    },
+    {
+      "filename": "Restaurant_Guide_to_NYC.pdf",
+      "keywords": [
+        "restaurant reviews",
+        "letter grades",
+        "NYC neighborhoods",
+        "mid-priced restaurants",
+        "food quality",
+        "service reviews",
+        "value ratings",
+        "restaurant guide",
+        "reviews"
+      ],
+      "description": "A personal review of numerous New York City restaurants across various cuisines and price points. Each review includes a letter grade (A+ to D), neighborhood, date of visit, and comments on food quality, service, and value. The guide focuses on mid-priced establishments. It's best for users seeking detailed, subjective opinions on a wide range of NYC restaurants."
+    },
+    {
+      "filename": "New York Gui kitchen Diary.pdf",
+      "keywords": [
+        "Gui Kitchen",
+        "Guangxi cuisine",
+        "Lower East Side",
+        "Chinese food",
+        "personal review",
+        "food blog",
+        "restaurant ambiance",
+        "blog",
+        "restaurant review"
+      ],
+      "description": "A personal food blog entry detailing a visit to Gui Kitchen, a Guangxi cuisine restaurant in NYC's Lower East Side. The author provides personal ratings and descriptions of several dishes, along with comments on the restaurant's ambiance and service. This is useful for users specifically interested in Gui Kitchen or Guangxi cuisine."
+    },
+    {
+      "filename": "My First Time at Gui Kitchen.pdf",
+      "keywords": [
+        "Gui Kitchen",
+        "Guangxi cuisine",
+        "signature dishes",
+        "Chinese food",
+        "cooking methods",
+        "flavor profiles",
+        "restaurant review"
+      ],
+      "description": "A detailed review of Gui Kitchen, focusing on the restaurant's specialization in Guangxi cuisine and highlighting several signature dishes with descriptions of their preparation and flavors. It's suitable for users researching Gui Kitchen or seeking information about Guangxi cuisine."
+    },
+    {
+      "filename": "Local New Yorker's Secret List_by Cherie Chen.pdf",
+      "keywords": [
+        "local recommendations",
+        "Lower East Side",
+        "hidden gems",
+        "trendy spots",
+        "shopping",
+        "dining",
+        "insider tips",
+        "local guide"
+      ],
+      "description": "A local's perspective on six restaurants and shops in New York City's Lower East Side. It includes descriptions of the ambiance, food/products, and personal recommendations. It's helpful for users looking for trendy or unique dining and shopping experiences in the Lower East Side."
+    },
+    {
+      "filename": "Gui Kitchen reviews.pdf",
+      "keywords": [
+        "Gui Kitchen",
+        "customer reviews",
+        "ratings",
+        "price points",
+        "service quality",
+        "food reviews",
+        "review compilation",
+        "Guangxi cuisine"
+      ],
+      "description": "A compilation of various online reviews of Gui Kitchen restaurants, including ratings and comments on food quality, service, price, and ambiance. It's useful for users wanting a broader perspective on customer experiences at Gui Kitchen."
+    },
+    {
+      "filename": "Friedman's - Chelsea Market Restaurant.pdf",
+      "keywords": [
+        "Friedman's",
+        "Chelsea Market",
+        "menu items",
+        "prices",
+        "gluten-free",
+        "breakfast",
+        "lunch",
+        "dinner",
+        "menu",
+        "restaurant information"
+      ],
+      "description": "A menu for Friedman's restaurant in Chelsea Market, New York City. It lists food and drink options with prices, including breakfast, lunch, and dinner items, as well as specifying gluten-free options. This is useful for users planning to dine at Friedman's or looking for menu information."
+    },
+    {
+      "filename": "big_bear_Rice_Noodles.pdf",
+      "keywords": [
+        "Big Bear Rice Noodles",
+        "Liuzhou cuisine",
+        "Guangxi cuisine",
+        "Flushing",
+        "rice noodles",
+        "Chinese food",
+        "cooking methods",
+        "restaurant history",
+        "restaurant profile"
+      ],
+      "description": "A document describing Big Bear Rice Noodles, a Liuzhou-style rice noodle restaurant in Flushing, NY. It details the restaurant's history, cooking methods (particularly the separate broth and marinade), ingredients, and ambiance. It's suitable for users seeking information about Big Bear Rice Noodles or Liuzhou cuisine."
+    },
+    {
+      "filename": "A Guide to New York City_Bumble and bumble University Edition.pdf",
+      "keywords": [
+        "NYC attractions",
+        "restaurants",
+        "bars",
+        "shops",
+        "Bumble and bumble",
+        "visitor guide",
+        "price ranges",
+        "city guide"
+      ],
+      "description": "A guide to New York City attractions, restaurants, bars, and shops, specifically curated for attendees of Bumble and bumble University. It includes location information, price ranges, and brief descriptions. This document is useful for users planning a trip to New York City and interested in the locations recommended in this specific guide."
+    },
+    {
+      "filename": "2024-National-Meeting-Restaurant-Guide.pdf",
+      "keywords": [
+        "New York Hilton Midtown",
+        "walking distance",
+        "private dining",
+        "quick lunch",
+        "coffee shops",
+        "business dining",
+        "quiet restaurants",
+        "event guide"
+      ],
+      "description": "A restaurant guide for a national meeting held at the New York Hilton Midtown. It lists restaurants within walking distance of the hotel, categorized by cuisine type and price range, including those with private dining spaces and low-noise options. It also includes nearby quick lunch options and coffee shops. This is useful for users attending this specific national meeting or looking for dining options near the New York Hilton Midtown."
+    }
+  ],
+  "metadata": {
+    "suggested_embeddings": ["document title", "keywords", "description"],
+    "search_recommendations": {
+      "vector_search": ["keywords", "document content"],
+      "keyword_search": ["restaurant names", "cuisine types", "neighborhoods"]
+    }
+  }
+}

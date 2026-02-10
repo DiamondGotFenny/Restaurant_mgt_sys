@@ -4,8 +4,8 @@ from typing import Dict, List, Any
 from datetime import datetime
 import difflib
 from dotenv import load_dotenv, find_dotenv
-from text_to_sql_engine import TextToSQLEngine
-from logger_config import setup_logger
+from server.text_to_sql.text_to_sql_engine import TextToSQLEngine
+from server.logger_config import setup_logger
 import os
 import sys
 import ast
@@ -31,12 +31,14 @@ class QueryEvaluator:
             raise
             
         self.results = []
+        azure_api_version = os.getenv("AZURE_API_VERSION")
         self.embeddings = AzureOpenAIEmbeddings(
-                model=azure_openai_embedding_deployment,
-                api_key=azure_openai_api_key,
-                azure_endpoint=azure_openai_endpoint,
-                deployment=azure_openai_embedding_deployment,
-            )
+            api_key=azure_openai_api_key,
+            azure_endpoint=azure_openai_endpoint,
+            api_version=azure_api_version,
+            azure_deployment=azure_openai_embedding_deployment,
+            model=azure_openai_embedding_deployment,
+        )
     def normalize_query(self, query: str) -> str:
         """Normalize SQL query for comparison."""
         self.logger.debug(f"Normalizing query: {query}")
@@ -164,20 +166,20 @@ class QueryEvaluator:
             
             # Log the actual content for debugging
             self.logger.info("Generated output structure:")
-            self.logger.info(f"Query Result Type: {type(generated_output['query_result'])}")
+            self.logger.info(f"Query Result Type: {type(generated_output['result'])}")
             
             # Parse the query result string into a list of dictionaries
             try:
-                if isinstance(generated_output['query_result'], str):
+                if isinstance(generated_output['result'], str):
                     # Remove any 'text=' prefix if present
-                    result_str = generated_output['query_result']
+                    result_str = generated_output['result']
                     if result_str.startswith('text='):
                         result_str = result_str[5:]
                     # Convert string representation of tuples to list of tuples
                     result_tuples = ast.literal_eval(result_str)
                     
                     # Extract column names from the query
-                    columns = self.extract_columns_from_query(generated_output['sql_query'])
+                    columns = self.extract_columns_from_query(generated_output['query'])
                     
                     # Convert to list of dictionaries
                     generated_result = []
@@ -190,13 +192,13 @@ class QueryEvaluator:
                                 result_dict[f'column_{i}'] = value
                         generated_result.append(result_dict)
                 else:
-                    generated_result = generated_output['query_result']
+                    generated_result = generated_output['result']
             except Exception as e:
                 self.logger.error(f"Error parsing query result: {str(e)}")
                 generated_result = []
             self.logger.info(f"user input: {test_case['input']}")
             self.logger.info(f"--------Generated query start--------")
-            self.logger.info(f"Generated query: {generated_output['sql_query']}")
+            self.logger.info(f"Generated query: {generated_output['query']}")
             self.logger.info(f"--------Generated query end--------")
             self.logger.info(f"--------Golden query start--------")
             self.logger.info(f"Golden query: {test_case['query']}")
@@ -212,7 +214,7 @@ class QueryEvaluator:
             
             # Calculate metrics
             query_similarity = self.calculate_query_similarity(
-                generated_output['sql_query'],
+                generated_output['query'],
                 test_case['query']
             )
             
@@ -237,13 +239,13 @@ class QueryEvaluator:
             evaluation_result = {
                 'test_id': test_case['id'],
                 'input_query': input_query,
-                'generated_query': generated_output['sql_query'],
+                'generated_query': generated_output['query'],
                 'golden_query': test_case['query'],
                 'query_similarity': query_similarity,
                 'generated_result': generated_result,
                 'golden_result': test_case['result'],
                 'result_similarity': result_similarity,
-                'generated_answer': generated_output['result'],
+                'generated_answer': generated_output['answer'],
                 'timestamp': datetime.now().isoformat(),
                 'status': {
                     'query_passed': query_passed,

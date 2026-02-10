@@ -1,6 +1,39 @@
 import axios from 'axios';
 import { Message } from './types';
 
+const SESSION_ID_KEY = 'nyc_restaurant_session_id';
+
+function getSessionId(): string | null {
+  try {
+    return localStorage.getItem(SESSION_ID_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function setSessionId(sessionId: string) {
+  try {
+    localStorage.setItem(SESSION_ID_KEY, sessionId);
+  } catch {
+    // ignore (private mode / storage disabled)
+  }
+}
+
+function withSessionHeaders() {
+  const sessionId = getSessionId();
+  return sessionId ? { 'X-Session-Id': sessionId } : {};
+}
+
+function captureSessionIdFromResponse(response: any) {
+  const headerSessionId =
+    response?.headers?.['x-session-id'] ?? response?.headers?.['X-Session-Id'];
+  const bodySessionId = response?.data?.session_id;
+  const sessionId = headerSessionId || bodySessionId;
+  if (typeof sessionId === 'string' && sessionId.length > 0) {
+    setSessionId(sessionId);
+  }
+}
+
 function generateErrorId() {
   // Generate a random number between 1000 and 9999
   const id = Math.floor(Math.random() * 9000) + 1000;
@@ -20,9 +53,12 @@ const getTextResponse = async (
   endpoint: string
 ): Promise<Message> => {
   try {
-    const response = await axios.post(endpoint, {
-      message: userInput,
-    });
+    const response = await axios.post(
+      endpoint,
+      { message: userInput },
+      { headers: withSessionHeaders() }
+    );
+    captureSessionIdFromResponse(response);
     console.log(response);
     return response.data.response;
   } catch (error) {
@@ -49,9 +85,11 @@ const sendTextToSpeechRequest = async (
       },
       {
         responseType: 'arraybuffer', // Set the response type to handle binary data
+        headers: withSessionHeaders(),
       }
     );
 
+    captureSessionIdFromResponse(response);
     console.log(response, ' response from getAudioResponse');
 
     // Extracting text and audio data from the response
@@ -76,10 +114,12 @@ const sendSpeechToTextRequest = async (
   const config = {
     headers: {
       'content-type': 'multipart/form-data',
+      ...withSessionHeaders(),
     },
   };
   try {
     const response = await axios.post(endpoint, speechData, config);
+    captureSessionIdFromResponse(response);
     console.log('input text: ', response);
     return response.data.input_text;
   } catch (error) {
@@ -89,7 +129,8 @@ const sendSpeechToTextRequest = async (
 };
 
 const getChatHistory = async (endpoint: string): Promise<Message[]> => {
-  const response = await axios.get(endpoint);
+  const response = await axios.get(endpoint, { headers: withSessionHeaders() });
+  captureSessionIdFromResponse(response);
   return response.data.chat_history;
 };
 

@@ -1,10 +1,31 @@
 .env
-data/
-logs/
-vectorDB_Agent/__pycache__/
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.vscode/
+
+# Virtual environments
+.venv/
+venv/
 resAgentV/
-whoosh_index/
+
+# Logs
+logs/
 *.log
+
+# Generated indexes / caches
+data/
+data/vectorDB/
+data/whoosh_index/
+vectorDB_Agent/whoosh_index/
+
+# Audio artifacts
 *.wav
-*.pyc
-*.json
+
+# Local eval artifacts
+/tests/
+/test_conversations.json

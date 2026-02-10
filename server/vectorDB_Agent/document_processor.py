@@ -1,18 +1,13 @@
-# document_processor.py
-
-import os
 import glob
+import os
+from collections import defaultdict
 from typing import List
-from langchain.schema import Document
-from langchain.text_splitter import NLTKTextSplitter
-from langchain_community.document_loaders import PyPDFLoader
-from logger_config import setup_logger
-import nltk
 
-# Ensure the necessary NLTK data is downloaded
-nltk.download('punkt_tab')
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
+from langchain.schema import Document
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+from ..logger_config import setup_logger
 
 class DocumentProcessor:
     def __init__(
@@ -23,7 +18,7 @@ class DocumentProcessor:
         logger_file: str = "document_processor.log"
     ):
         """
-        Initializes the DocumentProcessor with NLTKTextSplitter.
+        Initializes the DocumentProcessor with a deterministic splitter (no runtime downloads).
 
         Args:
             pdf_directory (str): Path to the directory containing PDF files.
@@ -36,12 +31,12 @@ class DocumentProcessor:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
 
-        # Initialize NLTKTextSplitter
-        self.text_splitter = NLTKTextSplitter(
+        # RecursiveCharacterTextSplitter avoids NLTK download side effects at import/runtime.
+        self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.chunk_size,
             chunk_overlap=self.chunk_overlap,
-            separator="\n",
-            length_function=len
+            add_start_index=True,
+            separators=["\n\n", "\n", " ", ""],
         )
 
     def load_and_split_documents(self) -> List[Document]:
@@ -56,7 +51,7 @@ class DocumentProcessor:
             self.logger.warning(f"No PDF files found in directory: {self.pdf_directory}")
             return []
 
-        documents = []
+        documents: List[Document] = []
         for pdf_file in pdf_files:
             self.logger.info(f"Loading PDF file: {pdf_file}")
             try:
@@ -70,16 +65,26 @@ class DocumentProcessor:
             split_docs = self.text_splitter.split_documents(raw_docs)
             self.logger.info(f"Loaded and split {len(split_docs)} documents from {pdf_file}.")
 
-            # Annotate documents with metadata
-            for idx, doc in enumerate(split_docs, start=1):
-                annotated_doc = Document(
-                    page_content=doc.page_content,
-                    metadata={
-                        "source": os.path.basename(pdf_file),
-                        "page": idx  # Assuming each split corresponds to a page
-                    }
-                )
-                documents.append(annotated_doc)
+            # Annotate documents with stable, trustworthy metadata.
+            # Keep the real PDF page number from PyPDFLoader (0-indexed) and add a chunk id.
+            chunk_counters: defaultdict[tuple[str, int | str], int] = defaultdict(int)
+            source_name = os.path.basename(pdf_file)
+            for doc in split_docs:
+                raw_page = doc.metadata.get("page", "N/A")
+                page = raw_page + 1 if isinstance(raw_page, int) else raw_page
+
+                key = (source_name, page)
+                chunk_counters[key] += 1
+                chunk_index = chunk_counters[key]
+
+                doc.metadata = {
+                    **doc.metadata,
+                    "source": source_name,
+                    "page": page,
+                    "chunk_index": chunk_index,
+                    "chunk_id": f"{source_name}#p{page}c{chunk_index}",
+                }
+                documents.append(doc)
 
         self.logger.info(f"Total documents loaded and split: {len(documents)}")
         return documents

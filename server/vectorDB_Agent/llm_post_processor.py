@@ -6,7 +6,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_openai.chat_models import AzureChatOpenAI
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv, find_dotenv
-from logger_config import setup_logger
+from ..logger_config import setup_logger
 from collections import namedtuple
 
 _ = load_dotenv(find_dotenv())
@@ -33,8 +33,8 @@ class LLMProcessor:
         self.llm = AzureChatOpenAI(
             api_key=azure_openai_api_key,
             azure_endpoint=azure_openai_endpoint,
-            deployment_name=azure_openai_deployment,
             api_version=azure_api_version,
+            azure_deployment=azure_openai_deployment,
             temperature=0.1,  # Low temperature for more deterministic outputs
             max_tokens=3000    # Adjust based on expected summary length
         )

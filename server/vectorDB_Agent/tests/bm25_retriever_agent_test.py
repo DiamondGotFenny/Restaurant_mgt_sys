@@ -6,10 +6,8 @@ from typing import List, Dict
 from dotenv import load_dotenv, find_dotenv
 from sklearn.metrics.pairwise import cosine_similarity
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from bm25_retriever_agent import BM25RetrieverAgent
-from logger_config import setup_logger
+from ..bm25_retriever_agent import BM25RetrieverAgent
+from ...logger_config import setup_logger
 
 from langchain_openai import AzureOpenAIEmbeddings
 
@@ -24,11 +22,12 @@ class EmbeddingSimilarityEvaluator:
             azure_openai_embedding_deployment (str): Azure OpenAI embedding deployment name.
         """
         self.embeddings = AzureOpenAIEmbeddings(
-                model=azure_openai_embedding_deployment,
-                api_key=azure_openai_api_key,
-                azure_endpoint=azure_openai_endpoint,
-                deployment=azure_openai_embedding_deployment,
-            )
+            api_key=azure_openai_api_key,
+            azure_endpoint=azure_openai_endpoint,
+            api_version=os.getenv("AZURE_API_VERSION"),
+            azure_deployment=azure_openai_embedding_deployment,
+            model=azure_openai_embedding_deployment,
+        )
 
     def compute_similarity(self, prediction: str, reference: str, logger: logging.Logger) -> float:
         """

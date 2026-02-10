@@ -4,6 +4,31 @@ import { Message } from './types';
 import { FaMicrophone, FaStop, FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useAudioRecorder } from './useAudioRecorder';
 
+const SESSION_ID_KEY = 'nyc_restaurant_session_id';
+
+function withSessionHeaders() {
+  try {
+    const sessionId = localStorage.getItem(SESSION_ID_KEY);
+    return sessionId ? { 'X-Session-Id': sessionId } : {};
+  } catch {
+    return {};
+  }
+}
+
+function captureSessionIdFromResponse(response: any) {
+  const headerSessionId =
+    response?.headers?.['x-session-id'] ?? response?.headers?.['X-Session-Id'];
+  const bodySessionId = response?.data?.session_id;
+  const sessionId = headerSessionId || bodySessionId;
+  if (typeof sessionId === 'string' && sessionId.length > 0) {
+    try {
+      localStorage.setItem(SESSION_ID_KEY, sessionId);
+    } catch {
+      // ignore
+    }
+  }
+}
+
 interface SpeechProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   getHistory: (
@@ -48,10 +73,12 @@ const Speech: React.FC<SpeechProps> = ({ setMessages, getHistory }) => {
             responseType: 'arraybuffer',
             headers: {
               'content-type': 'multipart/form-data',
+              ...withSessionHeaders(),
             },
           }
         );
 
+        captureSessionIdFromResponse(response);
         playAudioResponse(response.data);
         await getHistory(setMessages);
         clearAudioBlob();

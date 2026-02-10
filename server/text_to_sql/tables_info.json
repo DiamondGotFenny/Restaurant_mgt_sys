@@ -1,0 +1,616 @@
+{
+  "tables": [
+    {
+      "name": "restaurant_inspections",
+      "description": "Contains restaurant inspection records, violations, and health grades",
+      "table_aliases": "ri",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "description": "Primary key",
+          "examples": [1, 2, 3]
+        },
+        {
+          "name": "camis",
+          "type": "VARCHAR(8)",
+          "description": "Restaurant identifier",
+          "examples": ["41446753", "41086655", "50079981"]
+        },
+        {
+          "name": "dba",
+          "type": "VARCHAR(255)",
+          "description": "Business name",
+          "examples": ["TASTY GRILL", "SCOOPS", "THE COPPER STILL"]
+        },
+        {
+          "name": "boro",
+          "type": "VARCHAR(50)",
+          "description": "Borough location",
+          "examples": ["Queens", "Brooklyn", "Manhattan"]
+        },
+        {
+          "name": "building",
+          "type": "VARCHAR(50)",
+          "description": "Building number",
+          "examples": ["1422", "624", "206"]
+        },
+        {
+          "name": "street",
+          "type": "VARCHAR(255)",
+          "description": "Street name",
+          "examples": ["150 STREET", "FLATBUSH AVENUE", "7 AVENUE"]
+        },
+        {
+          "name": "zipcode",
+          "type": "VARCHAR(10)",
+          "description": "ZIP code",
+          "examples": ["", "11225", "10011"]
+        },
+        {
+          "name": "phone",
+          "type": "VARCHAR(15)",
+          "description": "Phone number",
+          "examples": ["7187677200", "7182825904", "6465968975"]
+        },
+        {
+          "name": "cuisine_description",
+          "type": "VARCHAR(100)",
+          "description": "Type of cuisine",
+          "examples": ["Greek", "Vegetarian", ""]
+        },
+        {
+          "name": "inspection_date",
+          "type": "DATE",
+          "description": "Date of inspection",
+          "examples": ["2023-10-24", null, "2023-09-05"]
+        },
+        {
+          "name": "action",
+          "type": "TEXT",
+          "description": "Action taken after inspection",
+          "examples": [
+            "Violations were cited in the following area(s).",
+            "",
+            "No violations were recorded at the time of this inspection."
+          ]
+        },
+        {
+          "name": "violation_code",
+          "type": "VARCHAR(10)",
+          "description": "Code of violation",
+          "examples": ["20-06", "02B", null]
+        },
+        {
+          "name": "violation_description",
+          "type": "TEXT",
+          "description": "Description of violation",
+          "examples": [
+            "Current letter grade or Grade Pending card not posted",
+            "Hot TCS food item not held at or above 140 °F.",
+            null
+          ]
+        },
+        {
+          "name": "critical_flag",
+          "type": "VARCHAR(20)",
+          "description": "Whether violation is critical",
+          "examples": ["Not Critical", "Critical", "Not Applicable"]
+        },
+        {
+          "name": "score",
+          "type": "INTEGER",
+          "description": "Inspection score",
+          "examples": [null, 28, 0]
+        },
+        {
+          "name": "grade",
+          "type": "VARCHAR(1)",
+          "description": "Inspection grade",
+          "examples": ["A", null, "N"]
+        },
+        {
+          "name": "grade_date",
+          "type": "DATE",
+          "description": "Inspection grade date",
+          "examples": ["2022-09-14", null, "2024-02-14"]
+        },
+        {
+          "name": "latitude",
+          "type": "DOUBLE PRECISION",
+          "description": "Location latitude",
+          "examples": [40.788288140134, 40.658160510787, 40.743296351728]
+        },
+        {
+          "name": "longitude",
+          "type": "DOUBLE PRECISION",
+          "description": "Location longitude",
+          "examples": [-73.813615515673, -73.96045484422, -73.996232400573]
+        },
+        {
+          "name": "record_date",
+          "type": "DATE",
+          "description": "date the record was added",
+          "examples": ["2022-09-14", null, "2024-02-14"]
+        }
+      ]
+    },
+    {
+      "name": "restaurant_menu",
+      "description": "Contains menu items and prices for restaurants",
+      "table_aliases": "rm",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "description": "Primary key",
+          "examples": [1, 2, 3]
+        },
+        {
+          "name": "restaurant",
+          "type": "VARCHAR(255)",
+          "description": "Restaurant name",
+          "examples": ["Malecon", "Malecon", "Malecon"]
+        },
+        {
+          "name": "item",
+          "type": "VARCHAR(255)",
+          "description": "Menu item name",
+          "examples": ["Potato Salad", "Avocado Salad", "Mixed Green Salad"]
+        },
+        {
+          "name": "base_price",
+          "type": "DOUBLE PRECISION",
+          "description": "Base price of item",
+          "examples": [6.0, 6.0, 6.0]
+        },
+        {
+          "name": "has_addons",
+          "type": "BOOLEAN",
+          "description": "Whether item has add-ons available",
+          "examples": [false, false, false]
+        },
+        {
+          "name": "max_price",
+          "type": "DOUBLE PRECISION",
+          "description": "Maximum price with add-ons",
+          "examples": [6.0, 6.0, 6.0]
+        },
+        {
+          "name": "restaurant_id",
+          "type": "VARCHAR(50)",
+          "description": "Restaurant identifier",
+          "examples": ["4825873", "4825873", "4825873"]
+        },
+        {
+          "name": "item_id",
+          "type": "INTEGER",
+          "description": "Menu item identifier",
+          "examples": [1, 2, 3]
+        }
+      ]
+    },
+    {
+      "name": "restaurant_reviews",
+      "description": "Contains customer reviews and ratings for restaurants",
+      "table_aliases": "rr",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "description": "Primary key",
+          "examples": [1, 2, 3]
+        },
+        {
+          "name": "review_id",
+          "type": "VARCHAR(20)",
+          "description": "Unique review identifier",
+          "examples": ["706215165", "700840575", "694073144"]
+        },
+        {
+          "name": "user_id",
+          "type": "VARCHAR(50)",
+          "description": "User identifier",
+          "examples": [
+            "17D46E31037C5BDD038E5AB6901F04E7",
+            "4F7831483E6BF2AD8443326A2C37B0C5",
+            "3C3893C5ED71D24292BC51450CFC5782"
+          ]
+        },
+        {
+          "name": "restaurant_id",
+          "type": "INTEGER",
+          "description": "Restaurant identifier",
+          "examples": [481034, 481034, 481034]
+        },
+        {
+          "name": "title",
+          "type": "VARCHAR(255)",
+          "description": "Review title",
+          "examples": [
+            "Wonderful food and service",
+            "SUMMER SPECIALS AREN'T ALWAYS GREAT!",
+            "Good old-fashioned steaks"
+          ]
+        },
+        {
+          "name": "text",
+          "type": "TEXT",
+          "description": "Review content",
+          "examples": [
+            "I have been a patron of the Palm 2 on second avenue for many years and I adore this place. The steak",
+            "I love the Palm Two and have been going there for years---so summertime at their restaurant means lo",
+            "Some things never change, and sometimes that's a good thing - this restaurant, for example, is servi"
+          ]
+        },
+        {
+          "name": "date",
+          "type": "DATE",
+          "description": "Review date",
+          "examples": ["2019-09-03", "2019-08-19", "2019-07-30"]
+        },
+        {
+          "name": "rating",
+          "type": "INTEGER",
+          "description": "Review rating (0-50), need to convert to 0-5 scale",
+          "examples": [50, 30, 40]
+        },
+        {
+          "name": "language",
+          "type": "VARCHAR(10)",
+          "description": "Review language",
+          "examples": ["en", "en", "en"]
+        },
+        {
+          "name": "images",
+          "type": "JSON",
+          "description": "Review images",
+          "examples": [[], [], []]
+        }
+      ]
+    },
+    {
+      "name": "restaurants_has_menu",
+      "description": "Contains restaurant information for those with menu data",
+      "table_aliases": "rhm",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "description": "Primary key",
+          "examples": [10, 11, 12]
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "description": "Restaurant name",
+          "examples": ["Malecon", "Dyckman Express Restaurant", "Cafeteria"]
+        },
+        {
+          "name": "cuisine",
+          "type": "VARCHAR(255)",
+          "description": "Type of cuisine",
+          "examples": ["Dominican", "Caribbean, Latin American", "Diner"]
+        },
+        {
+          "name": "address",
+          "type": "VARCHAR(255)",
+          "description": "Restaurant address",
+          "examples": [
+            "5592 Broadway, New York, NY, 10463",
+            "101 Dyckman St, New York, NY, 10040",
+            "119 7th Ave, New York, NY, 10011"
+          ]
+        },
+        {
+          "name": "restaurant_id",
+          "type": "VARCHAR(50)",
+          "description": "Unique restaurant identifier",
+          "examples": ["4825873", "4415244", "457893"]
+        }
+      ]
+    },
+    {
+      "name": "restaurants_has_reviews",
+      "description": "Contains basic information for restaurants with reviews",
+      "table_aliases": "rhr",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "description": "Primary key",
+          "examples": [5017667, 8595500, 423441]
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "description": "Restaurant name",
+          "examples": [
+            "Audrey Bakery & Cafe",
+            "August Gatherings",
+            "August Restaurant"
+          ]
+        },
+        {
+          "name": "city",
+          "type": "VARCHAR(50)",
+          "description": "City location, the value is always New York City",
+          "examples": ["New York City", "New York City", "New York City"]
+        },
+        {
+          "name": "price_interval",
+          "type": "VARCHAR(20)",
+          "description": "Price range category",
+          "examples": ["$", "$$ - $$$", "$$ - $$$"]
+        },
+        {
+          "name": "rating",
+          "type": "DOUBLE PRECISION",
+          "description": "Overall rating that scale from 0-50, need to convert it to 0-5 scale if needed",
+          "examples": [40.0, 50.0, 45.0]
+        },
+        {
+          "name": "type",
+          "type": "VARCHAR(100)",
+          "description": "Restaurant type/cuisine",
+          "examples": ["Chinese, Cafe", "Chinese, Asian", "American"]
+        }
+      ]
+    },
+    {
+      "name": "restaurants_week_2018_final",
+      "description": "Detailed restaurant information from Restaurant Week 2018",
+      "table_aliases": "rwf",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "description": "Primary key",
+          "examples": [1, 2, 3]
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "description": "Restaurant name",
+          "examples": [
+            "Smoke Jazz and Supper Club",
+            "Tavern on the Green",
+            "ABC Kitchen"
+          ]
+        },
+        {
+          "name": "street_address",
+          "type": "VARCHAR(255)",
+          "description": "Full street address",
+          "examples": [
+            "2751 Broadway New York, NY  10025",
+            "1 Tavern on the Green New York, NY  10023",
+            "35 East 18th Street New York, NY  10003"
+          ]
+        },
+        {
+          "name": "review_count",
+          "type": "INTEGER",
+          "description": "Number of reviews",
+          "examples": [2155, 7029, 6031]
+        },
+        {
+          "name": "phone",
+          "type": "VARCHAR(50)",
+          "description": "Phone number",
+          "examples": ["(212) 864-6662", "(212) 877-8684", "(212) 475-5829"]
+        },
+        {
+          "name": "website",
+          "type": "VARCHAR(255)",
+          "description": "Website URL",
+          "examples": [
+            "http://www.smokejazz.com/",
+            "http://www.tavernonthegreen.com/",
+            "http://www.abckitchennyc.com/"
+          ]
+        },
+        {
+          "name": "restaurant_type",
+          "type": "VARCHAR(100)",
+          "description": "Type of restaurant",
+          "examples": [
+            "Contemporary American",
+            "American",
+            "Contemporary American"
+          ]
+        },
+        {
+          "name": "average_review",
+          "type": "DOUBLE PRECISION",
+          "description": "Average rating",
+          "examples": [4.42155, 4.67029, 4.76031]
+        },
+        {
+          "name": "food_review",
+          "type": "DOUBLE PRECISION",
+          "description": "Food rating",
+          "examples": [3.9, 4.4, 4.6]
+        },
+        {
+          "name": "service_review",
+          "type": "DOUBLE PRECISION",
+          "description": "Service rating",
+          "examples": [4.2, 4.4, 4.4]
+        },
+        {
+          "name": "ambience_review",
+          "type": "DOUBLE PRECISION",
+          "description": "Ambience rating",
+          "examples": [4.5, 4.7, 4.6]
+        },
+        {
+          "name": "value_review",
+          "type": "DOUBLE PRECISION",
+          "description": "Value rating",
+          "examples": [4.0, 4.0, 4.1]
+        },
+        {
+          "name": "price_range",
+          "type": "VARCHAR(50)",
+          "description": "Price range",
+          "examples": ["$31 to $50", "$31 to $50", "$31 to $50"]
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "description": "Restaurant description",
+          "examples": [
+            "Smoke has augmented its reputation as one of Manhattan's most distinguished jazz venues with an addi",
+            "Magical is a word thrown around a lot when discussing Tavern On The Green and one can't help but fee",
+            "ABC Kitchen with Jean-Georges: passionately committed to offering the freshest organic and local ing"
+          ]
+        },
+        {
+          "name": "restaurant_main_type",
+          "type": "VARCHAR(100)",
+          "description": "Do not use this field, not accurate",
+          "examples": [
+            "Contemporary American",
+            "American",
+            "Contemporary American"
+          ]
+        },
+        {
+          "name": "latitude",
+          "type": "DOUBLE PRECISION",
+          "description": "Location latitude",
+          "examples": [40.8011258, 40.7721869, 40.7378971]
+        },
+        {
+          "name": "longitude",
+          "type": "DOUBLE PRECISION",
+          "description": "Location longitude",
+          "examples": [-73.9681923, -73.9777215, -73.9894995]
+        },
+        {
+          "name": "postal_code",
+          "type": "VARCHAR(20)",
+          "description": "ZIP/Postal code",
+          "examples": ["10025", "10023", "10003"]
+        },
+        {
+          "name": "restaurant_id",
+          "type": "VARCHAR(50)",
+          "description": "Unique restaurant identifier",
+          "examples": [
+            "c250b37c-a279-4d48-99e9-dab8509b7d22",
+            "6e1c4844-31e3-4b60-a801-086fb6718400",
+            "0a28cb2d-a48d-486b-9ebf-81efd9df5cd0"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "trip_advisor_restaurants",
+      "description": "Contains TripAdvisor restaurant information and reviews",
+      "table_aliases": "tar",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "description": "Primary key",
+          "examples": [1, 2, 3]
+        },
+        {
+          "name": "title",
+          "type": "VARCHAR(255)",
+          "description": "Restaurant name",
+          "examples": [
+            "All Stars Sports Bar & Grill",
+            "Olio e Piu",
+            "Boucherie West Village"
+          ]
+        },
+        {
+          "name": "number_of_reviews",
+          "type": "VARCHAR(20)",
+          "description": "Number of reviews,but in string format. It may contain text '1 review', so in this case, need to convert '1 review' to '1', 'No' to '0'",
+          "examples": ["21", "2,998", "6", "1 review", "No"]
+        },
+        {
+          "name": "category",
+          "type": "VARCHAR(100)",
+          "description": "Restaurant category",
+          "examples": ["Bar, Pub", "Italian, Pizza", "French, Steakhouse"]
+        },
+        {
+          "name": "review_comment",
+          "type": "TEXT",
+          "description": "Featured review comment",
+          "examples": [
+            "The fries were terrific also, hot crisp...",
+            "I love the food and our server Maria!",
+            "The filet mignon was impeccable and the mussels and steak tartare were also v..."
+          ]
+        },
+        {
+          "name": "popular_food",
+          "type": "VARCHAR(255)",
+          "description": "Popular menu items",
+          "examples": ["fries", "filet mignon", "lobster"]
+        },
+        {
+          "name": "online_order",
+          "type": "BOOLEAN",
+          "description": "Whether online ordering is available",
+          "examples": [true, true, true]
+        },
+        {
+          "name": "restaurant_id",
+          "type": "VARCHAR(50)",
+          "description": "Unique restaurant identifier",
+          "examples": [
+            "6f15f759-aa0b-4d5e-a98a-cab6882435b4",
+            "343a9551-c7d6-41de-ac3a-abc72f0c27f2",
+            "2de5a805-0e7a-40c7-85c7-66d2f458baaf"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "users",
+      "description": "Contains user information for reviewers",
+      "table_aliases": "usr",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "description": "Primary key",
+          "examples": [1, 2, 3]
+        },
+        {
+          "name": "user_id",
+          "type": "VARCHAR(32)",
+          "description": "Unique user identifier",
+          "examples": [
+            "F13B96B29E63955DB3DBAD2D0554ACCA",
+            "497B672C2B2E86C71AB83B4D8EA58A03",
+            "661BCA16DCD6EDA120FD1D8AA18301BD"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "description": "User's name",
+          "examples": ["DanandJanC", "cindit0", "Lawrence O"]
+        },
+        {
+          "name": "location",
+          "type": "VARCHAR(255)",
+          "description": "User's location",
+          "examples": [
+            "Palm Desert, California",
+            "New York City, New York",
+            "Edgewater, New Jersey"
+          ]
+        }
+      ]
+    }
+  ]
+}

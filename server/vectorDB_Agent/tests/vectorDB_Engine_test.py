@@ -6,11 +6,9 @@ from typing import List, Dict
 from dotenv import load_dotenv, find_dotenv
 from sklearn.metrics.pairwise import cosine_similarity
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from vectorDB_Engine import VectorDBEngine
+from ..vectorDB_Engine import VectorDBEngine
 from langchain_openai import AzureOpenAIEmbeddings
-from logger_config import setup_logger
+from ...logger_config import setup_logger
 
 def load_qa_pairs(filepath: str, logger: logging.Logger) -> List[Dict]:
     """
@@ -41,11 +39,12 @@ class EmbeddingSimilarityEvaluator:
             azure_openai_embedding_deployment (str): Azure OpenAI embedding deployment name.
         """
         self.embeddings = AzureOpenAIEmbeddings(
-                model=azure_openai_embedding_deployment,
-                api_key=azure_openai_api_key,
-                azure_endpoint=azure_openai_endpoint,
-                deployment=azure_openai_embedding_deployment,
-            )
+            api_key=azure_openai_api_key,
+            azure_endpoint=azure_openai_endpoint,
+            api_version=os.getenv("AZURE_API_VERSION"),
+            azure_deployment=azure_openai_embedding_deployment,
+            model=azure_openai_embedding_deployment,
+        )
 
     def compute_similarity(self, prediction: str, reference: str, logger: logging.Logger) -> float:
         """
@@ -90,7 +89,7 @@ def test_vectorDB_engine(logger: logging.Logger):
         logger.error("One or more Azure OpenAI environment variables are missing.")
         sys.exit(1)
 
-    engine=VectorDBEngine()
+    engine = VectorDBEngine("vectorDB_Engine_test.log")
     
     # Initialize EmbeddingSimilarityEvaluator
     evaluator = EmbeddingSimilarityEvaluator(

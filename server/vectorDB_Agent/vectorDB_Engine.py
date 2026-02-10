@@ -1,4 +1,4 @@
-from document_processor import DocumentProcessor
+from .document_processor import DocumentProcessor
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_community.retrievers import BM25Retriever
@@ -6,10 +6,9 @@ from langchain.retrievers import EnsembleRetriever
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough
-import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from logger_config import setup_logger
+
+from ..logger_config import setup_logger
 # Get the directory of the current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -68,34 +67,32 @@ class VectorDBEngine:
         AZURE_OPENAI_4OMINI = os.getenv("OPENAI_MODEL_4OMINI")
         AZURE_API_VERSION = os.getenv("AZURE_API_VERSION")
         
-        #check if the environment variables are set, and show which ones are missing
+        missing = []
         if not AZURE_OPENAI_API_KEY:
-            self.logger.error("Azure OpenAI API key is not set.")
-            return
+            missing.append("OPENAI_API_KEY")
         if not AZURE_OPENAI_ENDPOINT:
-            self.logger.error("Azure OpenAI endpoint is not set.")
-            return
+            missing.append("AZURE_OPENAI_ENDPOINT")
         if not AZURE_OPENAI_EMBEDDING:
-            self.logger.error("Azure OpenAI embedding model is not set.")
-            return
+            missing.append("OPENAI_EMBEDDING_MODEL")
         if not AZURE_OPENAI_4OMINI:
-            self.logger.error("Azure OpenAI model 4OMINI is not set.")
-            return
+            missing.append("OPENAI_MODEL_4OMINI")
         if not AZURE_API_VERSION:
-            self.logger.error("Azure API version is not set.")
-            return
+            missing.append("AZURE_API_VERSION")
+        if missing:
+            raise ValueError(f"Missing environment variables: {', '.join(missing)}")
 
         self.embeddings = AzureOpenAIEmbeddings(
-            model=AZURE_OPENAI_EMBEDDING,
             api_key=AZURE_OPENAI_API_KEY,
             azure_endpoint=AZURE_OPENAI_ENDPOINT,
-            deployment=AZURE_OPENAI_EMBEDDING,
+            api_version=AZURE_API_VERSION,
+            azure_deployment=AZURE_OPENAI_EMBEDDING,
+            model=AZURE_OPENAI_EMBEDDING,
         )
         self.llm = AzureChatOpenAI(
             api_key=AZURE_OPENAI_API_KEY,
             azure_endpoint=AZURE_OPENAI_ENDPOINT,
-            deployment_name=AZURE_OPENAI_4OMINI,
             api_version=AZURE_API_VERSION,
+            azure_deployment=AZURE_OPENAI_4OMINI,
             temperature=0,
             max_tokens=3000
         )
@@ -105,25 +102,29 @@ class VectorDBEngine:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         persist_directory = os.path.join(current_dir, '..', 'data', 'vectorDB', 'chroma')
 
-        if not os.path.exists(persist_directory):
-            os.makedirs(persist_directory)
-            self.logger.info("Vector store not found. Creating a new one...")
+        os.makedirs(persist_directory, exist_ok=True)
+        is_empty = not any(os.scandir(persist_directory))
+
+        if is_empty:
+            self.logger.info("Vector store not found (or empty). Creating a new one...")
             self.vector_store = Chroma.from_documents(
                 self.documents,
                 self.embeddings,
+                persist_directory=persist_directory,
+            )
+            self.vector_store.persist()
+            self.logger.info("Chroma vector store initialized.")
+            return
+
+        try:
+            self.vector_store = Chroma(
+                embedding_function=self.embeddings,
                 persist_directory=persist_directory
             )
-            self.logger.info("Chroma vector store initialized.")
-        else:
-            try:
-                self.vector_store = Chroma(
-                    embedding_function=self.embeddings,
-                    persist_directory=persist_directory
-                )
-                self.logger.info("Chroma vector store loaded from existing directory.")
-            except Exception as e:
-                self.logger.error(f"Failed to load Chroma vector store: {e}")
-                self.vector_store = None
+            self.logger.info("Chroma vector store loaded from existing directory.")
+        except Exception as e:
+            self.logger.error(f"Failed to load Chroma vector store: {e}")
+            self.vector_store = None
 
     def _setup_bm25_retriever(self):
         """Sets up the BM25 retriever."""

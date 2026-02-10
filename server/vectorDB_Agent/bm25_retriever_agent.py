@@ -10,12 +10,12 @@ queries to retrieve relevant documents based on specified entities.
 """
 
 import os
-import sys
 from typing import List, Optional, Dict, Any
-from logger_config import setup_logger
+
+from ..logger_config import setup_logger
 from langchain_community.retrievers import BM25Retriever
 from langchain.schema import Document
-from document_processor import DocumentProcessor
+from .document_processor import DocumentProcessor
 from whoosh import index
 from whoosh.fields import Schema, TEXT, ID
 from whoosh.qparser import QueryParser, OrGroup
@@ -53,8 +53,7 @@ class BM25RetrieverAgent:
         self.documents = self.document_processor.load_and_split_documents()
 
         if not self.documents:
-            self.logger.error("No documents to process. Exiting.")
-            sys.exit(1)
+            raise ValueError("No documents to process.")
 
         # Initialize BM25 Retriever
         self.retriever = BM25Retriever.from_documents(

@@ -7,6 +7,31 @@ import { Message } from './types';
 import InputArea from './InputArea';
 import ClearButton from './ClearButton';
 
+const SESSION_ID_KEY = 'nyc_restaurant_session_id';
+
+function withSessionHeaders() {
+  try {
+    const sessionId = localStorage.getItem(SESSION_ID_KEY);
+    return sessionId ? { 'X-Session-Id': sessionId } : {};
+  } catch {
+    return {};
+  }
+}
+
+function captureSessionIdFromResponse(response: any) {
+  const headerSessionId =
+    response?.headers?.['x-session-id'] ?? response?.headers?.['X-Session-Id'];
+  const bodySessionId = response?.data?.session_id;
+  const sessionId = headerSessionId || bodySessionId;
+  if (typeof sessionId === 'string' && sessionId.length > 0) {
+    try {
+      localStorage.setItem(SESSION_ID_KEY, sessionId);
+    } catch {
+      // ignore
+    }
+  }
+}
+
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -54,9 +79,12 @@ const ChatInterface: React.FC = () => {
 
   //make axios request to clear chat history
   const clearChatHistory = async () => {
-    await axios.post(
-      `${process.env.REACT_APP_API_BASE_URL}/clear_chat_history/`
+    const response = await axios.post(
+      `${process.env.REACT_APP_API_BASE_URL}/clear_chat_history/`,
+      {},
+      { headers: withSessionHeaders() }
     );
+    captureSessionIdFromResponse(response);
     await getHistory(setMessages);
     console.log('chat history cleared');
   };

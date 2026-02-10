@@ -5,10 +5,8 @@ import logging
 from typing import List, Dict, Tuple
 from dotenv import load_dotenv, find_dotenv
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from query_pre_processor import LLMQueryPreProcessor 
-from logger_config import setup_logger
+from ..query_pre_processor import LLMQueryPreProcessor
+from ...logger_config import setup_logger
 
 
 def load_qa_keywords(filepath: str,logger:logging.Logger) -> List[Dict]:

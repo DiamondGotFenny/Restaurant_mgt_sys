@@ -1,12 +1,13 @@
 import logging
 import os
 
-def setup_logger(log_file: str = "vector_store_agent.log") -> logging.Logger:
+def setup_logger(log_file: str = "app.log", logger_name: str | None = None) -> logging.Logger:
     """
     Sets up the logger to record logs to a specified file with UTF-8 encoding.
 
     Args:
         log_file (str): Path to the log file.
+        logger_name (str | None): Optional logger name. Defaults to a stable name derived from log_file.
 
     Returns:
         logging.Logger: Configured logger instance.
@@ -16,9 +17,13 @@ def setup_logger(log_file: str = "vector_store_agent.log") -> logging.Logger:
     if log_directory and not os.path.exists(log_directory):
         os.makedirs(log_directory, exist_ok=True)
 
-    # Configure the logger
-    logger = logging.getLogger("VectorStoreAgentLogger")
+    if logger_name is None:
+        # One logger per log file to avoid handler reuse across different components.
+        logger_name = f"logger:{os.path.normpath(log_file)}"
+
+    logger = logging.getLogger(logger_name)
     logger.setLevel(logging.INFO)
+    logger.propagate = False
 
     # Prevent adding multiple handlers if the logger already has handlers
     if not logger.handlers:
